@@ -315,39 +315,50 @@ const ADMIN_EMAIL = "faycel.khlifiii@gmail.com";
 // Adresse publique du site (pour les messages WhatsApp)
 const SITE_URL = "https://faycel018-del.github.io/profaycel/";
 
-// Une mensualité couvre 4 séances
-const SEANCES_PAR_MOIS = 4;
+// Prix d'une séance (les paiements sont enregistrés en nombre de séances)
+const PRIX_SEANCE = 25;
 
-// Séances faites, période en cours et état du paiement d'un élève
+// Une présence compte à partir du jour où l'élève a commencé
+function presenceComptee(eleve, p) {
+    const date = p.seances && p.seances.date_seance;
+    return !eleve.date_debut || !date || date >= eleve.date_debut;
+}
+
+// Séances suivies, séances payées et ce qui reste à payer
 // (eleve.presences et eleve.paiements viennent de la requête Supabase)
 function suiviEleve(eleve) {
 
-    const presents = (eleve.presences || []).filter(function (p) {
-        return p.present;
-    }).length;
+    const presences = (eleve.presences || []).filter(function (p) {
+        return presenceComptee(eleve, p);
+    });
 
-    const total = (eleve.seances_anterieures || 0) + presents;
-    const moisPayes = (eleve.paiements || []).length;
-    const periode = total === 0 ? 0 : ((total - 1) % SEANCES_PAR_MOIS) + 1;
-    const paye = moisPayes * SEANCES_PAR_MOIS >= total;
+    const suivies = presences.filter(function (p) { return p.present; }).length;
+    const absences = presences.length - suivies;
+
+    const payees = (eleve.paiements || []).reduce(function (total, p) {
+        return total + (p.seances || 4);
+    }, 0);
+
+    const reste = suivies - payees;
 
     let paiement;
 
-    if (total === 0 && moisPayes === 0) {
+    if (suivies === 0 && payees === 0) {
         paiement = "—";
-    } else if (paye) {
-        paiement = "✅ Payé";
+    } else if (reste > 0) {
+        paiement = `⚠️ ${reste} séance(s) à payer · ${reste * PRIX_SEANCE} DT`;
+    } else if (reste < 0) {
+        paiement = `✅ Avance : ${-reste} séance(s)`;
     } else {
-        paiement = "⚠️ Paiement attendu";
+        paiement = "✅ À jour";
     }
 
     return {
-        total: total,
-        periode: periode,
-        moisPayes: moisPayes,
-        paye: paye,
-        paiement: paiement,
-        seancesCouvertes: moisPayes * SEANCES_PAR_MOIS
+        suivies: suivies,
+        absences: absences,
+        payees: payees,
+        reste: reste,
+        paiement: paiement
     };
 
 }
@@ -1300,9 +1311,9 @@ console.log("Page actuelle:", currentPage);
                                     <br>
                                     <strong>Téléphone :</strong> ${parent && parent.telephone ? parent.telephone : (eleve.telephone || "—")}`}
                                     <br>
-                                    <strong>Séances :</strong> ${suivi.total} (ce mois : ${suivi.periode} / ${SEANCES_PAR_MOIS})
+                                    <strong>Séances suivies :</strong> ${suivi.suivies} · <strong>payées :</strong> ${suivi.payees}
                                     <br>
-                                    <strong>Paiement :</strong> ${suivi.paiement} · ${suivi.moisPayes} mois
+                                    <strong>Paiement :</strong> ${suivi.paiement}
                                     <br>
                                     <strong>Code :</strong> <code>${eleve.code_acces || "—"}</code>
                                 </p>
@@ -1362,7 +1373,7 @@ console.log("Page actuelle:", currentPage);
 
             window.supabaseClient
                 .from("eleves")
-                .select("*, parents(prenom, nom, telephone, lien_parente), presences(present), paiements(id)")
+                .select("*, parents(prenom, nom, telephone, lien_parente), presences(present, seances(date_seance)), paiements(seances)")
                 .neq("statut", "archive")
                 .order("prenom", { ascending: true })
                 .then(function (result) {
@@ -1440,6 +1451,41 @@ console.log("Page actuelle:", currentPage);
 
             });
 
+            // choix rapide 4 / 8 / 12 séances et montant affiché
+            ficheContenu.addEventListener("click", function (event) {
+
+                const choix = event.target.closest("#fiche-nb button[data-n]");
+
+                if (!choix) {
+                    return;
+                }
+
+                document.querySelectorAll("#fiche-nb button").forEach(function (b) {
+                    b.classList.toggle("on", b === choix);
+                });
+
+                const champ = ficheContenu.querySelector("[name=seances]");
+                champ.value = choix.dataset.n;
+                champ.dispatchEvent(new Event("input", { bubbles: true }));
+
+            });
+
+            ficheContenu.addEventListener("input", function (event) {
+
+                if (!event.target.matches("[name=seances]")) {
+                    return;
+                }
+
+                const n = Number(event.target.value) || 0;
+
+                ficheContenu.querySelector(".fiche-montant").textContent = `${n * PRIX_SEANCE} DT`;
+
+                document.querySelectorAll("#fiche-nb button").forEach(function (b) {
+                    b.classList.toggle("on", Number(b.dataset.n) === n);
+                });
+
+            });
+
             ficheContenu.addEventListener("submit", async function (event) {
 
                 if (!event.target.matches("#fiche-paiement")) {
@@ -1449,13 +1495,19 @@ console.log("Page actuelle:", currentPage);
                 event.preventDefault();
 
                 const form = event.target;
+                const nombre = Number(form.querySelector("[name=seances]").value) || 0;
+
+                if (nombre < 1) {
+                    return;
+                }
 
                 const { error } = await window.supabaseClient
                     .from("paiements")
                     .insert([{
                         eleve_id: Number(ficheEleveId),
                         date_paiement: form.querySelector("[name=date]").value,
-                        montant: Number(form.querySelector("[name=montant]").value) || 0
+                        seances: nombre,
+                        montant: nombre * PRIX_SEANCE
                     }]);
 
                 if (error) {
@@ -1475,7 +1527,7 @@ console.log("Page actuelle:", currentPage);
             return iso ? iso.slice(8, 10) + "/" + iso.slice(5, 7) + "/" + iso.slice(0, 4) : "—";
         }
 
-        async function ouvrirFiche(id) {
+        async function ouvrirFiche(id, versPaiement) {
 
             ficheEleveId = id;
             ficheContenu.innerHTML = "<p>Chargement...</p>";
@@ -1483,7 +1535,7 @@ console.log("Page actuelle:", currentPage);
 
             const { data: eleve, error } = await window.supabaseClient
                 .from("eleves")
-                .select("*, parents(prenom, nom, telephone, lien_parente), presences(present, seances(date_seance, matiere)), paiements(id, date_paiement, montant)")
+                .select("*, parents(prenom, nom, telephone, lien_parente), presences(present, seances(date_seance, matiere)), paiements(id, date_paiement, montant, seances)")
                 .eq("id", id)
                 .single();
 
@@ -1495,38 +1547,29 @@ console.log("Page actuelle:", currentPage);
 
             document.querySelector("#fiche-titre").textContent = `${eleve.prenom} ${eleve.nom}`.trim();
 
+            const suivi = suiviEleve(eleve);
+
             const presences = (eleve.presences || [])
-                .filter(function (p) { return p.seances && p.seances.date_seance; })
+                .filter(function (p) { return p.seances && p.seances.date_seance && presenceComptee(eleve, p); })
                 .sort(function (a, b) { return b.seances.date_seance.localeCompare(a.seances.date_seance); });
 
-            const presents = presences.filter(function (p) { return p.present; }).length;
-            const absences = presences.length - presents;
-            const anterieures = eleve.seances_anterieures || 0;
-            const total = anterieures + presents;
-
             const paiements = (eleve.paiements || []).slice().sort(function (a, b) {
-                return (a.date_paiement || "").localeCompare(b.date_paiement || "") || a.id - b.id;
+                return (b.date_paiement || "").localeCompare(a.date_paiement || "") || b.id - a.id;
             });
 
-            const couvertes = paiements.length * SEANCES_PAR_MOIS;
-            const reste = total - couvertes;
-            const tarif = eleve.tarif_mensuel || 100;
             const parent = eleve.parents;
 
-            const bilan = reste > 0
-                ? `<div class="fiche-alerte">⚠️ ${reste} séance(s) à payer · ${Math.round(reste * tarif / SEANCES_PAR_MOIS)} DT</div>`
-                : reste < 0
-                    ? `<div class="fiche-ok">✅ Payé d'avance : ${-reste} séance(s)</div>`
-                    : (total > 0 ? `<div class="fiche-ok">✅ À jour</div>` : "");
+            const bilan = suivi.reste > 0
+                ? `<div class="fiche-alerte">${suivi.paiement}</div>`
+                : (suivi.paiement !== "—" ? `<div class="fiche-ok">${suivi.paiement}</div>` : "");
 
             const lignesPaiements = paiements.length === 0
                 ? "<p>Aucun paiement.</p>"
-                : paiements.map(function (p, i) {
-                    const de = i * SEANCES_PAR_MOIS + 1;
+                : paiements.map(function (p) {
                     return `
                         <div class="fiche-paiement">
-                            <span>💰 <strong>${dateFr(p.date_paiement)}</strong> · ${p.montant} DT</span>
-                            <small>séances ${de} → ${de + SEANCES_PAR_MOIS - 1}</small>
+                            <span>💰 <strong>${dateFr(p.date_paiement)}</strong> · ${p.seances || 4} séance(s)</span>
+                            <small>${p.montant} DT</small>
                             <button type="button" class="fiche-retirer" data-retirer-paiement="${p.id}" aria-label="Supprimer">✕</button>
                         </div>
                     `;
@@ -1538,35 +1581,58 @@ console.log("Page actuelle:", currentPage);
                     return `<span class="${p.present ? "reg-p" : "reg-a"}">${p.present ? "✅" : "❌"} ${dateFr(p.seances.date_seance)}</span>`;
                 }).join("")}</div>`;
 
+            const aujourdhuiIso = (function () {
+                const d = new Date();
+                return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+            })();
+
+            const proposition = Math.max(suivi.reste, 4);
+
             ficheContenu.innerHTML = `
                 <p class="fiche-infos">
                     <bdi>${eleve.classe || "—"}</bdi> · ${eleve.mode === "distance" ? "💻 À distance" : "🏫 Présentiel"}
+                    ${eleve.date_debut ? ` · depuis le ${dateFr(eleve.date_debut)}` : ""}
                     ${parent ? `<br>👪 <span dir="auto">${parent.prenom} ${parent.nom || ""}</span>${parent.telephone ? ` · ${parent.telephone}` : ""}` : ""}
                     ${eleve.code_acces ? `<br>🔑 Code : <code>${eleve.code_acces}</code>` : ""}
                 </p>
 
                 <div class="fiche-chiffres">
-                    <div><strong>${total}</strong><small>séance(s) suivie(s)</small></div>
-                    <div><strong>${absences}</strong><small>absence(s)</small></div>
-                    <div><strong>${paiements.length}</strong><small>mois payé(s)</small></div>
+                    <div><strong>${suivi.suivies}</strong><small>séance(s) suivie(s)</small></div>
+                    <div><strong>${suivi.absences}</strong><small>absence(s)</small></div>
+                    <div><strong>${suivi.payees}</strong><small>séance(s) payée(s)</small></div>
                 </div>
 
                 ${bilan}
 
-                <h3 class="fiche-titre">📅 Séances${eleve.date_debut ? ` (depuis le ${dateFr(eleve.date_debut)})` : ""}</h3>
-                ${anterieures > 0 ? `<p class="doc-aide">+ ${anterieures} séance(s) avant l'inscription sur le site.</p>` : ""}
-                ${lignesSeances}
+                <h3 class="fiche-titre" id="fiche-titre-paiement">💰 Nouveau paiement <small>(1 séance = ${PRIX_SEANCE} DT)</small></h3>
 
-                <h3 class="fiche-titre">💰 Paiements <small>(${tarif} DT = ${SEANCES_PAR_MOIS} séances)</small></h3>
+                <form id="fiche-paiement" class="fiche-ajout-v2">
+                    <div class="doc-choix" id="fiche-nb">
+                        ${[4, 8, 12].map(function (n) {
+                            return `<button type="button" data-n="${n}"${n === proposition ? " class=\"on\"" : ""}>${n} séances</button>`;
+                        }).join("")}
+                    </div>
+                    <div class="fiche-ajout">
+                        <input type="number" name="seances" value="${proposition}" min="1" max="60" required aria-label="Séances">
+                        <span>séance(s) =</span>
+                        <strong class="fiche-montant">${proposition * PRIX_SEANCE} DT</strong>
+                    </div>
+                    <div class="fiche-ajout">
+                        <input type="date" name="date" value="${aujourdhuiIso}" required aria-label="Date">
+                        <button type="submit" class="button button-primary">💾 Enregistrer le paiement</button>
+                    </div>
+                </form>
+
+                <h3 class="fiche-titre">🧾 Paiements</h3>
                 ${lignesPaiements}
 
-                <form id="fiche-paiement" class="fiche-ajout">
-                    <input type="date" name="date" value="${(function () { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); })()}" required>
-                    <input type="number" name="montant" value="${tarif}" min="0" step="5" required>
-                    <span>DT</span>
-                    <button type="submit" class="button button-primary">+ Ajouter</button>
-                </form>
+                <h3 class="fiche-titre">📅 Séances</h3>
+                ${lignesSeances}
             `;
+
+            if (versPaiement) {
+                document.querySelector("#fiche-titre-paiement").scrollIntoView({ block: "start" });
+            }
 
         }
 
@@ -1574,36 +1640,9 @@ console.log("Page actuelle:", currentPage);
         function attachCardEvents(eleves) {
 
             document.querySelectorAll("#eleves-grid .btn-paiement").forEach(function (btn) {
-
-                btn.addEventListener("click", async function () {
-
-                    const eleve = eleves.find(function (e) {
-                        return e.id == btn.dataset.id;
-                    });
-
-                    if (!eleve) return;
-
-                    const montant = eleve.tarif_mensuel || 100;
-
-                    if (!confirm(`Enregistrer un paiement de ${montant} DT pour ${eleve.prenom} (${eleve.classe || ""}) ?`)) {
-                        return;
-                    }
-
-                    const { error } = await window.supabaseClient
-                        .from("paiements")
-                        .insert([{ eleve_id: eleve.id, montant: montant }]);
-
-                    if (error) {
-                        console.error("Erreur paiement:", error);
-                        showToast("Erreur : " + error.message, "error");
-                        return;
-                    }
-
-                    showToast("Paiement enregistré !", "success");
-                    loadEleves();
-
+                btn.addEventListener("click", function () {
+                    ouvrirFiche(btn.dataset.id, true);
                 });
-
             });
 
             document.querySelectorAll("#eleves-grid .btn-edit:not(.btn-paiement):not(.btn-fiche)").forEach(function (btn) {
@@ -2828,10 +2867,10 @@ console.log("Page actuelle:", currentPage);
         const appelResume = document.querySelector("#appel-resume");
         const boutonEnregistrer = document.querySelector("#appel-enregistrer");
         const registre = document.querySelector("#registre");
-        const registrePeriode = document.querySelector("#registre-periode");
 
         let classe = "";
         let elevesClasse = [];
+        let elevesDuJour = [];
         let seancesClasse = [];
         let seanceDuJour = null;
         let etat = {};
@@ -2952,7 +2991,7 @@ console.log("Page actuelle:", currentPage);
             const [resEleves, resSeances] = await Promise.all([
                 window.supabaseClient
                     .from("eleves")
-                    .select("id, prenom, nom")
+                    .select("id, prenom, nom, date_debut")
                     .eq("classe", classe)
                     .eq("mode", "presentiel")
                     .eq("statut", "actif")
@@ -2994,6 +3033,11 @@ console.log("Page actuelle:", currentPage);
                 return s.date_seance === date;
             }) || null;
 
+            // un élève apparaît à partir du jour où il a commencé
+            elevesDuJour = elevesClasse.filter(function (e) {
+                return !e.date_debut || e.date_debut <= date;
+            });
+
             const dejaFait = {};
 
             ((seanceDuJour && seanceDuJour.presences) || []).forEach(function (p) {
@@ -3008,7 +3052,7 @@ console.log("Page actuelle:", currentPage);
 
             etat = {};
 
-            elevesClasse.forEach(function (e) {
+            elevesDuJour.forEach(function (e) {
                 etat[e.id] = dejaFait[e.id] === undefined ? true : dejaFait[e.id];
             });
 
@@ -3019,13 +3063,13 @@ console.log("Page actuelle:", currentPage);
 
         function afficherAppel() {
 
-            if (elevesClasse.length === 0) {
-                appelListe.innerHTML = "<p>Aucun élève dans cette classe.</p>";
+            if (elevesDuJour.length === 0) {
+                appelListe.innerHTML = "<p>Aucun élève dans cette classe à cette date.</p>";
                 appelPied.hidden = true;
                 return;
             }
 
-            appelListe.innerHTML = elevesClasse.map(function (e) {
+            appelListe.innerHTML = elevesDuJour.map(function (e) {
 
                 const present = etat[e.id];
 
@@ -3039,9 +3083,9 @@ console.log("Page actuelle:", currentPage);
 
             }).join("");
 
-            const absents = elevesClasse.filter(function (e) { return !etat[e.id]; }).length;
+            const absents = elevesDuJour.filter(function (e) { return !etat[e.id]; }).length;
 
-            appelResume.textContent = `${elevesClasse.length - absents} présent(s) · ${absents} absent(s)`;
+            appelResume.textContent = `${elevesDuJour.length - absents} présent(s) · ${absents} absent(s)`;
             appelPied.hidden = false;
 
         }
@@ -3075,7 +3119,7 @@ console.log("Page actuelle:", currentPage);
 
         boutonEnregistrer.addEventListener("click", async function () {
 
-            if (!classe || elevesClasse.length === 0) {
+            if (!classe || elevesDuJour.length === 0) {
                 return;
             }
 
@@ -3108,7 +3152,7 @@ console.log("Page actuelle:", currentPage);
 
                 }
 
-                const lignes = elevesClasse.map(function (e) {
+                const lignes = elevesDuJour.map(function (e) {
                     return { seance_id: seanceId, eleve_id: e.id, present: !!etat[e.id] };
                 });
 
@@ -3138,38 +3182,18 @@ console.log("Page actuelle:", currentPage);
         });
 
 
-        // --- Registre : élèves × dates ---
-
-        registrePeriode.addEventListener("click", function (event) {
-
-            const bouton = event.target.closest("button[data-v]");
-
-            if (!bouton) {
-                return;
-            }
-
-            registrePeriode.querySelectorAll("button").forEach(function (b) {
-                b.classList.toggle("on", b === bouton);
-            });
-
-            registrePeriode.dataset.valeur = bouton.dataset.v;
-            afficherRegistre();
-
-        });
+        // --- Registre : élèves × dates (depuis septembre) ---
 
         function afficherRegistre() {
 
             document.querySelector("#registre-titre").innerHTML = `📚 Registre — <bdi>${classe}</bdi>`;
 
-            const mois = aujourdhui().slice(0, 7);
-
             const seances = seancesClasse.filter(function (s) {
-                return (s.presences || []).length > 0 &&
-                    (registrePeriode.dataset.valeur === "annee" || s.date_seance.slice(0, 7) === mois);
+                return (s.presences || []).length > 0;
             });
 
             if (seances.length === 0) {
-                registre.innerHTML = "<p>Aucun appel pour cette période.</p>";
+                registre.innerHTML = "<p>Aucun appel pour le moment.</p>";
                 return;
             }
 
@@ -3181,14 +3205,18 @@ console.log("Page actuelle:", currentPage);
             const lignes = elevesClasse.map(function (e) {
 
                 let presents = 0;
+                let comptees = 0;
 
                 const cases = seances.map(function (s) {
 
                     const p = (s.presences || []).find(function (x) { return x.eleve_id === e.id; });
 
-                    if (!p) {
+                    // pas encore inscrit à cette date, ou pas dans l'appel
+                    if (!p || (e.date_debut && s.date_seance < e.date_debut)) {
                         return "<td class=\"reg-vide\">·</td>";
                     }
+
+                    comptees++;
 
                     if (p.present) {
                         presents++;
@@ -3198,7 +3226,7 @@ console.log("Page actuelle:", currentPage);
 
                 }).join("");
 
-                return `<tr><th dir="auto">${e.prenom} ${e.nom}</th>${cases}<td class="reg-total">${presents}/${seances.length}</td></tr>`;
+                return `<tr><th dir="auto">${e.prenom} ${e.nom}</th>${cases}<td class="reg-total">${presents}/${comptees}</td></tr>`;
 
             }).join("");
 
@@ -4196,7 +4224,7 @@ console.log("Page actuelle:", currentPage);
 
             const { data: enfants, error: errEnfants } = await window.supabaseClient
                 .from("eleves")
-                .select("*, presences(present, seances(date_seance, matiere)), paiements(date_paiement, montant)")
+                .select("*, presences(present, seances(date_seance, matiere)), paiements(date_paiement, montant, seances)")
                 .eq("parent_id", parent.id)
                 .order("prenom", { ascending: true });
 
@@ -4265,8 +4293,8 @@ console.log("Page actuelle:", currentPage);
                             <article class="student-dashboard-card">
                                 <div class="dashboard-card-icon">📅</div>
                                 <div>
-                                    <h3>${suivi.total} séance(s)</h3>
-                                    <p>Ce mois : ${suivi.periode} / ${SEANCES_PAR_MOIS}</p>
+                                    <h3>${suivi.suivies} séance(s)</h3>
+                                    <p>${suivi.absences} absence(s)</p>
                                 </div>
                             </article>
 
@@ -4274,7 +4302,7 @@ console.log("Page actuelle:", currentPage);
                                 <div class="dashboard-card-icon">💰</div>
                                 <div>
                                     <h3>${suivi.paiement}</h3>
-                                    <p>${suivi.moisPayes} mois payé(s) · ${enfant.tarif_mensuel || 100} DT / mois</p>
+                                    <p>${suivi.payees} séance(s) payée(s) · ${PRIX_SEANCE} DT / séance</p>
                                 </div>
                             </article>
 
