@@ -574,3 +574,10 @@ begin
     return json_build_object('classe', niveau);
 end;
 $function$;
+
+
+-- =================================================
+-- 9. PAIEMENTS EN NOMBRE DE SÉANCES (1 séance = 25 DT)
+-- =================================================
+
+alter table public.paiements add column if not exists seances int not null default 4 check (seances > 0);
