@@ -2,8 +2,10 @@
 
 ## Le site
 
-- **Adresse officielle (la seule) : https://faycel018-del.github.io/profaycel/index.html**
+- **Adresse officielle (la seule) : https://profaycel.github.io/index.html**
   Quand on parle « du site », c'est toujours de cette adresse.
+- Ancienne adresse (avant le 20/10/2026) : `https://faycel018-del.github.io/profaycel/` — ne plus l'utiliser.
+- Dépôt GitHub : `profaycel/profaycel.github.io` (organisation `profaycel`).
 - Hébergement : GitHub Pages, publié automatiquement depuis la branche `main`
   (2–3 minutes après chaque fusion de Pull Request).
 - Les anciennes copies Netlify (`profaycel.netlify.app`, `tranquil-swan-a4ca4c`) ont été
@@ -47,3 +49,5 @@
 - Après une modification de CSS / JS, augmenter le numéro `?v=` dans les pages et
   `CACHE_NAME` dans `sw.js`.
 - Le schéma de la base est tenu à jour dans `supabase/schema.sql`.
+- Ne pas supprimer `googled179e0f4796b59bb.html` ni `google25415fdafefb95f9.html`
+  (validation Google Search Console).
