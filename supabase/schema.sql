@@ -581,3 +581,130 @@ $function$;
 -- =================================================
 
 alter table public.paiements add column if not exists seances int not null default 4 check (seances > 0);
+
+
+-- =================================================
+-- 10. COURS PAR NIVEAUX (parcours) : PROGRESSION + CERTIFICATS
+-- =================================================
+
+-- Progression d'un élève dans une leçon (une ligne par élève et par leçon)
+create table if not exists public.progression (
+    id            bigint generated always as identity primary key,
+    user_id       uuid not null default auth.uid() references auth.users (id) on delete cascade,
+    lecon         text not null,                      -- ex. '8-maths-divisibilite'
+    etoiles       int[] not null default '{}',        -- étoiles (1 à 3) par niveau, 0 = pas fait
+    erreurs       jsonb not null default '{}'::jsonb, -- erreurs par question : {"2-3": 4, ...}
+    examen_score  int,                                -- meilleure note à l'examen réussi
+    examen_total  int,
+    examen_essais int not null default 0,
+    examen_le     timestamptz,
+    updated_at    timestamptz not null default now(),
+    unique (user_id, lecon)
+);
+
+-- Certificats : numéro unique, nom tiré de la fiche élève (pas modifiable par l'élève)
+create sequence if not exists public.certificat_seq start 1;
+
+create table if not exists public.certificats (
+    id          bigint generated always as identity primary key,
+    numero      text not null unique,                 -- ex. 'PF-2026-0001'
+    user_id     uuid not null references auth.users (id) on delete cascade,
+    lecon       text not null,
+    titre       text not null,
+    nom_complet text not null,
+    niveau      text,
+    score       int,
+    total       int,
+    etoiles     int,
+    delivre_le  timestamptz not null default now(),
+    unique (user_id, lecon)
+);
+
+alter table public.progression enable row level security;
+alter table public.certificats enable row level security;
+
+create policy admin_tout on public.progression for all to authenticated
+    using (public.is_admin()) with check (public.is_admin());
+create policy admin_tout on public.certificats for all to authenticated
+    using (public.is_admin()) with check (public.is_admin());
+
+-- L'élève lit et écrit SA progression
+create policy progression_eleve on public.progression for all to authenticated
+    using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+-- Le parent lit la progression et les certificats de ses enfants
+create policy progression_parent on public.progression for select to authenticated
+    using (user_id in (select e.user_id from public.eleves e
+                       join public.parents p on p.id = e.parent_id
+                       where p.user_id = auth.uid()));
+
+create policy certificats_lecture on public.certificats for select to authenticated
+    using (user_id = auth.uid()
+           or user_id in (select e.user_id from public.eleves e
+                          join public.parents p on p.id = e.parent_id
+                          where p.user_id = auth.uid()));
+
+-- Délivrer le certificat (une seule fois par leçon) après la réussite de l'examen
+create or replace function public.delivrer_certificat(p_lecon text, p_titre text)
+ returns json
+ language plpgsql
+ security definer
+ set search_path to ''
+as $function$
+declare
+    uid uuid := auth.uid();
+    pr public.progression;
+    c public.certificats;
+    e public.eleves;
+    nom text;
+    nb int;
+begin
+    if uid is null then
+        raise exception 'Non connecté';
+    end if;
+
+    select * into c from public.certificats where user_id = uid and lecon = p_lecon;
+    if found then
+        return row_to_json(c);
+    end if;
+
+    select * into pr from public.progression where user_id = uid and lecon = p_lecon;
+    if not found or pr.examen_score is null then
+        raise exception 'Examen non réussi';
+    end if;
+
+    select * into e from public.eleves where user_id = uid order by id limit 1;
+    nom := trim(coalesce(e.prenom, '') || ' ' || coalesce(e.nom, ''));
+    if nom = '' then
+        select trim(coalesce(raw_user_meta_data ->> 'full_name', raw_user_meta_data ->> 'nom', ''))
+            into nom from auth.users where id = uid;
+    end if;
+    if coalesce(nom, '') = '' then
+        nom := 'تلميذ(ة) Profaycel';
+    end if;
+
+    select coalesce(sum(x), 0) into nb from unnest(pr.etoiles) as x;
+
+    insert into public.certificats (numero, user_id, lecon, titre, nom_complet, niveau, score, total, etoiles)
+    values ('PF-' || to_char(now(), 'YYYY') || '-' || lpad(nextval('public.certificat_seq')::text, 4, '0'),
+            uid, p_lecon, p_titre, nom, e.classe, pr.examen_score, pr.examen_total, nb)
+    returning * into c;
+
+    return row_to_json(c);
+end;
+$function$;
+
+-- Vérifier un certificat à partir de son numéro (page publique certificat.html)
+create or replace function public.verifier_certificat(p_numero text)
+ returns json
+ language sql
+ security definer
+ set search_path to ''
+as $function$
+    select json_build_object('numero', numero, 'nom', nom_complet, 'titre', titre,
+                             'niveau', niveau, 'delivre_le', delivre_le)
+    from public.certificats where numero = upper(trim(p_numero));
+$function$;
+
+grant execute on function public.delivrer_certificat(text, text) to authenticated;
+grant execute on function public.verifier_certificat(text) to anon, authenticated;

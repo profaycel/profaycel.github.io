@@ -12,7 +12,8 @@
 
     const PAGES_ADMIN = [
         "admin.html", "eleves.html", "parents.html", "classes.html",
-        "seances-admin.html", "presence-admin.html", "documents-admin.html"
+        "seances-admin.html", "presence-admin.html", "documents-admin.html",
+        "parcours-admin.html"
     ];
 
     let page = window.location.pathname.split("/").pop() || "index.html";
@@ -280,6 +281,10 @@
         "🎥 Rejoindre le cours": "🎥 الالتحاق بالحصة",
         "DOCUMENTS": "الوثائق",
         "📁 Mes documents": "📁 وثائقي",
+        "COURS INTERACTIFS": "دروس تفاعليّة",
+        "🎯 Mes cours par niveaux": "🎯 دروسي بالمستويات",
+        "Apprends étape par étape : chaque niveau réussi ouvre le suivant. À la fin, un examen et ton certificat officiel 🎓": "تعلّم خطوة بخطوة: كلّ مستوى تنجح فيه يفتح المستوى الموالي. وفي الآخر امتحان وشهادتك الرسميّة 🎓",
+        "Commencer →": "ابدأ ←",
         "Les séries d'exercices de ton niveau.": "سلاسل التمارين الخاصة بمستواك.",
         "Choisis ton niveau ci-dessus pour voir tes documents.": "اختر مستواك أعلاه لتظهر لك وثائقك.",
         "Tes documents apparaîtront ici dès que ton niveau sera connu.": "ستظهر وثائقك هنا حالما يُحدَّد مستواك.",
