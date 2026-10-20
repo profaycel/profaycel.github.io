@@ -61,23 +61,36 @@ async function lancer() {
     const carteLecon = l => {
         const p = parId[l.id] || {}, et = (p.etoiles || []).filter(x => x > 0).length + (p.examen_score != null ? 1 : 0);
         const pc = Math.round(100 * et / (l.n + 1)); faits += et; tous += l.n + 1;
-        const c = certParId[l.id];
-        const badge = c ? '<span class="badge or">🎓 شهادة</span>' : pc > 0 ? `<span class="badge vert ltr">${pc}%</span>` : "";
+        const ok = p.examen_score != null;
+        const badge = ok ? '<span class="badge or">✅ نجح</span>' : pc > 0 ? `<span class="badge vert ltr">${pc}%</span>` : "";
         return `<a class="niveau lecon" href="lecon.html?l=${l.id}">
-          <span class="num">${c ? "✓" : l.partie === "geometrie" ? "📐" : "🔢"}</span>
+          <span class="num">${ok ? "✓" : l.partie === "geometrie" ? "📐" : "🔢"}</span>
           <span class="info"><span class="titre">${l.titre}</span><br><span class="sous">${l.sous}</span>
             <div class="prog"><div style="width:${pc}%"></div></div></span>${badge}</a>`;
     };
-    const alg = lecons.filter(l => l.partie === "algebre").map(carteLecon).join("");
-    const geo = lecons.filter(l => l.partie === "geometrie").map(carteLecon).join("");
+    // Carte du certificat d'une partie (algèbre, géométrie)
+    const parties = window.PARTIES.filter(pa => pa.lecons.some(id => lecons.some(l => l.id === id)));
+    const cartePartie = pa => {
+        const k = pa.lecons.filter(id => parId[id] && parId[id].examen_score != null).length, n = pa.lecons.length, c = certParId[pa.id];
+        const action = c ? `<a class="btn vert" style="text-decoration:none" href="certificat.html?n=${encodeURIComponent(c.numero)}">🎓 عرض شهادتي</a>`
+            : k === n ? `<button class="btn vert" onclick="obtenir('${pa.id}', this)">🎓 احصل على شهادتي</button>`
+            : `<small style="color:var(--gris)">انجح في امتحانات كلّ الدروس لتحصل على الشهادة.</small>`;
+        return `<div class="carte" style="background:#fffbeb;border-color:#fde68a;margin-top:8px">
+            <b>🎓 شهادة « ${pa.titre} »</b> <span class="badge ${k === n ? "or" : "vert"} ltr" style="float:left">${k} / ${n}</span>
+            <div class="prog"><div style="width:${Math.round(100 * k / n)}%"></div></div>${action}</div>`;
+    };
+    const section = part => lecons.filter(l => l.partie === part).map(carteLecon).join("")
+        + parties.filter(pa => pa.partie === part).map(cartePartie).join("");
+    const alg = section("algebre");
+    const geo = section("geometrie");
     const pt = tous ? Math.round(100 * faits / tous) : 0;
     const prenom = eleve.prenom || (user.user_metadata || {}).full_name || "";
 
     let h = `<div class="carte">
         <h2>مرحبا ${prenom} 👋</h2>
-        <div style="color:var(--gris)">كلّ درس فيه مستويات تُفتح واحدا بعد الآخر. أجب عن الأسئلة لتفتح المستوى الموالي، وفي الآخر امتحان و<b>شهادة رسميّة</b> باسمك 🎓</div>
+        <div style="color:var(--gris)">كلّ درس فيه مستويات تُفتح واحدا بعد الآخر، وفي آخره امتحان. عندما تنجح في كلّ دروس جزء (الجبر أو الهندسة) تحصل على <b>شهادة رسميّة</b> باسمك 🎓</div>
         <div class="prog"><div style="width:${pt}%"></div></div>
-        <small style="color:var(--gris)">تقدّمك: ${N(pt + "%")} · الشهادات: ${N((certs.data || []).length + " / " + lecons.length)} 🎓</small>
+        <small style="color:var(--gris)">تقدّمك: ${N(pt + "%")} · الشهادات: ${N((certs.data || []).length + " / " + parties.length)} 🎓</small>
       </div>`;
     if (!lecons.length) {
         h += `<div class="carte centre"><h3>دروس مستواك في الطريق ✍️</h3><p>الدروس التفاعليّة متوفّرة حاليّا للسنة الثامنة أساسي.</p><a href="?tout=1">عرض كلّ الدروس</a></div>`;
@@ -90,6 +103,12 @@ async function lancer() {
             `<a href="certificat.html?n=${encodeURIComponent(c.numero)}"><span><b>${c.titre}</b><br><small class="ltr" style="color:var(--gris)">${c.numero}</small></span><span class="badge or">عرض ←</span></a>`).join("") + `</div>`;
     }
     app.innerHTML = h;
+}
+async function obtenir(partie, bouton) {
+    bouton.disabled = true; bouton.textContent = "⏳ …";
+    const { data, error } = await sb().rpc("delivrer_certificat_partie", { p_partie: partie });
+    if (error) { console.error(error); bouton.disabled = false; bouton.textContent = "😕 أعد المحاولة"; return; }
+    location.href = "certificat.html?n=" + encodeURIComponent(data.numero);
 }
 lancer();
 </script>
