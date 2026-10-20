@@ -22,7 +22,19 @@
 - Parent : `parent.html` (code de l'enfant, présences, paiements)
 - Administration (en français) : `admin.html`, `eleves.html` (fiche élève + paiements),
   `parents.html`, `classes.html`, `seances-admin.html`, `presence-admin.html`
-  (appel par classe + registre), `documents-admin.html` (photos / PDF)
+  (appel par classe + registre), `documents-admin.html` (photos / PDF),
+  `parcours-admin.html` (suivi des cours par niveaux : progression, questions ratées, certificats)
+- Cours par niveaux (élèves, en arabe) : dossier `parcours/`
+  - `index.html` (« دروسي », leçons du niveau de l'élève), `lecon.html?l=<id>` (une leçon),
+    `certificat.html?n=PF-AAAA-NNNN` (vérification publique d'un certificat, QR code).
+  - `moteur.js` (moteur des leçons), `geo.js` (figures SVG), `certificat.js` (certificat),
+    `catalogue.js` (liste des leçons), `lecons/*.js` (contenu de chaque leçon).
+  - Ajouter une leçon : créer `parcours/lecons/<f>.js` puis l'ajouter dans `catalogue.js`
+    (et dans la liste des scripts de `parcours-admin.html`).
+  - Tables Supabase `progression` (une ligne par élève et par leçon) et `certificats`
+    (numéro unique, nom pris dans la fiche élève) ; fonctions `delivrer_certificat`,
+    `verifier_certificat` (section 10 de `supabase/schema.sql`).
+  - Le « mode professeur » (toutes les réponses) n'apparaît que pour l'administrateur.
 
 ## Règles de fonctionnement
 
