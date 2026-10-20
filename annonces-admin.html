@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Annonces | Profaycel</title>
+
+    <link rel="stylesheet" href="style.css?v=9">
+    <meta name="robots" content="noindex">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+    <style>
+        .an-form { display: grid; gap: 12px; }
+        .an-form label { font-weight: 700; font-size: 14px; display: grid; gap: 6px; }
+        .an-form input, .an-form textarea, .an-form select { width: 100%; box-sizing: border-box; min-width: 0; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 10px; font: inherit; }
+        .an-form textarea { min-height: 150px; line-height: 1.8; }
+        .an-ligne { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 12px; }
+        .an-case input { width: auto !important; }
+        .an-case { display: flex !important; align-items: center; gap: 8px; font-weight: 600 !important; }
+        .an-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+        .an-item { border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px; margin: 10px 0; background: #fff; }
+        .an-item.masque { opacity: .6; background: #f8fafc; }
+        .an-item h3 { margin: 0 0 6px; }
+        .an-item { overflow-wrap: anywhere; }
+        .an-item .an-texte { white-space: pre-line; color: #334155; margin: 6px 0; }
+        .an-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+        .an-tag { font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 99px; background: #eff6ff; color: #1e40af; }
+        .an-tag.vert { background: #dcfce7; color: #166534; }
+        .an-tag.gris { background: #f1f5f9; color: #64748b; }
+        .an-tag.or { background: #fef3c7; color: #92400e; }
+        .an-boutons { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+        .an-boutons button { padding: 7px 12px; border-radius: 9px; border: 1px solid #cbd5e1; background: #fff; font: inherit; font-size: 14px; cursor: pointer; }
+        .an-boutons button.danger { border-color: #fecaca; color: #b91c1c; }
+    </style>
+</head>
+
+<body>
+
+<header class="header">
+
+    <div class="container header-container">
+
+        <a href="index.html" class="logo">
+            Profaycel
+        </a>
+
+        <button
+            class="mobile-menu-button"
+            type="button"
+            aria-label="Ouvrir le menu"
+            aria-expanded="false">
+
+            <span></span>
+            <span></span>
+            <span></span>
+
+        </button>
+
+        <nav class="navigation">
+
+                <ul>
+                    <li><a href="admin.html">Tableau de bord</a></li>
+                    <li><a href="eleves.html">Élèves</a></li>
+                    <li><a href="parents.html">Parents</a></li>
+                    <li><a href="classes.html">Classes</a></li>
+                    <li><a href="seances-admin.html">Séances</a></li>
+                    <li><a href="presence-admin.html">Présence</a></li>
+                    <li><a href="documents-admin.html">Documents</a></li>
+                    <li><a href="parcours-admin.html">Parcours</a></li>
+                </ul>
+
+            </nav>
+
+        <div class="header-actions">
+
+            <a href="eleve.html" class="header-button">
+                Espace Élève
+            </a>
+
+            <a href="parent.html" class="header-button">
+                Espace Parent
+            </a>
+
+            <a href="admin.html" class="header-button">
+                Administration
+            </a>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<main>
+
+        <section class="student-dashboard-hero">
+
+            <div class="container">
+
+                <span class="section-label">
+                    ADMINISTRATION
+                </span>
+
+                <h1>
+                    Annonces
+                </h1>
+
+                <p>
+                    Écrivez un message : il apparaît en haut de l'espace des élèves et / ou des parents choisis, avec le badge « 🔔 جديد ».
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <section class="student-dashboard">
+
+            <div class="container">
+
+                <!-- ÉCRIRE -->
+
+                <section class="student-welcome-card is-stacked" id="an-zone-form">
+
+                    <span class="student-label" id="an-form-label">NOUVELLE ANNONCE</span>
+
+                    <form class="an-form" id="an-form">
+
+                        <label>Titre
+                            <input name="titre" dir="auto" required maxlength="120" placeholder="ex. 🎉 جديد في المنصّة">
+                        </label>
+
+                        <label>Message
+                            <textarea name="contenu" dir="auto" placeholder="اكتب الإعلان هنا…"></textarea>
+                        </label>
+
+                        <div class="an-ligne">
+                            <label>Pour qui ?
+                                <select name="cible">
+                                    <option value="eleves">Élèves</option>
+                                    <option value="parents">Parents</option>
+                                    <option value="tous">Élèves et parents</option>
+                                </select>
+                            </label>
+                            <label>Niveau
+                                <select name="niveau">
+                                    <option value="">Tous les niveaux</option>
+                                    <option value="7 أساسي">7 أساسي</option>
+                                    <option value="8 أساسي">8 أساسي</option>
+                                    <option value="9 أساسي">9 أساسي</option>
+                                    <option value="1 ثانوي">1 ثانوي</option>
+                                </select>
+                            </label>
+                            <label>Afficher jusqu'au (facultatif)
+                                <input name="expire_le" type="date">
+                            </label>
+                        </div>
+
+                        <div class="an-ligne">
+                            <label>Bouton : lien (facultatif)
+                                <input name="lien" dir="ltr" placeholder="parcours/index.html ou https://…">
+                            </label>
+                            <label>Bouton : texte
+                                <input name="lien_texte" dir="auto" placeholder="ابدأ ←">
+                            </label>
+                        </div>
+
+                        <label class="an-case"><input type="checkbox" name="epingle"> 📌 Épingler en haut</label>
+
+                        <div class="an-actions">
+                            <button class="button button-primary" type="submit" id="an-envoyer">📣 Publier</button>
+                            <button class="button" type="button" id="an-annuler" hidden>Annuler la modification</button>
+                        </div>
+
+                    </form>
+
+                </section>
+
+
+                <!-- LISTE -->
+
+                <section class="student-welcome-card is-stacked">
+
+                    <span class="student-label">ANNONCES</span>
+                    <h2>Toutes les annonces</h2>
+
+                    <div id="an-liste"><p>Chargement…</p></div>
+
+                </section>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+<footer class="footer">
+
+        <div class="container">
+
+            <div class="footer-content">
+
+                <div>
+
+                    <a href="index.html" class="footer-logo">
+                        Profaycel
+                    </a>
+
+                    <p>
+                        Professeur Faycel Khlifi — Maths & Technologie
+                    </p>
+
+                </div>
+
+                <div class="footer-links">
+
+                    <a href="index.html">
+                        Accueil
+                    </a>
+
+                    <a href="index.html#contact">
+                        Contact
+                    </a>
+
+                    <a href="confidentialite.html">
+                        Politique de confidentialité
+                    </a>
+
+                </div>
+
+            </div>
+
+            <div class="footer-bottom">
+
+                <p>
+                    © 2026 Profaycel. Tous droits réservés.
+                </p>
+
+            </div>
+
+        </div>
+
+    </footer>
+
+
+<script src="script.js?v=9"></script>
+<script>
+(function () {
+
+    const form = document.getElementById("an-form");
+    const liste = document.getElementById("an-liste");
+    let enEdition = null;
+    let annonces = [];
+    const esc = t => String(t == null ? "" : t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+    const CIBLES = { eleves: "👦 Élèves", parents: "👨‍👩‍👧 Parents", tous: "Élèves et parents" };
+
+    async function client() {
+        for (let i = 0; i < 100 && !window.supabaseClient; i++) await new Promise(r => setTimeout(r, 100));
+        return window.supabaseClient;
+    }
+
+    async function charger() {
+        const sb = await client();
+        const { data, error } = await sb.from("annonces").select("*").order("epingle", { ascending: false }).order("created_at", { ascending: false });
+        if (error) { console.error(error); showToast("Erreur de chargement des annonces", "error"); return; }
+        annonces = data || [];
+        afficher();
+    }
+
+    function afficher() {
+        if (!annonces.length) { liste.innerHTML = "<p>Aucune annonce pour l'instant.</p>"; return; }
+        const auj = new Date().toISOString().slice(0, 10);
+        liste.innerHTML = annonces.map(a => {
+            const publie = a.statut === "publie", expiree = a.expire_le && a.expire_le < auj;
+            return `<div class="an-item ${publie && !expiree ? "" : "masque"}">
+                <h3 dir="auto">${a.epingle ? "📌 " : ""}${esc(a.titre)}</h3>
+                <div class="an-tags">
+                    <span class="an-tag ${publie ? "vert" : "gris"}">${publie ? "Publiée" : "Masquée"}</span>
+                    <span class="an-tag">${CIBLES[a.cible] || a.cible}</span>
+                    <span class="an-tag"><bdi>${a.niveau || "Tous les niveaux"}</bdi></span>
+                    ${a.expire_le ? `<span class="an-tag ${expiree ? "gris" : "or"}">${expiree ? "Terminée le" : "Jusqu'au"} ${new Date(a.expire_le).toLocaleDateString("fr-FR")}</span>` : ""}
+                    <span class="an-tag gris">${new Date(a.created_at).toLocaleDateString("fr-FR")}</span>
+                </div>
+                ${a.contenu ? `<div class="an-texte" dir="auto">${esc(a.contenu)}</div>` : ""}
+                ${a.lien ? `<div style="font-size:14px">🔗 <bdi>${esc(a.lien_texte || "")}</bdi> → <code>${esc(a.lien)}</code></div>` : ""}
+                <div class="an-boutons">
+                    <button type="button" data-action="modifier" data-id="${a.id}">✏️ Modifier</button>
+                    <button type="button" data-action="statut" data-id="${a.id}">${publie ? "🙈 Masquer" : "👁️ Publier"}</button>
+                    <button type="button" data-action="epingle" data-id="${a.id}">${a.epingle ? "Désépingler" : "📌 Épingler"}</button>
+                    <button type="button" class="danger" data-action="supprimer" data-id="${a.id}">🗑️ Supprimer</button>
+                </div>
+            </div>`;
+        }).join("");
+    }
+
+    function lireForm() {
+        const f = new FormData(form);
+        const lien = (f.get("lien") || "").trim();
+        if (lien && !/^(https:\/\/|[a-z0-9_\-\/]+\.html)/i.test(lien)) {
+            showToast("Lien : une page du site (ex. parcours/index.html) ou une adresse https://", "error");
+            return null;
+        }
+        return {
+            titre: f.get("titre").trim(),
+            contenu: (f.get("contenu") || "").trim() || null,
+            cible: f.get("cible"),
+            niveau: f.get("niveau") || null,
+            expire_le: f.get("expire_le") || null,
+            lien: lien || null,
+            lien_texte: (f.get("lien_texte") || "").trim() || null,
+            epingle: f.get("epingle") === "on"
+        };
+    }
+
+    function viderForm() {
+        form.reset(); enEdition = null;
+        document.getElementById("an-form-label").textContent = "NOUVELLE ANNONCE";
+        document.getElementById("an-envoyer").textContent = "📣 Publier";
+        document.getElementById("an-annuler").hidden = true;
+    }
+
+    form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        const ligne = lireForm(); if (!ligne) return;
+        const sb = await client();
+        const bouton = document.getElementById("an-envoyer"); bouton.disabled = true;
+        const req = enEdition
+            ? sb.from("annonces").update(ligne).eq("id", enEdition)
+            : sb.from("annonces").insert(Object.assign({ statut: "publie", type_annonce: "message", destinataires: ligne.cible }, ligne));
+        const { error } = await req;
+        bouton.disabled = false;
+        if (error) { console.error(error); showToast(error.message, "error"); return; }
+        showToast(enEdition ? "Annonce modifiée ✅" : "Annonce publiée ✅", "success");
+        viderForm(); charger();
+    });
+
+    document.getElementById("an-annuler").addEventListener("click", viderForm);
+
+    liste.addEventListener("click", async function (e) {
+        const b = e.target.closest("button[data-action]"); if (!b) return;
+        const a = annonces.find(x => String(x.id) === b.dataset.id); if (!a) return;
+        const sb = await client();
+        if (b.dataset.action === "modifier") {
+            enEdition = a.id;
+            ["titre", "contenu", "cible", "niveau", "expire_le", "lien", "lien_texte"].forEach(k => form.elements[k].value = a[k] || (k === "cible" ? "eleves" : ""));
+            form.elements.epingle.checked = !!a.epingle;
+            document.getElementById("an-form-label").textContent = "MODIFIER L'ANNONCE";
+            document.getElementById("an-envoyer").textContent = "💾 Enregistrer";
+            document.getElementById("an-annuler").hidden = false;
+            document.getElementById("an-zone-form").scrollIntoView({ behavior: "smooth" });
+            return;
+        }
+        let req;
+        if (b.dataset.action === "statut") req = sb.from("annonces").update({ statut: a.statut === "publie" ? "masque" : "publie" }).eq("id", a.id);
+        if (b.dataset.action === "epingle") req = sb.from("annonces").update({ epingle: !a.epingle }).eq("id", a.id);
+        if (b.dataset.action === "supprimer") {
+            if (!confirm("Supprimer définitivement cette annonce ?")) return;
+            req = sb.from("annonces").delete().eq("id", a.id);
+        }
+        const { error } = await req;
+        if (error) { console.error(error); showToast(error.message, "error"); return; }
+        charger();
+    });
+
+    charger();
+
+})();
+</script>
+
+</body>
+</html>
