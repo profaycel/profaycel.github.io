@@ -7345,3 +7345,38 @@ body.niveau-a-choisir {
     font-size: 20px;
     color: var(--primary);
 }
+
+
+/* =====================================================
+   ANNONCES DU PROFESSEUR
+===================================================== */
+
+.annonce-carte {
+    border: 2px solid #fde68a;
+    background: linear-gradient(135deg, #fffbeb 0%, #ffffff 70%);
+}
+
+.annonce-carte h2 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.annonce-nouveau {
+    font-size: 13px;
+    font-weight: 700;
+    background: #dc2626;
+    color: #fff;
+    border-radius: 999px;
+    padding: 3px 10px;
+}
+
+.annonce-texte {
+    white-space: pre-line;
+    line-height: 1.9;
+}
+
+.annonce-date {
+    color: #94a3b8;
+}

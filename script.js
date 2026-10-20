@@ -1147,7 +1147,8 @@ document.addEventListener("DOMContentLoaded", function () {
         "seances-admin.html": ["admin"],
         "presence-admin.html": ["admin"],
         "documents-admin.html": ["admin"],
-        "parcours-admin.html": ["admin"]
+        "parcours-admin.html": ["admin"],
+        "annonces-admin.html": ["admin"]
 
     };
 
@@ -4620,6 +4621,103 @@ console.log("Page actuelle:", currentPage);
 
     }
 
+
+    // =================================================
+    // 22. ANNONCES — AFFICHAGE (eleve.html, parent.html)
+    // =================================================
+
+    const annoncesZone = document.querySelector("#annonces-zone");
+
+    if (annoncesZone) {
+
+        const CLE_VUES = "profaycel_annonces_vues";
+
+        function lireVues() {
+            try { return JSON.parse(localStorage.getItem(CLE_VUES)) || []; } catch (e) { return []; }
+        }
+
+        function echapperAnnonce(t) {
+            return String(t == null ? "" : t).replace(/[&<>"]/g, function (c) {
+                return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+            });
+        }
+
+        async function loadAnnonces() {
+
+            if (!window.supabaseClient) {
+                setTimeout(loadAnnonces, 200);
+                return;
+            }
+
+            const { data: sessionData } = await window.supabaseClient.auth.getSession();
+            const session = sessionData.session;
+            if (!session) return;
+
+            const publicVise = annoncesZone.dataset.public; // "eleves" ou "parents"
+            let niveaux = [];
+
+            if (publicVise === "eleves") {
+                const { data } = await window.supabaseClient.from("eleves").select("classe").eq("user_id", session.user.id);
+                niveaux = (data || []).map(function (e) { return e.classe; });
+            } else {
+                const { data: parents } = await window.supabaseClient.from("parents").select("id").eq("user_id", session.user.id);
+                const ids = (parents || []).map(function (p) { return p.id; });
+                if (ids.length) {
+                    const { data } = await window.supabaseClient.from("eleves").select("classe").in("parent_id", ids);
+                    niveaux = (data || []).map(function (e) { return e.classe; });
+                }
+            }
+
+            const { data: annonces, error } = await window.supabaseClient
+                .from("annonces")
+                .select("*")
+                .eq("statut", "publie")
+                .order("epingle", { ascending: false })
+                .order("created_at", { ascending: false })
+                .limit(30);
+
+            if (error) {
+                console.error("Erreur annonces:", error);
+                return;
+            }
+
+            const aujourdhui = new Date().toISOString().slice(0, 10);
+            const visibles = (annonces || []).filter(function (a) {
+                return (a.cible === "tous" || a.cible === publicVise)
+                    && (!a.niveau || niveaux.includes(a.niveau))
+                    && (!a.expire_le || a.expire_le >= aujourdhui);
+            }).slice(0, 5);
+
+            if (!visibles.length) {
+                annoncesZone.innerHTML = "";
+                return;
+            }
+
+            const vues = lireVues();
+
+            annoncesZone.innerHTML = visibles.map(function (a) {
+                const nouveau = !vues.includes(a.id);
+                const lienSur = a.lien && /^(https:\/\/|[a-z0-9_\-\/]+\.html)/i.test(a.lien);
+                return `<section class="student-welcome-card is-stacked annonce-carte">
+                    <span class="student-label">📣 ANNONCE</span>
+                    <h2 dir="auto">${echapperAnnonce(a.titre)} ${nouveau ? '<span class="annonce-nouveau">🔔 Nouveau</span>' : ""}</h2>
+                    ${a.contenu ? `<p dir="auto" class="annonce-texte">${echapperAnnonce(a.contenu)}</p>` : ""}
+                    ${lienSur ? `<p><a class="button button-primary" href="${echapperAnnonce(a.lien)}">${echapperAnnonce(a.lien_texte || "Ouvrir →")}</a></p>` : ""}
+                    <small class="annonce-date"><bdi>${new Date(a.created_at).toLocaleDateString("fr-FR")}</bdi></small>
+                </section>`;
+            }).join("");
+
+            try {
+                localStorage.setItem(CLE_VUES, JSON.stringify(vues.concat(visibles.map(function (a) { return a.id; })).slice(-200)));
+            } catch (e) {
+                // navigation privée : le badge « Nouveau » réapparaîtra
+            }
+
+        }
+
+        loadAnnonces();
+
+    }
 
 
 });
