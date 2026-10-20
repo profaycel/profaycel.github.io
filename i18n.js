@@ -13,7 +13,7 @@
     const PAGES_ADMIN = [
         "admin.html", "eleves.html", "parents.html", "classes.html",
         "seances-admin.html", "presence-admin.html", "documents-admin.html",
-        "parcours-admin.html"
+        "parcours-admin.html", "annonces-admin.html"
     ];
 
     let page = window.location.pathname.split("/").pop() || "index.html";
@@ -282,6 +282,9 @@
         "DOCUMENTS": "الوثائق",
         "📁 Mes documents": "📁 وثائقي",
         "COURS INTERACTIFS": "دروس تفاعليّة",
+        "📣 ANNONCE": "📣 إعلان",
+        "🔔 Nouveau": "🔔 جديد",
+        "Ouvrir →": "فتح ←",
         "🎯 Mes cours par niveaux": "🎯 دروسي بالمستويات",
         "Apprends étape par étape : chaque niveau réussi ouvre le suivant. À la fin, un examen et ton certificat officiel 🎓": "تعلّم خطوة بخطوة: كلّ مستوى تنجح فيه يفتح المستوى الموالي. وفي الآخر امتحان وشهادتك الرسميّة 🎓",
         "Commencer →": "ابدأ ←",
