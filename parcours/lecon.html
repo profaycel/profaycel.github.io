@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>درس | Profaycel</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#2563eb">
+<link rel="icon" type="image/svg+xml" href="../icons/icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Aref+Ruqaa:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="moteur.css?v=1">
+</head>
+<body>
+<nav class="pf-nav no-print"><div class="wrap"><a class="pf-logo" href="../index.html">Profaycel</a><a href="index.html">📚 دروسي</a><a href="../eleve.html">🏠 فضائي</a></div></nav>
+<div class="prof-bande">الأستاذ فيصل خليفي</div>
+<header class="top">
+  <div class="wrap">
+    <div>
+      <h1 id="titre">…</h1>
+      <small id="sous"></small>
+    </div>
+  </div>
+</header>
+<main class="wrap" id="app"><div class="carte chargement">⏳ تحميل…</div></main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../supabase.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="moteur.js?v=1"></script>
+<script src="geo.js?v=1"></script>
+<script src="certificat.js?v=1"></script>
+<script src="catalogue.js?v=1"></script>
+<script>
+(function () {
+    const id = new URLSearchParams(location.search).get("l");
+    const l = window.CATALOGUE_PAR_ID[id];
+    if (!l) {
+        document.getElementById("app").innerHTML = `<div class="carte centre"><h2>الدرس غير موجود</h2><a class="btn" href="index.html" style="text-decoration:none">← كلّ الدروس</a></div>`;
+        return;
+    }
+    document.getElementById("titre").textContent = l.titre;
+    document.getElementById("sous").textContent = "رياضيات · " + l.niveau + (l.partie === "geometrie" ? " · هندسة" : "");
+    const sc = document.createElement("script");
+    sc.src = "lecons/" + l.f + ".js?v=1";
+    sc.onload = function () { window.LECON = window.LECONS[id]; demarrer(); };
+    sc.onerror = function () { document.getElementById("app").innerHTML = `<div class="carte centre">تعذّر تحميل الدرس. تحقّق من الأنترنت.</div>`; };
+    document.body.appendChild(sc);
+})();
+</script>
+</body>
+</html>

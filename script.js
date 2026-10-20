@@ -1146,7 +1146,8 @@ document.addEventListener("DOMContentLoaded", function () {
         "classes.html": ["admin"],
         "seances-admin.html": ["admin"],
         "presence-admin.html": ["admin"],
-        "documents-admin.html": ["admin"]
+        "documents-admin.html": ["admin"],
+        "parcours-admin.html": ["admin"]
 
     };
 
