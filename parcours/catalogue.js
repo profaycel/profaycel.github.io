@@ -15,3 +15,12 @@ window.CATALOGUE = [
 ];
 
 window.CATALOGUE_PAR_ID = Object.fromEntries(window.CATALOGUE.map(function (l) { return [l.id, l]; }));
+
+// Un certificat par partie (même liste que la table Supabase public.parties)
+window.PARTIES = [
+    { id: "8-algebre-t1",   titre: "الجبر والحساب", niveau: "8 أساسي", partie: "algebre",
+      lecons: ["8-maths-divisibilite", "8-maths-entiers-relatifs", "8-maths-addition-soustraction-z", "8-maths-multiplication-z", "8-maths-rationnels", "8-maths-addition-q"] },
+    { id: "8-geometrie-t1", titre: "الهندسة",       niveau: "8 أساسي", partie: "geometrie",
+      lecons: ["8-geo-symetrie-centrale", "8-geo-angles-paralleles"] }
+];
+window.partieDe = function (lid) { return window.PARTIES.find(function (p) { return p.lecons.includes(lid); }); };
