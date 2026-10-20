@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Suivi des cours par niveaux | Profaycel</title>
+
+    <link rel="stylesheet" href="style.css?v=8">
+    <meta name="robots" content="noindex">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        .pa-filtres { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+        .pa-filtres select, .pa-filtres input { padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 10px; font: inherit; }
+        .pa-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-top: 14px; }
+        .pa-stat { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px; text-align: center; }
+        .pa-stat b { display: block; font-size: 28px; color: #1e3a8a; }
+        .pa-stat span { color: #64748b; font-size: 14px; }
+        .pa-table-wrap { overflow-x: auto; margin-top: 12px; border: 1px solid #e2e8f0; border-radius: 12px; }
+        .pa-table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 760px; }
+        .pa-table th, .pa-table td { padding: 9px 8px; border-bottom: 1px solid #eef2f7; text-align: center; vertical-align: middle; }
+        .pa-table th { background: #f1f5f9; font-size: 13px; position: sticky; top: 0; }
+        .pa-table td:first-child, .pa-table th:first-child { min-width: 150px; text-align: left; position: sticky; left: 0; background: #fff; z-index: 1; }
+        .pa-table th:first-child { background: #f1f5f9; }
+        .pa-table tr.cliquable { cursor: pointer; }
+        .pa-table tr.cliquable:hover td { background: #eff6ff; }
+        .pa-ar { font-family: "Tajawal", sans-serif; direction: rtl; unicode-bidi: isolate; }
+        .pa-cell { display: inline-flex; flex-direction: column; align-items: center; gap: 3px; min-width: 64px; }
+        .pa-barre { width: 60px; height: 6px; background: #e2e8f0; border-radius: 99px; overflow: hidden; }
+        .pa-barre > i { display: block; height: 100%; background: #16a34a; }
+        .pa-vide { color: #cbd5e1; }
+        .pa-badge { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 12px; font-weight: 700; }
+        .pa-badge.or { background: #fef3c7; color: #92400e; }
+        .pa-badge.bleu { background: #dbeafe; color: #1e40af; }
+        .pa-badge.gris { background: #f1f5f9; color: #64748b; }
+        .pa-detail { border: 2px solid #2563eb; }
+        .pa-niv { display: inline-block; min-width: 26px; padding: 2px 4px; margin: 1px; border-radius: 6px; font-size: 12px; background: #f1f5f9; color: #94a3b8; }
+        .pa-niv.ok { background: #dcfce7; color: #166534; }
+        .pa-q { border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; margin: 10px 0; background: #fff; }
+        .pa-q .pa-q-tete { display: flex; justify-content: space-between; gap: 10px; color: #64748b; font-size: 13px; margin-bottom: 6px; }
+        .pa-q .pa-q-enonce { font-family: "Tajawal", sans-serif; direction: rtl; font-size: 16px; font-weight: 600; }
+        .pa-q .pa-q-rep { font-family: "Tajawal", sans-serif; direction: rtl; background: #ecfdf3; border-radius: 8px; padding: 4px 10px; margin-top: 6px; display: inline-block; }
+        .pa-q .fig { max-width: 260px !important; }
+        /* Écriture mathématique (comme dans les leçons) */
+        .ltr { direction: ltr; unicode-bidi: isolate; display: inline-block; font-weight: 700; white-space: nowrap; }
+        .frac { display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; font-size: .85em; line-height: 1.15; margin: 0 2px; }
+        .frac > span:first-child { border-bottom: 1.5px solid currentColor; padding: 0 3px; }
+        .case { display: inline-block; width: 1.1em; height: 1.25em; border: 2px solid #2563eb; border-radius: 4px; vertical-align: -0.2em; margin: 0 1px; background: #fff; }
+        .fig { display: block; margin: 8px auto; width: 100%; height: auto; direction: ltr; border: 1px solid #e2e8f0; border-radius: 10px; }
+    </style>
+</head>
+
+<body>
+
+<header class="header">
+
+    <div class="container header-container">
+
+        <a href="index.html" class="logo">
+            Profaycel
+        </a>
+
+        <button
+            class="mobile-menu-button"
+            type="button"
+            aria-label="Ouvrir le menu"
+            aria-expanded="false">
+
+            <span></span>
+            <span></span>
+            <span></span>
+
+        </button>
+
+        <nav class="navigation">
+
+                <ul>
+                    <li><a href="admin.html">Tableau de bord</a></li>
+                    <li><a href="eleves.html">Élèves</a></li>
+                    <li><a href="parents.html">Parents</a></li>
+                    <li><a href="classes.html">Classes</a></li>
+                    <li><a href="seances-admin.html">Séances</a></li>
+                    <li><a href="presence-admin.html">Présence</a></li>
+                    <li><a href="documents-admin.html">Documents</a></li>
+                    <li><a href="parcours-admin.html" class="active">Parcours</a></li>
+                </ul>
+
+            </nav>
+
+        <div class="header-actions">
+
+            <a href="eleve.html" class="header-button">
+                Espace Élève
+            </a>
+
+            <a href="parent.html" class="header-button">
+                Espace Parent
+            </a>
+
+            <a href="admin.html" class="header-button">
+                Administration
+            </a>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<main>
+
+        <section class="student-dashboard-hero">
+
+            <div class="container">
+
+                <span class="section-label">
+                    ADMINISTRATION
+                </span>
+
+                <h1>
+                    Cours par niveaux
+                </h1>
+
+                <p>
+                    Où en est chaque élève : niveaux réussis, étoiles, examen, certificat, et les questions qui posent problème.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <section class="student-dashboard">
+
+            <div class="container">
+
+                <!-- FILTRES + CHIFFRES -->
+
+                <section class="student-welcome-card is-stacked">
+
+                    <span class="student-label">VUE D'ENSEMBLE</span>
+
+                    <div class="pa-filtres">
+                        <select id="pa-classe" aria-label="Niveau"></select>
+                        <input id="pa-recherche" type="search" placeholder="Rechercher un élève…">
+                        <a class="button button-primary" href="parcours/index.html">👁️ Voir les leçons (comme un élève)</a>
+                    </div>
+
+                    <div class="pa-stats" id="pa-stats"></div>
+
+                </section>
+
+
+                <!-- TABLEAU ÉLÈVES × LEÇONS -->
+
+                <section class="student-welcome-card is-stacked">
+
+                    <span class="student-label">ÉLÈVES</span>
+                    <h2>Progression par leçon</h2>
+                    <p>Touchez un élève pour voir le détail. 🎓 = certificat délivré.</p>
+
+                    <div class="pa-table-wrap"><table class="pa-table" id="pa-table"><tbody><tr><td>Chargement…</td></tr></tbody></table></div>
+                    <p id="pa-sans-compte" style="color:#64748b;font-size:14px"></p>
+
+                </section>
+
+
+                <!-- DÉTAIL D'UN ÉLÈVE -->
+
+                <section class="student-welcome-card is-stacked pa-detail" id="pa-detail" hidden></section>
+
+
+                <!-- PAR LEÇON : QUESTIONS DIFFICILES -->
+
+                <section class="student-welcome-card is-stacked">
+
+                    <span class="student-label">PAR LEÇON</span>
+                    <h2>Questions les plus ratées</h2>
+
+                    <div class="pa-filtres">
+                        <select id="pa-lecon" aria-label="Leçon"></select>
+                    </div>
+
+                    <div id="pa-lecon-detail"></div>
+
+                </section>
+
+
+                <!-- CERTIFICATS -->
+
+                <section class="student-welcome-card is-stacked">
+
+                    <span class="student-label">CERTIFICATS</span>
+                    <h2>🎓 Certificats délivrés</h2>
+
+                    <div class="pa-table-wrap"><table class="pa-table" id="pa-certifs"><tbody><tr><td>Chargement…</td></tr></tbody></table></div>
+
+                </section>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+<footer class="footer">
+
+        <div class="container">
+
+            <div class="footer-content">
+
+                <div>
+
+                    <a href="index.html" class="footer-logo">
+                        Profaycel
+                    </a>
+
+                    <p>
+                        Professeur Faycel Khlifi — Maths & Technologie
+                    </p>
+
+                </div>
+
+                <div class="footer-links">
+
+                    <a href="index.html">
+                        Accueil
+                    </a>
+
+                    <a href="index.html#contact">
+                        Contact
+                    </a>
+
+                    <a href="confidentialite.html">
+                        Politique de confidentialité
+                    </a>
+
+                </div>
+
+            </div>
+
+            <div class="footer-bottom">
+
+                <p>
+                    © 2026 Profaycel. Tous droits réservés.
+                </p>
+
+            </div>
+
+        </div>
+
+    </footer>
+
+
+<script src="script.js?v=8"></script>
+<script src="parcours/moteur.js?v=1"></script>
+<script src="parcours/geo.js?v=1"></script>
+<script src="parcours/catalogue.js?v=1"></script>
+<script src="parcours/lecons/lecon1-divisibilite.js?v=1"></script>
+<script src="parcours/lecons/lecon2-entiers-relatifs.js?v=1"></script>
+<script src="parcours/lecons/lecon3-addition-soustraction.js?v=1"></script>
+<script src="parcours/lecons/lecon4-multiplication.js?v=1"></script>
+<script src="parcours/lecons/lecon5-rationnels.js?v=1"></script>
+<script src="parcours/lecons/lecon6-addition-q.js?v=1"></script>
+<script src="parcours/lecons/geo1-symetrie-centrale.js?v=1"></script>
+<script src="parcours/lecons/geo2-angles.js?v=1"></script>
+<script>
+(function () {
+
+    const D = { eleves: [], prog: [], certifs: [] };
+    const $ = s => document.querySelector(s);
+    const esc = t => String(t == null ? "" : t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+    const dateFr = iso => iso ? new Date(iso).toLocaleDateString("fr-FR") : "—";
+
+    // Progression d'une ligne : niveaux réussis + examen
+    function avancement(l, p) {
+        if (!p) return { pc: 0, niv: 0, etoiles: 0 };
+        const et = p.etoiles || [], niv = et.filter(x => x > 0).length;
+        return { pc: Math.round(100 * (niv + (p.examen_score != null ? 1 : 0)) / (l.n + 1)), niv, etoiles: et.reduce((a, b) => a + (b || 0), 0) };
+    }
+    const nomEleve = e => e ? `${e.prenom || ""} ${e.nom || ""}`.trim() : "Compte sans fiche";
+
+    async function charger() {
+        for (let i = 0; i < 100 && !window.supabaseClient; i++) await new Promise(r => setTimeout(r, 100));
+        const sb = window.supabaseClient;
+        const [e, p, c] = await Promise.all([
+            sb.from("eleves").select("id,prenom,nom,classe,mode,statut,user_id"),
+            sb.from("progression").select("*"),
+            sb.from("certificats").select("*").order("delivre_le", { ascending: false })
+        ]);
+        if (e.error || p.error || c.error) { showToast("Erreur de chargement des données", "error"); console.error(e.error, p.error, c.error); return; }
+        D.eleves = (e.data || []).filter(x => x.statut !== "archive");
+        D.prog = p.data || [];
+        D.certifs = c.data || [];
+
+        const niveaux = [...new Set(window.CATALOGUE.map(l => l.niveau))];
+        $("#pa-classe").innerHTML = niveaux.map(n => `<option value="${n}">${n}</option>`).join("") + `<option value="">Tous les niveaux</option>`;
+        $("#pa-lecon").innerHTML = window.CATALOGUE.map(l => `<option value="${l.id}">${esc(l.titre)}</option>`).join("");
+        $("#pa-classe").onchange = afficher;
+        $("#pa-recherche").oninput = afficher;
+        $("#pa-lecon").onchange = afficherLecon;
+        afficher();
+        afficherLecon();
+        afficherCertifs();
+    }
+
+    function lignesProg(uid) { return Object.fromEntries(D.prog.filter(p => p.user_id === uid).map(p => [p.lecon, p])); }
+    function certifsDe(uid) { return Object.fromEntries(D.certifs.filter(c => c.user_id === uid).map(c => [c.lecon, c])); }
+
+    function afficher() {
+        const classe = $("#pa-classe").value, q = $("#pa-recherche").value.trim().toLowerCase();
+        const lecons = window.CATALOGUE.filter(l => !classe || l.niveau === classe);
+        const tous = D.eleves.filter(e => !classe || e.classe === classe);
+        const avecCompte = tous.filter(e => e.user_id && nomEleve(e).toLowerCase().includes(q));
+        const lignes = avecCompte.map(e => {
+            const pr = lignesProg(e.user_id), ce = certifsDe(e.user_id);
+            const cells = lecons.map(l => ({ l, p: pr[l.id], c: ce[l.id], a: avancement(l, pr[l.id]) }));
+            const total = cells.length ? Math.round(cells.reduce((s, x) => s + x.a.pc, 0) / cells.length) : 0;
+            const derniere = Object.values(pr).map(p => p.updated_at).sort().pop();
+            return { e, cells, total, derniere };
+        }).sort((a, b) => b.total - a.total || nomEleve(a.e).localeCompare(nomEleve(b.e)));
+
+        // Chiffres
+        const commence = lignes.filter(x => x.total > 0).length;
+        const nbCert = D.certifs.filter(c => lecons.some(l => l.id === c.lecon) && (!classe || (D.eleves.find(e => e.user_id === c.user_id) || {}).classe === classe)).length;
+        const moy = lignes.length ? Math.round(lignes.reduce((s, x) => s + x.total, 0) / lignes.length) : 0;
+        $("#pa-stats").innerHTML = [
+            [avecCompte.length, "élèves avec un compte"], [commence, "ont commencé"],
+            [nbCert, "certificats délivrés"], [moy + " %", "progression moyenne"]
+        ].map(([v, t]) => `<div class="pa-stat"><b>${v}</b><span>${t}</span></div>`).join("");
+
+        // Tableau
+        let h = `<thead><tr><th>Élève</th>${lecons.map(l => `<th class="pa-ar">${esc(l.titre)}</th>`).join("")}<th>Total</th><th>Dernière activité</th></tr></thead><tbody>`;
+        h += lignes.map(x => `<tr class="cliquable" data-uid="${x.e.user_id}"><td><b>${esc(nomEleve(x.e))}</b><br><small style="color:#64748b">${x.e.mode === "distance" ? "💻 À distance" : "🏫 Présentiel"}</small></td>`
+            + x.cells.map(({ c, a }) => a.pc === 0 && !c ? `<td class="pa-vide">—</td>`
+                : `<td><span class="pa-cell"><b>${a.pc} %</b><span class="pa-barre"><i style="width:${a.pc}%"></i></span><small>⭐ ${a.etoiles}${c ? " · 🎓" : ""}</small></span></td>`).join("")
+            + `<td><b>${x.total} %</b></td><td><small>${dateFr(x.derniere)}</small></td></tr>`).join("");
+        if (!lignes.length) h += `<tr><td colspan="${lecons.length + 3}">Aucun élève avec un compte dans ce niveau.</td></tr>`;
+        $("#pa-table").innerHTML = h + "</tbody>";
+        $("#pa-table").querySelectorAll("tr.cliquable").forEach(tr => tr.onclick = () => detailEleve(tr.dataset.uid));
+
+        const sans = tous.filter(e => !e.user_id).length;
+        $("#pa-sans-compte").textContent = sans ? `${sans} élève(s) de ce niveau n'ont pas encore de compte (code non utilisé) : ils n'apparaissent pas ici.` : "";
+    }
+
+    // Texte d'une question à partir de sa clé ("2-3" = niveau 2, question 4 ; "E-1" = examen, question 2)
+    function question(lid, cle) {
+        const L = window.LECONS[lid]; if (!L) return null;
+        const [a, b] = cle.split("-");
+        if (a === "E") return { q: L.examen.questions[+b], lieu: `Examen · question ${+b + 1}` };
+        const nv = L.niveaux[+a]; if (!nv) return null;
+        return { q: nv.questions[+b], lieu: `Niveau ${a} · question ${+b + 1} — <bdi class="pa-ar">${esc(nv.titre)}</bdi>` };
+    }
+    function blocQuestion(lid, cle, info) {
+        const x = question(lid, cle); if (!x || !x.q) return "";
+        return `<div class="pa-q"><div class="pa-q-tete"><span>${x.lieu}</span><span>${info}</span></div>
+            <div class="pa-q-enonce">${x.q.enonce}</div><div class="pa-q-rep">✅ ${reponseTxt(x.q)}</div></div>`;
+    }
+
+    function detailEleve(uid) {
+        const e = D.eleves.find(x => x.user_id === uid), pr = lignesProg(uid), ce = certifsDe(uid);
+        let h = `<span class="student-label">DÉTAIL</span><h2>${esc(nomEleve(e))} <small style="color:#64748b;font-size:16px"><bdi>${esc(e && e.classe || "")}</bdi></small></h2>
+            <div class="pa-table-wrap"><table class="pa-table"><thead><tr><th>Leçon</th><th>Niveaux</th><th>Étoiles</th><th>Examen</th><th>Essais</th><th>Certificat</th></tr></thead><tbody>`;
+        h += window.CATALOGUE.map(l => {
+            const p = pr[l.id], c = ce[l.id], a = avancement(l, p);
+            const niv = Array.from({ length: l.n }, (_, i) => { const s = p && p.etoiles ? p.etoiles[i] || 0 : 0; return `<span class="pa-niv ${s ? "ok" : ""}">${s ? "★".repeat(s) : i}</span>`; }).join("");
+            return `<tr><td class="pa-ar"><b>${esc(l.titre)}</b></td><td>${niv}</td><td>⭐ ${a.etoiles} / ${l.n * 3}</td>
+                <td>${p && p.examen_score != null ? `<span class="pa-badge bleu">${p.examen_score} / ${p.examen_total}</span>` : p && p.examen_essais ? `<span class="pa-badge gris">pas encore réussi</span>` : "—"}</td>
+                <td>${p ? p.examen_essais || 0 : 0}</td>
+                <td>${c ? `<a class="pa-badge or" href="parcours/certificat.html?n=${encodeURIComponent(c.numero)}" target="_blank">🎓 ${c.numero}</a><br><small>${dateFr(c.delivre_le)}</small>` : "—"}</td></tr>`;
+        }).join("") + "</tbody></table></div>";
+
+        // Ses erreurs les plus fréquentes
+        const erreurs = [];
+        Object.values(pr).forEach(p => Object.entries(p.erreurs || {}).forEach(([cle, n]) => erreurs.push({ lid: p.lecon, cle, n })));
+        erreurs.sort((a, b) => b.n - a.n);
+        h += `<h3 style="margin-top:18px">Ses questions les plus ratées</h3>` + (erreurs.length
+            ? erreurs.slice(0, 5).map(x => blocQuestion(x.lid, x.cle, `❌ ${x.n} erreur(s) · <span class="pa-ar">${esc(window.CATALOGUE_PAR_ID[x.lid] ? window.CATALOGUE_PAR_ID[x.lid].titre : x.lid)}</span>`)).join("")
+            : `<p style="color:#64748b">Aucune erreur enregistrée pour l'instant.</p>`);
+        h += `<button class="button" type="button" onclick="document.getElementById('pa-detail').hidden=true">Fermer</button>`;
+        const zone = $("#pa-detail"); zone.innerHTML = h; zone.hidden = false;
+        zone.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function afficherLecon() {
+        const lid = $("#pa-lecon").value, l = window.CATALOGUE_PAR_ID[lid];
+        const lignes = D.prog.filter(p => p.lecon === lid);
+        const total = {}, eleves = {};
+        lignes.forEach(p => Object.entries(p.erreurs || {}).forEach(([cle, n]) => { total[cle] = (total[cle] || 0) + n; eleves[cle] = (eleves[cle] || 0) + 1; }));
+        const top = Object.keys(total).sort((a, b) => total[b] - total[a]).slice(0, 8);
+        const reussis = lignes.filter(p => p.examen_score != null).length;
+        let h = `<div class="pa-stats"><div class="pa-stat"><b>${lignes.length}</b><span>élèves ont commencé</span></div>
+            <div class="pa-stat"><b>${reussis}</b><span>ont réussi l'examen</span></div>
+            <div class="pa-stat"><b>${D.certifs.filter(c => c.lecon === lid).length}</b><span>certificats</span></div></div>`;
+        h += top.length ? top.map(cle => blocQuestion(lid, cle, `❌ ${total[cle]} erreur(s) · ${eleves[cle]} élève(s)`)).join("")
+            : `<p style="color:#64748b;margin-top:12px">Pas encore de données pour cette leçon.</p>`;
+        $("#pa-lecon-detail").innerHTML = h;
+    }
+
+    function afficherCertifs() {
+        let h = `<thead><tr><th>Numéro</th><th>Élève</th><th>Leçon</th><th>Note</th><th>Date</th><th></th></tr></thead><tbody>`;
+        h += D.certifs.map(c => `<tr><td><b>${esc(c.numero)}</b></td><td>${esc(c.nom_complet)}</td><td class="pa-ar">${esc(c.titre)}</td>
+            <td>${c.score != null ? c.score + " / " + c.total : "—"}</td><td>${dateFr(c.delivre_le)}</td>
+            <td><a href="parcours/certificat.html?n=${encodeURIComponent(c.numero)}" target="_blank">Voir →</a></td></tr>`).join("");
+        if (!D.certifs.length) h += `<tr><td colspan="6">Aucun certificat pour l'instant.</td></tr>`;
+        $("#pa-certifs").innerHTML = h + "</tbody>";
+    }
+
+    charger();
+})();
+</script>
+
+</body>
+</html>

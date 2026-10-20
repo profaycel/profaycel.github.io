@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>التحقّق من شهادة | Profaycel</title>
+<meta name="description" content="التحقّق من شهادة نجاح صادرة عن منصّة Profaycel للأستاذ فيصل خليفي.">
+<meta name="theme-color" content="#2563eb">
+<link rel="icon" type="image/svg+xml" href="../icons/icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Aref+Ruqaa:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="moteur.css?v=1">
+</head>
+<body>
+<nav class="pf-nav no-print"><div class="wrap"><a class="pf-logo" href="../index.html">Profaycel</a><a href="index.html">📚 الدروس</a></div></nav>
+<div class="prof-bande">الأستاذ فيصل خليفي</div>
+<header class="top no-print"><div class="wrap"><div><h1>التحقّق من شهادة</h1><small>شهادات النجاح في الدروس التفاعليّة</small></div></div></header>
+<main class="wrap" id="app"><div class="carte chargement">⏳ نتحقّق من الشهادة…</div></main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../supabase.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="certificat.js?v=1"></script>
+<script>
+async function verifier() {
+    const app = document.getElementById("app");
+    const numero = (new URLSearchParams(location.search).get("n") || "").trim();
+    const formulaire = `<div class="carte no-print"><h3>أدخل رقم الشهادة</h3>
+        <form onsubmit="location.search='?n='+encodeURIComponent(this.n.value.trim());return false" style="display:flex;gap:8px">
+        <input class="rep" name="n" dir="ltr" placeholder="PF-2026-0001" style="flex:1"><button class="btn">تحقّق</button></form></div>`;
+    if (!numero) { app.innerHTML = formulaire; return; }
+    for (let i = 0; i < 100 && !window.supabaseClient; i++) await new Promise(r => setTimeout(r, 100));
+    const { data, error } = await window.supabaseClient.rpc("verifier_certificat", { p_numero: numero });
+    if (error || !data) {
+        app.innerHTML = `<div class="carte centre"><div class="grand">❌</div><h2>لا توجد شهادة بهذا الرقم</h2>
+          <p>الرقم <b class="ltr">${echapper(numero)}</b> غير مسجّل في منصّة Profaycel.</p></div>` + formulaire;
+        return;
+    }
+    app.innerHTML = `<div class="cert-ok no-print">✅ شهادة صحيحة، صادرة عن منصّة Profaycel للأستاذ فيصل خليفي.</div><div id="certZone"></div>
+      <div class="actions no-print" style="justify-content:center"><button class="btn" onclick="print()">🖨️ طباعة / حفظ PDF</button></div>`;
+    monterCertificat(document.getElementById("certZone"), data);
+}
+verifier();
+</script>
+</body>
+</html>
