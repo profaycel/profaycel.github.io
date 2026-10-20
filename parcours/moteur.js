@@ -82,12 +82,39 @@ function carte(){
   const exOuvert = etat.etoiles.filter(x=>x>0).length === nbNiv;
   h += `<button class="niveau ${etat.examen?"fait":exOuvert?"":"ferme"}" ${exOuvert?`onclick="ouvrirExamen()"`:"disabled"}>
       <span class="num">${etat.examen?"🎓":exOuvert?"🏁":"🔒"}</span>
-      <span class="info"><span class="titre">${LECON.examen.titre}</span><br><span class="sous">${LECON.examen.questions.length} أسئلة · تنجح بـ ${LECON.examen.seuil} إجابات صحيحة على الأقلّ ← الشهادة</span></span>
+      <span class="info"><span class="titre">${LECON.examen.titre}</span><br><span class="sous">${LECON.examen.questions.length} أسئلة · تنجح بـ ${LECON.examen.seuil} إجابات صحيحة على الأقلّ</span></span>
       ${etat.examen?`<span class="etoiles">${etat.examen.score}/${LECON.examen.questions.length}</span>`:""}
     </button>`;
-  if (etat.examen) h += `<div class="actions"><button class="btn vert" onclick="certificat()">🎓 شهادتي</button></div>`;
+  h += `<div id="partieEtat"></div>`;
   h += `<div class="actions no-print"><a class="btn sec" href="index.html" style="text-decoration:none">← كلّ الدروس</a>${window.PF_ADMIN ? `<button class="btn sec" onclick="toutesQuestions()">👨‍🏫 وضع الأستاذ</button>` : ""}</div>`;
   app.innerHTML = h; scrollTo(0,0);
+  majPartie();
+}
+
+// ---------------- الشهادة: واحدة لكلّ جزء (الجبر، الهندسة) ----------------
+async function majPartie(){
+  const zone = document.getElementById("partieEtat"), pa = window.partieDe && partieDe(LECON.id);
+  if (!zone || !pa || !UTIL) return;
+  clearTimeout(minuterie); await envoyer();
+  const [pr, ce] = await Promise.all([
+    sb().from("progression").select("lecon,examen_score").eq("user_id", UTIL.id).in("lecon", pa.lecons),
+    sb().from("certificats").select("numero").eq("user_id", UTIL.id).eq("lecon", pa.id)
+  ]);
+  const reussies = new Set((pr.data || []).filter(p => p.examen_score != null).map(p => p.lecon));
+  const n = pa.lecons.length, k = reussies.size, dejaCert = (ce.data || []).length > 0;
+  const restantes = pa.lecons.filter(id => !reussies.has(id)).map(id => window.CATALOGUE_PAR_ID[id]).filter(Boolean);
+  let h = `<div class="carte" style="background:#fffbeb;border-color:#fde68a">
+    <h3>🎓 شهادة « ${pa.titre} »</h3>
+    <div class="prog"><div style="width:${Math.round(100 * k / n)}%"></div></div>
+    <small style="color:var(--gris)">الدروس الناجحة: ${N(k + " / " + n)}</small>`;
+  if (dejaCert || k === n){
+    h += `<p>${dejaCert ? "شهادتك جاهزة 👏" : "🎉 نجحت في كلّ دروس هذا الجزء! تستحقّ شهادتك."}</p>
+      <div class="actions"><button class="btn vert" onclick="certificat('${pa.id}')">🎓 ${dejaCert ? "عرض شهادتي" : "احصل على شهادتي"}</button></div>`;
+  } else {
+    h += `<p>${reussies.has(LECON.id) ? "✅ نجحت في هذا الدرس. " : ""}أكمل الدروس الباقية لتحصل على الشهادة:</p>`
+      + restantes.map(l => `<a href="lecon.html?l=${l.id}" style="display:block;color:var(--bleu);font-weight:700;text-decoration:none;margin:4px 0">← ${l.titre}</a>`).join("");
+  }
+  zone.innerHTML = h + `</div>`;
 }
 
 // ---------------- المستوى: الشرح ثمّ الأسئلة ----------------
@@ -297,10 +324,12 @@ function fin(){
     app.innerHTML = `<div class="carte centre"><div class="grand">${reussi?"🎓":"💪"}</div>
       <h2>${reussi?"نجحت في الامتحان!":"لم تنجح هذه المرّة"}</h2>
       <p>نتيجتك: <b>${s.score} / ${n}</b></p>
-      <p>${reussi?"تستحقّ شهادتك 👏":`تحتاج ${LECON.examen.seuil} إجابات صحيحة. راجع المستويات ثمّ أعد المحاولة، الأسئلة ستأتي بترتيب جديد.`}</p>
+      <p>${reussi?"✅ نجحت في هذا الدرس، أحسنت 👏":`تحتاج ${LECON.examen.seuil} إجابات صحيحة. راجع المستويات ثمّ أعد المحاولة، الأسئلة ستأتي بترتيب جديد.`}</p>
       <div class="actions" style="justify-content:center">
-        ${reussi?`<button class="btn vert" onclick="certificat()">🎓 احصل على شهادتي</button>`:`<button class="btn" onclick="ouvrirExamen()">أعد الامتحان</button>`}
-        <button class="btn sec" onclick="carte()">الخريطة</button></div></div>`;
+        ${reussi?"":`<button class="btn" onclick="ouvrirExamen()">أعد الامتحان</button>`}
+        <button class="btn sec" onclick="carte()">الخريطة</button></div></div>
+      <div id="partieEtat"></div>`;
+    if (reussi) majPartie();
   }
   scrollTo(0,0);
 }
@@ -344,17 +373,16 @@ function toutesQuestions(){
 }
 
 // ---------------- الشهادة ----------------
-async function certificat(){
+async function certificat(partie){
   app.innerHTML = `<div class="carte chargement">⏳ نحضّر شهادتك…</div>`;
   clearTimeout(minuterie); await envoyer();
-  const { data, error } = await sb().rpc("delivrer_certificat", { p_lecon: LECON.id, p_titre: LECON.titre });
+  const { data, error } = await sb().rpc("delivrer_certificat_partie", { p_partie: partie });
   if (error){
     console.error(error);
     app.innerHTML = `<div class="carte centre"><h2>😕 تعذّر إصدار الشهادة</h2><p>تحقّق من اتّصالك بالأنترنت ثمّ أعد المحاولة.</p>
-      <div class="actions" style="justify-content:center"><button class="btn" onclick="certificat()">أعد المحاولة</button><button class="btn sec" onclick="carte()">الخريطة</button></div></div>`;
+      <div class="actions" style="justify-content:center"><button class="btn" onclick="certificat('${partie}')">أعد المحاولة</button><button class="btn sec" onclick="carte()">الخريطة</button></div></div>`;
     return;
   }
-  data.etoiles_max = nbNiv * 3;
   app.innerHTML = `<div class="cert-ok no-print">🎉 مبروك! هذه شهادتك الرسميّة. رقمها <b class="ltr">${data.numero}</b> ويمكن التحقّق منها بمسح الرمز.</div>
     <div id="certZone"></div>
     <div class="actions no-print" style="justify-content:center">

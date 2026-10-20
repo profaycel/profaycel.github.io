@@ -31,8 +31,9 @@
     `catalogue.js` (liste des leçons), `lecons/*.js` (contenu de chaque leçon).
   - Ajouter une leçon : créer `parcours/lecons/<f>.js` puis l'ajouter dans `catalogue.js`
     (et dans la liste des scripts de `parcours-admin.html`).
-  - Tables Supabase `progression` (une ligne par élève et par leçon) et `certificats`
-    (numéro unique, nom pris dans la fiche élève) ; fonctions `delivrer_certificat`,
+  - Tables Supabase `progression` (une ligne par élève et par leçon), `parties` et `certificats`
+    (UN certificat par partie : algèbre, géométrie ; numéro unique, nom pris dans la fiche élève) ;
+    fonctions `delivrer_certificat_partie`,
     `verifier_certificat` (section 10 de `supabase/schema.sql`).
   - Le « mode professeur » (toutes les réponses) n'apparaît que pour l'administrateur.
 

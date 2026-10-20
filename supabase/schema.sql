@@ -708,3 +708,36 @@ $function$;
 
 grant execute on function public.delivrer_certificat(text, text) to authenticated;
 grant execute on function public.verifier_certificat(text) to anon, authenticated;
+
+-- =================================================
+-- 10 bis. UN CERTIFICAT PAR PARTIE (algèbre, géométrie)
+-- =================================================
+-- Ajouter une partie : insérer une ligne ici ET dans window.PARTIES (parcours/catalogue.js).
+
+create table if not exists public.parties (
+    id      text primary key,
+    titre   text not null,
+    niveau  text,
+    detail  text,
+    lecons  text[] not null
+);
+alter table public.parties enable row level security;
+create policy admin_tout on public.parties for all to authenticated
+    using (public.is_admin()) with check (public.is_admin());
+create policy lecture_connectes on public.parties for select to authenticated using (true);
+
+insert into public.parties (id, titre, niveau, detail, lecons) values
+ ('8-algebre-t1', 'الجبر والحساب', '8 أساسي', '6 دروس · الثلاثي الأوّل',
+  array['8-maths-divisibilite','8-maths-entiers-relatifs','8-maths-addition-soustraction-z','8-maths-multiplication-z','8-maths-rationnels','8-maths-addition-q']),
+ ('8-geometrie-t1', 'الهندسة', '8 أساسي', 'درسان · الثلاثي الأوّل',
+  array['8-geo-symetrie-centrale','8-geo-angles-paralleles'])
+on conflict (id) do update set titre = excluded.titre, niveau = excluded.niveau, detail = excluded.detail, lecons = excluded.lecons;
+
+alter table public.certificats add column if not exists detail text;
+alter table public.certificats add column if not exists etoiles_max int;
+
+-- delivrer_certificat_partie(p_partie) : vérifie que toutes les leçons de la partie ont un examen réussi,
+-- puis crée le certificat (numéro PF-AAAA-NNNN, nom de la fiche élève, total des notes et des étoiles).
+-- verifier_certificat renvoie aussi « detail ». L'ancienne delivrer_certificat (par leçon) n'est plus exécutable.
+-- (Corps complet des fonctions : migration Supabase « parcours_certificats_par_partie ».)
+revoke execute on function public.delivrer_certificat(text, text) from public, anon, authenticated;
