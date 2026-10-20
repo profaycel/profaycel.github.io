@@ -1,0 +1,126 @@
+:root{
+  --bleu:#2563eb; --bleu-clair:#eff4ff; --vert:#16a34a; --vert-clair:#ecfdf3;
+  --rouge:#dc2626; --rouge-clair:#fef2f2; --or:#f59e0b; --gris:#64748b;
+  --fond:#f6f8fc; --carte:#ffffff; --texte:#0f172a; --bord:#e2e8f0;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Tajawal",sans-serif;background:var(--fond);color:var(--texte);font-size:18px;line-height:1.7}
+.wrap{max-width:760px;margin:0 auto;padding:16px}
+.prof-bande{background:#fff;color:var(--rouge);font-weight:800;text-align:center;padding:6px;font-size:17px;border-bottom:1px solid var(--bord)}
+header.top{background:var(--bleu);color:#fff;padding:14px 16px}
+header.top .wrap{padding:0 16px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+header.top h1{margin:0;font-size:20px}
+header.top small{opacity:.85}
+.prog{height:10px;background:#dbe5ff;border-radius:99px;overflow:hidden;margin:14px 0 4px}
+.prog > div{height:100%;background:var(--vert);width:0;transition:width .5s}
+.carte{background:var(--carte);border:1px solid var(--bord);border-radius:16px;padding:18px;margin:14px 0;box-shadow:0 2px 8px rgba(15,23,42,.04)}
+/* carte des niveaux */
+.niveau{display:flex;align-items:center;gap:14px;padding:14px;border-radius:14px;border:2px solid var(--bord);background:#fff;margin:10px 0;cursor:pointer;width:100%;font:inherit;text-align:right;color:inherit}
+.niveau .num{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:20px;background:var(--bleu-clair);color:var(--bleu);flex:none}
+.niveau.fait{border-color:#bbf7d0;background:var(--vert-clair)}
+.niveau.fait .num{background:var(--vert);color:#fff}
+.niveau.ferme{opacity:.55;cursor:not-allowed;background:#f1f5f9}
+.niveau.ferme .num{background:#e2e8f0;color:var(--gris)}
+.niveau .info{flex:1}
+.niveau .titre{font-weight:700}
+.niveau .sous{color:var(--gris);font-size:15px}
+.etoiles{color:var(--or);letter-spacing:2px;font-size:18px;white-space:nowrap}
+/* lecon */
+.regle{background:var(--bleu-clair);border-right:5px solid var(--bleu);padding:12px 14px;border-radius:10px;margin:12px 0}
+.regle b{color:var(--bleu)}
+.exemple{background:#fffbeb;border-right:5px solid var(--or);padding:12px 14px;border-radius:10px;margin:12px 0}
+.astuce{background:var(--vert-clair);border-right:5px solid var(--vert);padding:12px 14px;border-radius:10px;margin:12px 0}
+.ltr{direction:ltr;unicode-bidi:isolate;display:inline-block;font-weight:700;white-space:nowrap}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;font-size:.85em;line-height:1.15;margin:0 2px}
+.frac>span:first-child{border-bottom:1.5px solid currentColor;padding:0 3px}
+.case{display:inline-block;width:1.1em;height:1.25em;border:2px solid var(--bleu);border-radius:4px;vertical-align:-0.2em;margin:0 1px;background:#fff}
+h2{margin:6px 0 4px;font-size:22px}
+h3{margin:4px 0;font-size:19px}
+/* questions */
+.qhead{display:flex;justify-content:space-between;color:var(--gris);font-size:15px}
+.enonce{font-size:20px;font-weight:600;margin:8px 0 14px}
+.opts{display:grid;gap:10px}
+.opt{border:2px solid var(--bord);border-radius:12px;padding:12px 14px;background:#fff;font:inherit;font-size:20px;cursor:pointer;text-align:right;color:inherit}
+.opt.sel{border-color:var(--bleu);background:var(--bleu-clair)}
+.opt.ok{border-color:var(--vert);background:var(--vert-clair)}
+.opt.ko{border-color:var(--rouge);background:var(--rouge-clair)}
+.chiffres{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;direction:ltr}
+.chiffres .opt{text-align:center;font-weight:800;font-size:24px;padding:10px 0}
+input.rep{width:100%;font:inherit;font-size:22px;padding:12px;border:2px solid var(--bord);border-radius:12px;text-align:center}
+input.rep:focus{outline:none;border-color:var(--bleu)}
+.btn{display:inline-block;border:0;border-radius:12px;padding:13px 22px;font:inherit;font-weight:700;font-size:19px;cursor:pointer;background:var(--bleu);color:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.sec{background:#e2e8f0;color:var(--texte)}
+.btn.vert{background:var(--vert)}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.retour{margin:12px 0;font-size:17px;padding:12px 14px;border-radius:10px;display:none}
+.retour.ok{display:block;background:var(--vert-clair);color:#14532d}
+.retour.ko{display:block;background:var(--rouge-clair);color:#7f1d1d}
+.retour.indice{display:block;background:#fffbeb;color:#78350f}
+.centre{text-align:center}
+.grand{font-size:56px;line-height:1.2;margin:6px 0}
+/* certificat */
+.certif{background:#fff;border:10px double var(--bleu);border-radius:12px;padding:28px 22px;text-align:center;position:relative}
+.certif .prof{color:var(--rouge);font-weight:800;font-size:20px}
+.certif h2{font-size:34px;color:var(--bleu);margin:10px 0}
+.certif .nom{font-size:32px;font-weight:800;border-bottom:2px dashed var(--bord);display:inline-block;padding:0 20px;margin:8px 0}
+.certif .sceau{font-size:54px}
+.certif .bas{display:flex;justify-content:space-between;margin-top:24px;font-size:16px;color:var(--gris);gap:10px;flex-wrap:wrap}
+@media print{
+  header.top,.no-print{display:none!important}
+  body{background:#fff}
+  .certif{margin-top:40px}
+}
+
+.fig{display:block;margin:10px auto;width:100%;height:auto;direction:ltr;border:1px solid var(--bord);border-radius:10px}
+.figs{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin:10px 0}
+.figs .fig{margin:0}
+.figc .cap{text-align:center;font-weight:700;font-size:15px;color:var(--gris);margin-top:4px}
+
+/* ====== Barre de navigation des parcours ====== */
+.pf-nav{background:#fff;border-bottom:1px solid var(--bord)}
+.pf-nav .wrap{display:flex;justify-content:space-between;align-items:center;padding-top:10px;padding-bottom:10px;gap:10px}
+.pf-nav a{color:var(--bleu);text-decoration:none;font-weight:700;font-size:16px}
+.pf-nav .pf-logo{font-weight:800;font-size:20px;color:var(--texte)}
+.chargement{text-align:center;color:var(--gris);padding:40px 0}
+
+/* ====== Certificat ====== */
+.cert-echelle{position:relative;width:100%;overflow:hidden}
+.cert-cadre{width:1000px;height:707px;transform-origin:top right;position:absolute;top:0;right:0}
+.cert{position:relative;width:1000px;height:707px;box-sizing:border-box;padding:46px 70px 34px;
+  background:radial-gradient(circle at 50% 40%,#fffdf6 0%,#fbf5e6 70%,#f5ecd4 100%);
+  border:14px solid #1e3a8a;outline:3px solid #b8860b;outline-offset:-24px;text-align:center;font-family:"Tajawal",sans-serif;color:#1f2937}
+.cert-coin{position:absolute;width:64px;height:64px;border:4px solid #b8860b}
+.cert-coin.tl{top:30px;left:30px;border-right:0;border-bottom:0}.cert-coin.tr{top:30px;right:30px;border-left:0;border-bottom:0}
+.cert-coin.bl{bottom:30px;left:30px;border-right:0;border-top:0}.cert-coin.br{bottom:30px;right:30px;border-left:0;border-top:0}
+.cert-entete{display:flex;justify-content:space-between;align-items:center;margin:0 20px}
+.cert-logo{font-weight:800;font-size:26px;color:#1e3a8a;letter-spacing:.5px}
+.cert-prof{font-weight:800;font-size:22px;color:#dc2626}
+.cert-site{font-size:14px;color:#6b7280;font-weight:700}
+.cert-titre{font-size:62px;font-weight:800;color:#1e3a8a;margin:14px 0 0;line-height:1.1}
+.cert-sous{font-size:16px;letter-spacing:4px;color:#b8860b;font-weight:700;text-transform:uppercase;margin-bottom:8px}
+.cert-texte{font-size:20px;margin:6px 0}.cert-texte.petit{font-size:17px;color:#4b5563}
+.cert-nom{display:inline-block;font-size:44px;font-weight:800;color:#111827;border-bottom:2px solid #b8860b;padding:0 40px 4px;margin:4px 0 6px;min-width:380px}
+.cert-lecon{font-size:30px;font-weight:800;color:#1e3a8a;margin:2px 0}
+.cert-stats{display:flex;justify-content:center;gap:34px;font-size:17px;color:#374151;margin-top:6px}
+.cert-bas{position:absolute;left:70px;right:70px;bottom:44px;display:flex;justify-content:space-between;align-items:flex-end}
+.cert-col{width:230px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.cert-qr{width:92px;height:92px;background:#fff;padding:4px;border-radius:6px}
+.cert-qr img,.cert-qr canvas{width:92px!important;height:92px!important}
+.cert-num{font-size:13px;color:#4b5563;line-height:1.5}.cert-num b{font-size:15px;color:#1e3a8a}
+.cert-sceau{width:118px;height:118px}
+.cert-date{font-size:15px;font-weight:700;color:#4b5563}
+.cert-signature{display:flex;flex-direction:column;align-items:center}
+.cert-sig-trace{font-family:"Aref Ruqaa",serif;font-size:40px;color:#1e3a8a;line-height:1;transform:rotate(-4deg);margin-bottom:-6px}
+.cert-paraphe{width:200px;height:30px}
+.cert-sig-nom{font-size:14px;font-weight:700;color:#4b5563;border-top:1px solid #9ca3af;padding-top:4px;margin-top:2px}
+.cert-ok{background:var(--vert-clair);color:#14532d;border-radius:12px;padding:12px 16px;font-weight:700;text-align:center;margin:12px 0}
+@media print{
+  @page{size:A4 landscape;margin:8mm}
+  body{background:#fff!important}
+  .pf-nav,.prof-bande,header.top,.no-print{display:none!important}
+  .wrap{max-width:none;padding:0}
+  .cert-echelle{height:auto!important;overflow:visible}
+  .cert-cadre{position:static;transform:none!important;margin:0 auto}
+  .cert{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
