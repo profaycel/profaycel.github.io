@@ -24,6 +24,7 @@
   `parents.html`, `classes.html`, `seances-admin.html`, `presence-admin.html`
   (appel par classe + registre), `documents-admin.html` (photos / PDF),
   `parcours-admin.html` (suivi des cours par niveaux : progression, questions ratées, certificats)
+  `annonces-admin.html` (annonces affichées en haut de `eleve.html` / `parent.html`, par public et niveau)
 - Cours par niveaux (élèves, en arabe) : dossier `parcours/`
   - `index.html` (« دروسي », leçons du niveau de l'élève), `lecon.html?l=<id>` (une leçon),
     `certificat.html?n=PF-AAAA-NNNN` (vérification publique d'un certificat, QR code).
