@@ -313,7 +313,7 @@ if ("serviceWorker" in navigator) {
 const ADMIN_EMAIL = "faycel.khlifiii@gmail.com";
 
 // Adresse publique du site (pour les messages WhatsApp)
-const SITE_URL = "https://faycel018-del.github.io/profaycel/";
+const SITE_URL = "https://profaycel.github.io/";
 
 // Prix d'une séance (les paiements sont enregistrés en nombre de séances)
 const PRIX_SEANCE = 25;
