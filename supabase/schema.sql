@@ -741,3 +741,21 @@ alter table public.certificats add column if not exists etoiles_max int;
 -- verifier_certificat renvoie aussi « detail ». L'ancienne delivrer_certificat (par leçon) n'est plus exécutable.
 -- (Corps complet des fonctions : migration Supabase « parcours_certificats_par_partie ».)
 revoke execute on function public.delivrer_certificat(text, text) from public, anon, authenticated;
+
+
+-- =================================================
+-- 11. ANNONCES DU PROFESSEUR (annonces-admin.html → eleve.html / parent.html)
+-- =================================================
+
+alter table public.annonces add column if not exists contenu    text;
+alter table public.annonces add column if not exists lien       text;
+alter table public.annonces add column if not exists lien_texte text;
+alter table public.annonces add column if not exists cible      text not null default 'tous';   -- tous / eleves / parents
+alter table public.annonces add column if not exists niveau     text;                            -- null = tous les niveaux
+alter table public.annonces add column if not exists epingle    boolean not null default false;
+alter table public.annonces add column if not exists expire_le  date;
+alter table public.annonces alter column statut set default 'publie';                        -- publie / masque
+do $$ begin
+    alter table public.annonces add constraint annonces_cible_check check (cible in ('tous', 'eleves', 'parents'));
+exception when duplicate_object then null; end $$;
+alter policy lecture_connectes on public.annonces using (statut = 'publie');
