@@ -20,6 +20,7 @@ window.CATALOGUE = [
     { id: "7-maths-division-diviseurs",      f: "7-lecon5-division-diviseurs",  niveau: "7 أساسي", partie: "algebre", n: 6, titre: "القسمة الإقليديّة والقواسم", sous: "الخارج والباقي، الكتابة الأفقيّة، وضعيّات، القاسم، قواعد قابليّة القسمة، مجموعة القواسم" },
     { id: "7-maths-premiers",                f: "7-lecon6-premiers",            niveau: "7 أساسي", partie: "algebre", n: 6, titre: "الأعداد الأوّليّة والتفكيك", sous: "العدد الأوّلي، القواسم الأوّليّة، التفكيك إلى جذاء عوامل أوّليّة، قواسم عدد" },
     { id: "7-maths-multiples",               f: "7-lecon7-multiples",           niveau: "7 أساسي", partie: "algebre", n: 6, titre: "القواسم المشتركة والمضاعفات", sous: "ق.م.أ، الأعداد الأوّليّة فيما بينها، المضاعفات، م.م.أ، وضعيّات" },
+    { id: "7-maths-fractions",               f: "7-lecon8-fractions",           niveau: "7 أساسي", partie: "algebre", n: 8, titre: "الأعداد الكسريّة",            sous: "الاختزال، التوحيد، الأعداد الكسريّة العشريّة، المقارنة، الجمع والطرح، الضرب والقسمة" },
     // ----- 9 أساسي (الثلاثي الأوّل) -----
     { id: "9-maths-divisibilite",            f: "9-lecon1-divisibilite",        niveau: "9 أساسي", partie: "algebre", n: 7, titre: "قابليّة القسمة",             sous: "الأعداد الأوّليّة فيما بينها، القسمة على 6 و12 و15 و18 و36 و45، الأرقام الناقصة" },
     { id: "9-maths-denombrement",            f: "9-lecon2-denombrement",        niveau: "9 أساسي", partie: "algebre", n: 7, titre: "التعداد",                    sous: "كَمّ مجموعة، التقاطع والاتّحاد، شجرة الاختيار، الأزواج، المستقيمات والأقطار" },
