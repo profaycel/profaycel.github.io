@@ -18,7 +18,8 @@ window.CATALOGUE = [
     { id: "9-maths-reels",                   f: "9-lecon3-reels",               niveau: "9 أساسي", partie: "algebre", n: 7, titre: "مجموعة الأعداد الحقيقيّة ℝ", sous: "الكتابة العشريّة الدوريّة، ℕ ⊂ ℤ ⊂ ID ⊂ ℚ ⊂ ℝ، الجذر التربيعي، المستقيم المدرّج" },
     { id: "9-maths-operations-r",            f: "9-lecon4-operations-r",        niveau: "9 أساسي", partie: "algebre", n: 7, titre: "العمليات في ℝ",              sous: "الحدود المتشابهة، حذف الأقواس، ضرب الجذور، الشكل a√b، النشر" },
     { id: "9-maths-inverse-valeur-absolue",  f: "9-lecon5-inverse-valeur-absolue", niveau: "9 أساسي", partie: "algebre", n: 7, titre: "المقلوب والقيمة المطلقة",   sous: "مقلوب عدد، إزالة الجذر من المقام، القيمة المطلقة ومعادلاتها" },
-    { id: "9-maths-produits-remarquables",   f: "9-lecon6-produits-remarquables", niveau: "9 أساسي", partie: "algebre", n: 7, titre: "الجداءات المعتبرة",          sous: "المتطابقات الثلاث، النشر، التفكيك، الجذاء المعدوم" }
+    { id: "9-maths-produits-remarquables",   f: "9-lecon6-produits-remarquables", niveau: "9 أساسي", partie: "algebre", n: 7, titre: "الجداءات المعتبرة",          sous: "المتطابقات الثلاث، النشر، التفكيك، الجذاء المعدوم" },
+    { id: "9-geo-reperage",                  f: "9-geo1-reperage",              niveau: "9 أساسي", partie: "geometrie", n: 7, titre: "التعيين في المستوى",        sous: "الإحداثيّات، التناظر، المنتصف، متوازي الأضلاع، البعد" }
 ];
 
 window.CATALOGUE_PAR_ID = Object.fromEntries(window.CATALOGUE.map(function (l) { return [l.id, l]; }));
