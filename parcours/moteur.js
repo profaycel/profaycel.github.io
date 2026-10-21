@@ -228,7 +228,7 @@ function estJuste(q){
   const v = normaliser(document.getElementById("rep").value);
   if (q.type === "nombre"){
     if (q.decimal && v.includes("/")) return "pasDecimal";
-    const x = toNum(v);
+    const x = toNum(v.replace(/\s*(°|درجة|cm²|cm|hm²|hm|km|mm|m|l)\s*$/i, ""));   // الوحدة اختياريّة: «60°» أو «3 cm»
     if (isNaN(x) || !q.rep.some(r=>egal(x, toNum(r)))) return false;
     const m = v.replace(/\s/g,"").match(/^-?(\d+)\/(\d+)$/);
     if (q.irr && m && pgcd(+m[1], +m[2]) > 1) return "pasIrreductible";
