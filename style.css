@@ -7294,6 +7294,43 @@ body.niveau-a-choisir {
     background: #fef2f2;
 }
 
+.fiche-sous-titre {
+    margin: 14px 0 8px;
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.fiche-sous-titre.s-payees { color: #15803d; }
+.fiche-sous-titre.s-apayer { color: #c2410c; }
+.fiche-sous-titre.s-absences { color: #b91c1c; }
+
+.fiche-seances span.s-apayer {
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    color: #c2410c;
+    font-weight: 700;
+}
+
+.fiche-vide {
+    color: var(--text-light);
+    font-size: 14px;
+}
+
+.fiche-avance {
+    margin-top: 10px;
+    padding: 8px 12px;
+    border-radius: var(--radius-md);
+    background: var(--primary-soft);
+    color: var(--primary);
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.fiche-couvre {
+    flex-basis: 100%;
+    font-size: 13px;
+}
+
 .fiche-paiement {
     display: flex;
     flex-wrap: wrap;
