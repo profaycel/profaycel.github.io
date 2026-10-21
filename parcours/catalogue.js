@@ -19,7 +19,9 @@ window.CATALOGUE = [
     { id: "9-maths-operations-r",            f: "9-lecon4-operations-r",        niveau: "9 أساسي", partie: "algebre", n: 7, titre: "العمليات في ℝ",              sous: "الحدود المتشابهة، حذف الأقواس، ضرب الجذور، الشكل a√b، النشر" },
     { id: "9-maths-inverse-valeur-absolue",  f: "9-lecon5-inverse-valeur-absolue", niveau: "9 أساسي", partie: "algebre", n: 7, titre: "المقلوب والقيمة المطلقة",   sous: "مقلوب عدد، إزالة الجذر من المقام، القيمة المطلقة ومعادلاتها" },
     { id: "9-maths-produits-remarquables",   f: "9-lecon6-produits-remarquables", niveau: "9 أساسي", partie: "algebre", n: 7, titre: "الجداءات المعتبرة",          sous: "المتطابقات الثلاث، النشر، التفكيك، الجذاء المعدوم" },
-    { id: "9-geo-reperage",                  f: "9-geo1-reperage",              niveau: "9 أساسي", partie: "geometrie", n: 7, titre: "التعيين في المستوى",        sous: "الإحداثيّات، التناظر، المنتصف، متوازي الأضلاع، البعد" }
+    { id: "9-geo-reperage",                  f: "9-geo1-reperage",              niveau: "9 أساسي", partie: "geometrie", n: 7, titre: "التعيين في المستوى",        sous: "الإحداثيّات، التناظر، المنتصف، متوازي الأضلاع، البعد" },
+    { id: "9-geo-milieux",                   f: "9-geo2-milieux",               niveau: "9 أساسي", partie: "geometrie", n: 6, titre: "المستقيم المارّ من منتصفي ضلعين", sous: "مبرهنة المنتصفين، شبه المنحرف، المثلّث القائم ومركز الثقل" },
+    { id: "9-geo-thales",                    f: "9-geo3-thales",                niveau: "9 أساسي", partie: "geometrie", n: 6, titre: "مبرهنة طالس",               sous: "طالس في المثلّث، شكل الفراشة، المستقيمات المتوازية، تجزئة قطعة" }
 ];
 
 window.CATALOGUE_PAR_ID = Object.fromEntries(window.CATALOGUE.map(function (l) { return [l.id, l]; }));
@@ -32,6 +34,8 @@ window.PARTIES = [
       lecons: ["8-geo-symetrie-centrale", "8-geo-angles-paralleles"] },
     // 9 أساسي
     { id: "9-algebre-t1",   titre: "الجبر والحساب", niveau: "9 أساسي", partie: "algebre",
-      lecons: ["9-maths-divisibilite", "9-maths-denombrement", "9-maths-reels", "9-maths-operations-r", "9-maths-inverse-valeur-absolue", "9-maths-produits-remarquables"] }
+      lecons: ["9-maths-divisibilite", "9-maths-denombrement", "9-maths-reels", "9-maths-operations-r", "9-maths-inverse-valeur-absolue", "9-maths-produits-remarquables"] },
+    { id: "9-geometrie-t1", titre: "الهندسة",       niveau: "9 أساسي", partie: "geometrie",
+      lecons: ["9-geo-reperage", "9-geo-milieux", "9-geo-thales"] }
 ];
 window.partieDe = function (lid) { return window.PARTIES.find(function (p) { return p.lecons.includes(lid); }); };

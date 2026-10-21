@@ -732,7 +732,9 @@ insert into public.parties (id, titre, niveau, detail, lecons) values
  ('8-geometrie-t1', 'الهندسة', '8 أساسي', 'درسان · الثلاثي الأوّل',
   array['8-geo-symetrie-centrale','8-geo-angles-paralleles']),
  ('9-algebre-t1', 'الجبر والحساب', '9 أساسي', '6 دروس · الثلاثي الأوّل',
-  array['9-maths-divisibilite','9-maths-denombrement','9-maths-reels','9-maths-operations-r','9-maths-inverse-valeur-absolue','9-maths-produits-remarquables'])
+  array['9-maths-divisibilite','9-maths-denombrement','9-maths-reels','9-maths-operations-r','9-maths-inverse-valeur-absolue','9-maths-produits-remarquables']),
+ ('9-geometrie-t1', 'الهندسة', '9 أساسي', '3 دروس · الثلاثي الأوّل',
+  array['9-geo-reperage','9-geo-milieux','9-geo-thales'])
 on conflict (id) do update set titre = excluded.titre, niveau = excluded.niveau, detail = excluded.detail, lecons = excluded.lecons;
 
 alter table public.certificats add column if not exists detail text;
