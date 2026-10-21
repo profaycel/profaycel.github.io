@@ -17,6 +17,7 @@
   .badge.or{background:#fef3c7;color:#92400e}
   .badge.vert{background:var(--vert-clair);color:#14532d}
   .section{margin:22px 4px 4px;color:var(--gris);font-weight:700}
+  .niveau-titre{margin:30px 4px 0;padding:10px 14px;background:var(--bleu);color:#fff;border-radius:12px;font-size:19px}
   .certifs a{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--bord);border-radius:12px;margin:8px 0;text-decoration:none;color:inherit;background:#fffbeb}
 </style>
 </head>
@@ -76,13 +77,14 @@ async function lancer() {
             : k === n ? `<button class="btn vert" onclick="obtenir('${pa.id}', this)">🎓 احصل على شهادتي</button>`
             : `<small style="color:var(--gris)">انجح في امتحانات كلّ الدروس لتحصل على الشهادة.</small>`;
         return `<div class="carte" style="background:#fffbeb;border-color:#fde68a;margin-top:8px">
-            <b>🎓 شهادة « ${pa.titre} »</b> <span class="badge ${k === n ? "or" : "vert"} ltr" style="float:left">${k} / ${n}</span>
+            <b>🎓 شهادة « ${pa.titre} »${plusieurs ? ` · <bdi>${pa.niveau}</bdi>` : ""}</b> <span class="badge ${k === n ? "or" : "vert"} ltr" style="float:left">${k} / ${n}</span>
             <div class="prog"><div style="width:${Math.round(100 * k / n)}%"></div></div>${action}</div>`;
     };
-    const section = part => lecons.filter(l => l.partie === part).map(carteLecon).join("")
-        + parties.filter(pa => pa.partie === part).map(cartePartie).join("");
-    const alg = section("algebre");
-    const geo = section("geometrie");
+    // Regroupement par niveau (l'administrateur voit tous les niveaux : un bloc par niveau)
+    const niveaux = [...new Set(lecons.map(l => l.niveau))];
+    const plusieurs = niveaux.length > 1;
+    const section = (part, niv) => lecons.filter(l => l.partie === part && l.niveau === niv).map(carteLecon).join("")
+        + parties.filter(pa => pa.partie === part && pa.niveau === niv).map(cartePartie).join("");
     const pt = tous ? Math.round(100 * faits / tous) : 0;
     const prenom = eleve.prenom || (user.user_metadata || {}).full_name || "";
 
@@ -95,8 +97,12 @@ async function lancer() {
     if (!lecons.length) {
         h += `<div class="carte centre"><h3>دروس مستواك في الطريق ✍️</h3><p>الدروس التفاعليّة متوفّرة حاليّا للسنة الثامنة والسنة التاسعة أساسي.</p><a href="?tout=1">عرض كلّ الدروس</a></div>`;
     } else {
-        if (alg) h += `<div class="section">🔢 الجبر والحساب</div>${alg}`;
-        if (geo) h += `<div class="section">📐 الهندسة</div>${geo}`;
+        niveaux.forEach(niv => {
+            const alg = section("algebre", niv), geo = section("geometrie", niv);
+            if (plusieurs) h += `<h2 class="niveau-titre">📘 <bdi>${niv}</bdi></h2>`;
+            if (alg) h += `<div class="section">🔢 الجبر والحساب</div>${alg}`;
+            if (geo) h += `<div class="section">📐 الهندسة</div>${geo}`;
+        });
     }
     if ((certs.data || []).length) {
         h += `<div class="section">🎓 شهاداتي</div><div class="certifs">` + certs.data.map(c =>
