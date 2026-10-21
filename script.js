@@ -363,6 +363,51 @@ function suiviEleve(eleve) {
 
 }
 
+// Répartition des séances : les plus anciennes sont payées en premier
+// Renvoie les séances payées, celles à payer, les absences,
+// les séances payées d'avance et, pour chaque paiement, les séances qu'il couvre
+function repartitionSeances(eleve) {
+
+    const presences = (eleve.presences || [])
+        .filter(function (p) {
+            return p.seances && p.seances.date_seance && presenceComptee(eleve, p);
+        })
+        .sort(function (a, b) {
+            return a.seances.date_seance.localeCompare(b.seances.date_seance);
+        });
+
+    const presents = presences.filter(function (p) { return p.present; });
+    const absents = presences.filter(function (p) { return !p.present; });
+
+    const paiements = (eleve.paiements || []).slice().sort(function (a, b) {
+        return (a.date_paiement || "").localeCompare(b.date_paiement || "") || (a.id || 0) - (b.id || 0);
+    });
+
+    let position = 0;
+    const couverture = {};
+
+    paiements.forEach(function (p) {
+        const n = p.seances || 4;
+        const couvertes = presents.slice(position, position + n);
+        couverture[p.id] = {
+            dates: couvertes.map(function (x) { return x.seances.date_seance; }),
+            avance: n - couvertes.length
+        };
+        position += n;
+    });
+
+    const nbPayees = Math.min(position, presents.length);
+
+    return {
+        payees: presents.slice(0, nbPayees),
+        aPayer: presents.slice(nbPayees),
+        absences: absents,
+        avance: Math.max(position - presents.length, 0),
+        couverture: couverture
+    };
+
+}
+
 // Ordre d'affichage des classes
 const ORDRE_CLASSES = ["7 أساسي", "8 أساسي", "9 أساسي", "1 ثانوي", "2 ثانوي", "3 ثانوي", "باكالوريا"];
 
@@ -1565,6 +1610,38 @@ console.log("Page actuelle:", currentPage);
                 ? `<div class="fiche-alerte">${suivi.paiement}</div>`
                 : (suivi.paiement !== "—" ? `<div class="fiche-ok">${suivi.paiement}</div>` : "");
 
+            const repartition = repartitionSeances(eleve);
+
+            function puces(liste, classe, icone) {
+                return `<div class="fiche-seances">${liste.slice().reverse().map(function (p) {
+                    return `<span class="${classe}">${icone} ${dateFr(p.seances.date_seance)}</span>`;
+                }).join("")}</div>`;
+            }
+
+            function couvertureHTML(c) {
+                if (!c) return "";
+                const dates = c.dates.map(function (d) { return d.slice(8, 10) + "/" + d.slice(5, 7); }).join(" · ");
+                const avance = c.avance > 0 ? `${dates ? " · " : ""}🎟️ ${c.avance} d'avance` : "";
+                return `<small class="fiche-couvre">${dates ? "📆 " + dates : ""}${avance}</small>`;
+            }
+
+            const lignesSeances = presences.length === 0
+                ? "<p>Aucune séance enregistrée.</p>"
+                : `
+                    <h4 class="fiche-sous-titre s-payees">✅ Séances payées (${repartition.payees.length})</h4>
+                    ${repartition.payees.length ? puces(repartition.payees, "s-payee", "✅") : "<p class=\"fiche-vide\">Aucune séance payée.</p>"}
+
+                    <h4 class="fiche-sous-titre s-apayer">⏳ Séances à payer (${repartition.aPayer.length})</h4>
+                    ${repartition.aPayer.length ? puces(repartition.aPayer, "s-apayer", "⏳") : "<p class=\"fiche-vide\">Rien à payer 👍</p>"}
+
+                    ${repartition.avance > 0 ? `<p class="fiche-avance">🎟️ ${repartition.avance} séance(s) déjà payée(s) d'avance</p>` : ""}
+
+                    ${repartition.absences.length ? `
+                        <h4 class="fiche-sous-titre s-absences">❌ Absences (${repartition.absences.length})</h4>
+                        ${puces(repartition.absences, "reg-a", "❌")}
+                    ` : ""}
+                `;
+
             const lignesPaiements = paiements.length === 0
                 ? "<p>Aucun paiement.</p>"
                 : paiements.map(function (p) {
@@ -1573,15 +1650,10 @@ console.log("Page actuelle:", currentPage);
                             <span>💰 <strong>${dateFr(p.date_paiement)}</strong> · ${p.seances || 4} séance(s)</span>
                             <small>${p.montant} DT</small>
                             <button type="button" class="fiche-retirer" data-retirer-paiement="${p.id}" aria-label="Supprimer">✕</button>
+                            ${couvertureHTML(repartition.couverture[p.id])}
                         </div>
                     `;
                 }).join("");
-
-            const lignesSeances = presences.length === 0
-                ? "<p>Aucune séance enregistrée.</p>"
-                : `<div class="fiche-seances">${presences.map(function (p) {
-                    return `<span class="${p.present ? "reg-p" : "reg-a"}">${p.present ? "✅" : "❌"} ${dateFr(p.seances.date_seance)}</span>`;
-                }).join("")}</div>`;
 
             const aujourdhuiIso = (function () {
                 const d = new Date();
