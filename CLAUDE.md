@@ -37,6 +37,9 @@
     fonctions `delivrer_certificat_partie`,
     `verifier_certificat` (section 10 de `supabase/schema.sql`).
   - Le « mode professeur » (toutes les réponses) n'apparaît que pour l'administrateur.
+  - 7 أساسي (trimestre 1) : les 8 leçons d'algèbre `7-lecon1…8-*.js` sont faites ; restent 4 leçons de géométrie `7-geo*.js`
+    (ids `7-geo-droites`, `7-geo-mediatrice`, `7-geo-cercle-droite`, `7-geo-angles`) ;
+    parties `7-algebre-t1` / `7-geometrie-t1` déjà créées avec la liste complète (certificat seulement quand tout est fait).
   - Niveaux en ligne (trimestre 1) : 8 أساسي (8 leçons) et 9 أساسي (9 leçons : 6 algèbre `9-lecon*.js`,
     3 géométrie `9-geo*.js`), avec les parties `8-algebre-t1`, `8-geometrie-t1`, `9-algebre-t1`, `9-geometrie-t1`.
   - Aperçu « comme un élève » (`apercu.js`, administrateur uniquement) : barre en haut de `admin.html`,
