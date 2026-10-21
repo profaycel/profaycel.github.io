@@ -98,3 +98,56 @@ function fig(o) {
   (o.textes || []).forEach(([x, y, t, c]) => s += txt(x, y, t, { c, fs: 13 }));
   return svg(o.w, o.h, s, o.max || o.w);
 }
+
+// ---------------- رسم حرّ متقدّم (دروس 7 أساسي) ----------------
+// إحداثيّات SVG (y نحو الأسفل). pol(P, r, a) : نقطة على بعد r من P في اتّجاه a درجة (عكس عقارب الساعة).
+const pol = (P, r, a) => [P[0] + r * Math.cos(a * Math.PI / 180), P[1] - r * Math.sin(a * Math.PI / 180)];
+// o = { w, h, max, P:{A:[x,y]},
+//   droites:[["A","B", c, {t:"(D)", at:0.9, dash}]]  مستقيم لا متناه يمرّ من A و B (يُقصّ على حدود الرسم)
+//   demis:[["A","B", c, {t}]]                        نصف مستقيم [AB) من A في اتّجاه B
+//   segs:[["A","B", c, dash]] ، cercles:[["O", r, c, t]] ، polys:[[["A","B","C"], c]]
+//   droits:[["A","B","C", c]]   علامة الزاوية القائمة في B بين [BA) و [BC)
+//   codes:[["A","B", n, c]]     n شَرطات في منتصف [AB] (أطوال متقايسة)
+//   angles:[["A","O","B", c, "50°", r]] ، arcsC:[["O", r, a1, a2, c]] أقواس بركار
+//   croix:true (النقاط علامة ×) ، cachés:["X"] ، lab:{A:[dx,dy]} ، textes:[[x,y,"t",c,fs]] }
+function dessin(o) {
+  const P = o.P || {}, W = o.w, H = o.h, pt = n => (Array.isArray(n) ? n : P[n]);
+  let s = `<rect x="0" y="0" width="${W}" height="${H}" rx="10" fill="#fff"/>`;
+  // قصّ مستقيم على المستطيل [m, W-m]×[m, H-m] : t ∈ [tmin, tmax]
+  const clip = (A, B, ray) => {
+    const m = 6, dx = B[0] - A[0], dy = B[1] - A[1]; let t0 = ray ? 0 : -1e9, t1 = 1e9;
+    [[-dx, A[0] - m], [dx, W - m - A[0]], [-dy, A[1] - m], [dy, H - m - A[1]]].forEach(([p, q]) => {
+      if (Math.abs(p) < 1e-9) return; const r = q / p; if (p < 0) t0 = Math.max(t0, r); else t1 = Math.min(t1, r);
+    });
+    return [[A[0] + t0 * dx, A[1] + t0 * dy], [A[0] + t1 * dx, A[1] + t1 * dy]];
+  };
+  (o.polys || []).forEach(([ns, c]) => s += `<polygon points="${ns.map(n => pt(n).join(",")).join(" ")}" fill="${col(c || "bleu")}" fill-opacity="0.08" stroke="${col(c || "noir")}" stroke-width="2.2" stroke-linejoin="round"/>`);
+  (o.cercles || []).forEach(([n, r, c, t, at]) => { const [cx, cy] = pt(n);
+    s += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${col(c || "bleu")}" fill-opacity="0.04" stroke="${col(c || "bleu")}" stroke-width="2"/>`;
+    if (t) { const [x, y] = pol([cx, cy], r + 13, at ?? 135); s += txt(x, y, t, { c: c || "bleu", italic: true }); } });
+  (o.arcsC || []).forEach(([n, r, a1, a2, c]) => { const C = pt(n), A = pol(C, r, a1), B = pol(C, r, a2);
+    s += `<path d="M${A[0].toFixed(1)},${A[1].toFixed(1)} A${r},${r} 0 0 0 ${B[0].toFixed(1)},${B[1].toFixed(1)}" fill="none" stroke="${col(c || "gris")}" stroke-width="1.6"/>`; });
+  const trait = (A, B, c, opt, ray) => { const [a, b] = clip(A, B, ray); let r = ligne(a[0], a[1], b[0], b[1], { c: c || "noir", w: 2.2, dash: opt && opt.dash });
+    if (opt && opt.t) { const at = opt.at ?? 0.92, x = a[0] + at * (b[0] - a[0]), y = a[1] + at * (b[1] - a[1]); r += txt(x + (opt.dx ?? 0), y + (opt.dy ?? -12), opt.t, { c: c || "noir", italic: true }); }
+    return r; };
+  (o.droites || []).forEach(([a, b, c, opt]) => s += trait(pt(a), pt(b), c, opt, false));
+  (o.demis || []).forEach(([a, b, c, opt]) => s += trait(pt(a), pt(b), c, opt, true));
+  (o.segs || []).forEach(([a, b, c, dash]) => { const A = pt(a), B = pt(b); s += ligne(A[0], A[1], B[0], B[1], { c: c || "noir", dash, w: 2.2 }); });
+  (o.droits || []).forEach(([a, b, c2, c]) => { const B = pt(b), u = n => { const Q = pt(n), d = Math.hypot(Q[0] - B[0], Q[1] - B[1]); return [(Q[0] - B[0]) / d, (Q[1] - B[1]) / d]; };
+    const [ux, uy] = u(a), [vx, vy] = u(c2), k = 11;
+    s += `<path d="M${(B[0] + k * ux).toFixed(1)},${(B[1] + k * uy).toFixed(1)} L${(B[0] + k * ux + k * vx).toFixed(1)},${(B[1] + k * uy + k * vy).toFixed(1)} L${(B[0] + k * vx).toFixed(1)},${(B[1] + k * vy).toFixed(1)}" fill="none" stroke="${col(c || "noir")}" stroke-width="1.6"/>`; });
+  (o.codes || []).forEach(([a, b, n, c]) => { const A = pt(a), B = pt(b), mx = (A[0] + B[0]) / 2, my = (A[1] + B[1]) / 2, d = Math.hypot(B[0] - A[0], B[1] - A[1]);
+    const ux = (B[0] - A[0]) / d, uy = (B[1] - A[1]) / d, nx = -uy, ny = ux;
+    for (let i = 0; i < (n || 1); i++) { const off = (i - ((n || 1) - 1) / 2) * 5; const cx = mx + off * ux, cy = my + off * uy;
+      s += ligne(cx - 6 * nx, cy - 6 * ny, cx + 6 * nx, cy + 6 * ny, { c: c || "rouge", w: 1.8 }); } });
+  (o.angles || []).forEach(([a, v, b, c, t, r]) => {
+    const [vx, vy] = pt(v), ang = n => (Math.atan2(vy - pt(n)[1], pt(n)[0] - vx) * 180 / Math.PI + 360) % 360;
+    let a1 = ang(a), a2 = ang(b); if (((a2 - a1 + 360) % 360) > 180) [a1, a2] = [a2, a1];
+    s += arc(vx, vy, r || 22, a1, a2, { c: c || "rouge", t, dt: 16 }); });
+  const ns = Object.keys(P).filter(n => !(o.cachés || []).includes(n));
+  ns.forEach(n => { const [x, y] = P[n];
+    s += o.croix === false ? `<circle cx="${x}" cy="${y}" r="3" fill="${COUL.noir}"/>` : croix(x, y, "noir");
+    const [dx, dy] = (o.lab && o.lab[n]) || [10, -13]; s += txt(x + dx, y + dy, n, { italic: true }); });
+  (o.textes || []).forEach(([x, y, t, c, fs]) => s += txt(x, y, t, { c, fs: fs || 14, italic: /^[a-zA-Z()\[\]Δ'′ ]+$/.test(t) }));
+  return svg(W, H, s, o.max || W);
+}
