@@ -16,7 +16,8 @@ window.CATALOGUE = [
     { id: "9-maths-divisibilite",            f: "9-lecon1-divisibilite",        niveau: "9 أساسي", partie: "algebre", n: 7, titre: "قابليّة القسمة",             sous: "الأعداد الأوّليّة فيما بينها، القسمة على 6 و12 و15 و18 و36 و45، الأرقام الناقصة" },
     { id: "9-maths-denombrement",            f: "9-lecon2-denombrement",        niveau: "9 أساسي", partie: "algebre", n: 7, titre: "التعداد",                    sous: "كَمّ مجموعة، التقاطع والاتّحاد، شجرة الاختيار، الأزواج، المستقيمات والأقطار" },
     { id: "9-maths-reels",                   f: "9-lecon3-reels",               niveau: "9 أساسي", partie: "algebre", n: 7, titre: "مجموعة الأعداد الحقيقيّة ℝ", sous: "الكتابة العشريّة الدوريّة، ℕ ⊂ ℤ ⊂ ID ⊂ ℚ ⊂ ℝ، الجذر التربيعي، المستقيم المدرّج" },
-    { id: "9-maths-operations-r",            f: "9-lecon4-operations-r",        niveau: "9 أساسي", partie: "algebre", n: 7, titre: "العمليات في ℝ",              sous: "الحدود المتشابهة، حذف الأقواس، ضرب الجذور، الشكل a√b، النشر" }
+    { id: "9-maths-operations-r",            f: "9-lecon4-operations-r",        niveau: "9 أساسي", partie: "algebre", n: 7, titre: "العمليات في ℝ",              sous: "الحدود المتشابهة، حذف الأقواس، ضرب الجذور، الشكل a√b، النشر" },
+    { id: "9-maths-inverse-valeur-absolue",  f: "9-lecon5-inverse-valeur-absolue", niveau: "9 أساسي", partie: "algebre", n: 7, titre: "المقلوب والقيمة المطلقة",   sous: "مقلوب عدد، إزالة الجذر من المقام، القيمة المطلقة ومعادلاتها" }
 ];
 
 window.CATALOGUE_PAR_ID = Object.fromEntries(window.CATALOGUE.map(function (l) { return [l.id, l]; }));
