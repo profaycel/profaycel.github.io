@@ -156,10 +156,12 @@ function question(){
   } else {
     const num = ["nombre","ensemble","expr","facteur","coord"].includes(q.type);
     const clavier = q.type === "nombre" && q.rep.every(r=>r>=0) ? 'inputmode="numeric"' : "";
-    const ph = { nombre:"اكتب العدد", ensemble:"2 , -6", expr:"a - 3", facteur:"2(a + 3)", coord:"(-3 , 2)", mot:"اكتب الكلمة" }[q.type];
+    const ph = q.ph || { nombre:"اكتب العدد", ensemble:"2 , -6", expr:"a - 3", facteur:"2(a + 3)", coord:"(-3 , 2)", mot:"اكتب الكلمة" }[q.type];
     zone = `<input class="rep" id="rep" ${num?'dir="ltr"':''} ${clavier} placeholder="${ph}" autocomplete="off" onkeydown="if(event.key==='Enter')verifier()">`
-      + (q.type==="expr" ? '<small style="color:var(--gris)">اكتب العبارة مختصرة، بدون أقواس (مثال: <span class="ltr">a - 3</span> أو <span class="ltr">7 - a</span>).</small>' : "")
-      + (q.type==="facteur" ? '<small style="color:var(--gris)">اكتب العبارة في شكل جذاء (مثال: <span class="ltr">2(a + 3)</span> أو <span class="ltr">(a + 1)(2a - 5)</span>).</small>' : "")
+      + (q.type==="expr" && q.aide ? `<small style="color:var(--gris)">${q.aide}</small>` : "")
+      + (q.type==="expr" && !q.aide ? '<small style="color:var(--gris)">اكتب العبارة مختصرة، بدون أقواس (مثال: <span class="ltr">a - 3</span> أو <span class="ltr">7 - a</span>).</small>' : "")
+      + (q.type==="facteur" && q.aide ? `<small style="color:var(--gris)">${q.aide}</small>` : "")
+      + (q.type==="facteur" && !q.aide ? '<small style="color:var(--gris)">اكتب العبارة في شكل جذاء (مثال: <span class="ltr">2(a + 3)</span> أو <span class="ltr">(a + 1)(2a - 5)</span>).</small>' : "")
       + (q.type==="coord" ? '<small style="color:var(--gris)">اكتب <b>الفاصلة</b> ثمّ <b>الترتيبة</b> بينهما فاصلة: <span class="ltr">(-3 , 2)</span></small>' : "")
       + (q.type==="ensemble" ? '<small style="color:var(--gris)">اكتب العناصر مفصولة بفاصلة ( , ) وبأيّ ترتيب.</small>' : "");
   }
@@ -189,7 +191,7 @@ function normaliser(t){
   return String(t).trim().replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/[إأآ]/g,"ا").replace(/ة/g,"ه").replace(/[ًٌٍَُِّْـ]/g,"").replace(/[−–]/g,"-").replace(/\s+/g," ").toLowerCase();
 }
 // عبارة حرفيّة: نقارن القيم من أجل عدّة قيم لـ a و b، ونتثبّت أنّها مختصرة
-function versJS(t){ return t.replace(/\[/g,"(").replace(/\]/g,")").replace(/(\d)(?=[ab(])/g,"$1*").replace(/([ab)])(?=[ab(\d])/g,"$1*") }
+function versJS(t){ t = nettoyer(t); return t.replace(/\[/g,"(").replace(/\]/g,")").replace(/(\d)(?=[ab(])/g,"$1*").replace(/([ab)])(?=[ab(\d])/g,"$1*") }
 function evalExpr(t, a, b){ return Function("a","b","return (" + versJS(t) + ")")(a, b) }
 // عدد الحدود في المستوى الأعلى (خارج الأقواس)
 function nbTermes(t){
@@ -201,7 +203,8 @@ function nbTermes(t){
   }
   return n;
 }
-function nettoyer(t){ return t.replace(/[−–]/g,"-").replace(/[×·]/g,"*").replace(/\s+/g,"").replace(/^[A-Z]=/,"").replace(/\[/g,"(").replace(/\]/g,")") }
+function nettoyer(t){ return t.replace(/[−–]/g,"-").replace(/[×·]/g,"*").replace(/\s+/g,"").replace(/^[A-Z]=/,"").replace(/\[/g,"(").replace(/\]/g,")")
+  .replace(/[xX]/g,"a").replace(/[yY]/g,"b").replace(/²/g,"^2").replace(/³/g,"^3").replace(/\^/g,"**") }   // x ← a ، y ← b ، x² ← a**2
 // expr : نشر/اختصار ← يجب أن تكون بدون أقواس وبنفس عدد الحدود (أو أقلّ)
 // facteur : تفكيك ← يجب أن تكون جذاءً (حدّ واحد فيه أقواس)
 function verifierExpr(q){
@@ -343,7 +346,7 @@ function reponseTxt(q){
   if (q.type === "vf") return q.rep ? "صحيح" : "خطأ";
   if (q.type === "chiffres") return N(q.rep.join(" , "));
   if (q.type === "nombre") return q.rep.map(fmt).join(" أو ");
-  if (q.type === "expr" || q.type === "facteur") return N(q.rep.replace(/-/g," − ").replace(/\+/g," + ").trim().replace(/(\d+)\/(\d+)/g,(m,x,y)=>F(x,y)));
+  if (q.type === "expr" || q.type === "facteur") return N(q.rep.replace(/\^2/g,"²").replace(/-/g," − ").replace(/\+/g," + ").trim().replace(/(\d+)\/(\d+)/g,(m,x,y)=>F(x,y)));
   if (q.type === "coord") return N(`( ${fmt(q.rep[0])} , ${fmt(q.rep[1])} )`);
   if (q.type === "ensemble") return N("{ " + q.rep.map(fmt).join(" , ") + " }");
   return q.rep[0] + (q.rep.length > 1 ? ` <small style="color:var(--gris)">(يقبل أيضا: ${q.rep.slice(1).join("، ")})</small>` : "");
