@@ -3951,6 +3951,10 @@ console.log("Page actuelle:", currentPage);
 
         if (doc.lien) {
             boutons += `<a href="${doc.lien}" target="_blank" rel="noopener" class="button button-primary seance-join">📄 Ouvrir</a>`;
+            // PDF hébergé sur le site : bouton de téléchargement (pour imprimer)
+            if (/\.pdf$/i.test(doc.lien) && !/^https?:/i.test(doc.lien)) {
+                boutons += `<a href="${doc.lien}" download class="button seance-join doc-telecharger">⬇️ تحميل</a>`;
+            }
         }
 
         return boutons;
@@ -3977,13 +3981,25 @@ console.log("Page actuelle:", currentPage);
 
         paires.sort(function (a, b) { return a.numero - b.numero; });
 
+        // 5 séries par devoir de contrôle : 1–5 → avant le DC n°1, 6–10 → avant le DC n°2…
+        let dcCourant = 0;
+
         return paires.map(function (paire) {
+
+            let titreDc = "";
+            if (paire.numero !== 999) {
+                const dc = Math.ceil(paire.numero / 5);
+                if (dc !== dcCourant) {
+                    dcCourant = dc;
+                    titreDc = `<div class="docs-dc">⭐ ما قبل فرض المراقبة عدد <bdi>${dc}</bdi><br><small>Avant le devoir de contrôle n°${dc}</small></div>`;
+                }
+            }
 
             paire.docs.sort(function (a, b) {
                 return ORDRE_TYPES.indexOf(a.type_fichier) - ORDRE_TYPES.indexOf(b.type_fichier);
             });
 
-            return `<div class="docs-paire">${paire.docs.map(function (doc) {
+            return titreDc + `<div class="docs-paire">${paire.docs.map(function (doc) {
                 return `
                     <div class="docs-item${doc.type_fichier === "Correction" ? " docs-item-correction" : ""}">
                         <span class="docs-item-ic">${ICONES_TYPES[doc.type_fichier] || "📄"}</span>
