@@ -418,8 +418,10 @@ async function demarrer(){
   if (!session){ location.href = "../login.html"; return }
   UTIL = session.user;
   const role = (UTIL.user_metadata || {}).role;
-  window.PF_ADMIN = role === "admin" || (UTIL.email || "").toLowerCase() === "faycel.khlifiii@gmail.com";
-  if (!window.PF_ADMIN && role !== "eleve"){ location.href = "../index.html"; return }
+  const admin = role === "admin" || (UTIL.email || "").toLowerCase() === "faycel.khlifiii@gmail.com";
+  // En aperçu « تلميذ تجريبي » (apercu.js), le professeur voit la leçon exactement comme un élève (sans « وضع الأستاذ »)
+  window.PF_ADMIN = admin && !(window.pfApercu && window.pfApercu(UTIL));
+  if (!admin && role !== "eleve"){ location.href = "../index.html"; return }
   const { data, error } = await sb().from("progression").select("*").eq("user_id", UTIL.id).eq("lecon", LECON.id).maybeSingle();
   if (error) console.error(error);
   etat = { etoiles:[], erreurs:{}, examen:null, essais:0 };
