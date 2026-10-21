@@ -28,7 +28,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../supabase.js"></script>
-<script src="catalogue.js?v=1"></script>
+<script src="catalogue.js?v=2"></script>
 <script>
 const sb = () => window.supabaseClient;
 const N = s => `<span class="ltr">${s}</span>`;
@@ -93,7 +93,7 @@ async function lancer() {
         <small style="color:var(--gris)">تقدّمك: ${N(pt + "%")} · الشهادات: ${N((certs.data || []).length + " / " + parties.length)} 🎓</small>
       </div>`;
     if (!lecons.length) {
-        h += `<div class="carte centre"><h3>دروس مستواك في الطريق ✍️</h3><p>الدروس التفاعليّة متوفّرة حاليّا للسنة الثامنة أساسي.</p><a href="?tout=1">عرض كلّ الدروس</a></div>`;
+        h += `<div class="carte centre"><h3>دروس مستواك في الطريق ✍️</h3><p>الدروس التفاعليّة متوفّرة حاليّا للسنة الثامنة والسنة التاسعة أساسي.</p><a href="?tout=1">عرض كلّ الدروس</a></div>`;
     } else {
         if (alg) h += `<div class="section">🔢 الجبر والحساب</div>${alg}`;
         if (geo) h += `<div class="section">📐 الهندسة</div>${geo}`;
