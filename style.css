@@ -6903,6 +6903,27 @@ body.niveau-a-choisir {
     background: #f0fdf4;
 }
 
+.docs-dc {
+    direction: rtl;
+    font-weight: 800;
+    color: #7030a0;
+    background: #f5f0fb;
+    border-radius: var(--radius-md);
+    padding: 8px 14px;
+    margin: 6px 0 2px;
+}
+
+.docs-dc small {
+    font-weight: 600;
+    color: #6b5a7d;
+}
+
+.doc-telecharger {
+    background: #fff;
+    border: 1px solid var(--border);
+    color: inherit;
+}
+
 .docs-item-ic {
     font-size: 24px;
 }
