@@ -13,7 +13,8 @@ window.CATALOGUE = [
     { id: "8-geo-symetrie-centrale",         f: "geo1-symetrie-centrale",       niveau: "8 أساسي", partie: "geometrie", n: 7, titre: "التناظر المركزي",          sous: "مناظرة نقطة وأشكال، مركز التناظر، المعيّن المتعامد" },
     { id: "8-geo-angles-paralleles",         f: "geo2-angles",                  niveau: "8 أساسي", partie: "geometrie", n: 5, titre: "الزوايا والمستقيمات المتوازية", sous: "المتبادلة داخليّا، المتماثلة، الداخليّة من نفس الجهة" },
     // ----- 9 أساسي (الثلاثي الأوّل) -----
-    { id: "9-maths-divisibilite",            f: "9-lecon1-divisibilite",        niveau: "9 أساسي", partie: "algebre", n: 7, titre: "قابليّة القسمة",             sous: "الأعداد الأوّليّة فيما بينها، القسمة على 6 و12 و15 و18 و36 و45، الأرقام الناقصة" }
+    { id: "9-maths-divisibilite",            f: "9-lecon1-divisibilite",        niveau: "9 أساسي", partie: "algebre", n: 7, titre: "قابليّة القسمة",             sous: "الأعداد الأوّليّة فيما بينها، القسمة على 6 و12 و15 و18 و36 و45، الأرقام الناقصة" },
+    { id: "9-maths-denombrement",            f: "9-lecon2-denombrement",        niveau: "9 أساسي", partie: "algebre", n: 7, titre: "التعداد",                    sous: "كَمّ مجموعة، التقاطع والاتّحاد، شجرة الاختيار، الأزواج، المستقيمات والأقطار" }
 ];
 
 window.CATALOGUE_PAR_ID = Object.fromEntries(window.CATALOGUE.map(function (l) { return [l.id, l]; }));
