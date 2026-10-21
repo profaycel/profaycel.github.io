@@ -30,6 +30,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../supabase.js"></script>
 <script src="catalogue.js?v=9"></script>
+<script src="../apercu.js?v=1"></script>
 <script>
 const sb = () => window.supabaseClient;
 const N = s => `<span class="ltr">${s}</span>`;
@@ -49,12 +50,14 @@ async function lancer() {
         sb().from("progression").select("*").eq("user_id", user.id),
         sb().from("certificats").select("*").eq("user_id", user.id).order("delivre_le")
     ]);
-    const eleve = (fiche.data || [])[0] || {};
+    // Aperçu administrateur (apercu.js) : on voit la page comme un « تلميذ تجريبي » du niveau choisi
+    const apercu = window.pfApercu ? window.pfApercu(user) : null;
+    const eleve = apercu ? { prenom: "تلميذ تجريبي", classe: apercu } : ((fiche.data || [])[0] || {});
     const parId = Object.fromEntries((prog.data || []).map(p => [p.lecon, p]));
     const certParId = Object.fromEntries((certs.data || []).map(c => [c.lecon, c]));
 
     // Leçons du niveau de l'élève (tout pour l'administrateur ou si le niveau n'est pas encore connu)
-    const voirTout = admin || new URLSearchParams(location.search).has("tout");
+    const voirTout = (admin && !apercu) || new URLSearchParams(location.search).has("tout");
     let lecons = window.CATALOGUE.filter(l => voirTout || !eleve.classe || l.niveau === eleve.classe);
     if (eleve.classe) document.getElementById("sousTitre").innerHTML = "رياضيات · <bdi>" + eleve.classe + "</bdi> · الثلاثي الأوّل";
 
@@ -95,7 +98,7 @@ async function lancer() {
         <small style="color:var(--gris)">تقدّمك: ${N(pt + "%")} · الشهادات: ${N((certs.data || []).length + " / " + parties.length)} 🎓</small>
       </div>`;
     if (!lecons.length) {
-        h += `<div class="carte centre"><h3>دروس مستواك في الطريق ✍️</h3><p>الدروس التفاعليّة متوفّرة حاليّا للسنة الثامنة والسنة التاسعة أساسي.</p><a href="?tout=1">عرض كلّ الدروس</a></div>`;
+        h += `<div class="carte centre"><h3>دروس مستواك في الطريق ✍️</h3><p>الدروس التفاعليّة متوفّرة حاليّا للسنة الثامنة والسنة التاسعة أساسي، ودروس مستواك قادمة قريبا.</p><a href="?tout=1">عرض كلّ الدروس</a></div>`;
     } else {
         niveaux.forEach(niv => {
             const alg = section("algebre", niv), geo = section("geometrie", niv);

@@ -4412,6 +4412,18 @@ console.log("Page actuelle:", currentPage);
 
             console.log("User ID:", userId);
 
+            // Aperçu administrateur : « تلميذ تجريبي » du niveau choisi (apercu.js)
+            const apercu = window.pfApercu ? window.pfApercu(session.user) : null;
+
+            if (apercu) {
+                eleveNameEl.textContent = "تلميذ مستوى " + apercu + " (تجريبي)";
+                eleveClasseEl.innerHTML = `Niveau : <bdi>${apercu}</bdi>`;
+                eleveStatutEl.textContent = "🧪 Aperçu";
+                loadEleveSeances(apercu);
+                loadEleveDocuments(apercu);
+                return;
+            }
+
             const { data: eleves, error: errEleve } = await window.supabaseClient
                 .from("eleves")
                 .select("*")
@@ -4656,7 +4668,11 @@ console.log("Page actuelle:", currentPage);
             const publicVise = annoncesZone.dataset.public; // "eleves" ou "parents"
             let niveaux = [];
 
-            if (publicVise === "eleves") {
+            const apercu = window.pfApercu ? window.pfApercu(session.user) : null;
+
+            if (apercu) {
+                niveaux = [apercu];
+            } else if (publicVise === "eleves") {
                 const { data } = await window.supabaseClient.from("eleves").select("classe").eq("user_id", session.user.id);
                 niveaux = (data || []).map(function (e) { return e.classe; });
             } else {
