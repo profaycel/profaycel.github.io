@@ -425,6 +425,18 @@ function trierClasses(a, b) {
 }
 
 // Regroupe une liste par classe, dans l'ordre des classes
+// Aperçu « comme un élève » (apercu.js) : niveau choisi par le professeur, ou "" si pas d'aperçu
+function niveauApercu() {
+
+    try {
+        const v = localStorage.getItem("pf_apercu") || "";
+        return ["7 أساسي", "8 أساسي", "9 أساسي", "1 ثانوي"].includes(v) ? v : "";
+    } catch (e) {
+        return "";
+    }
+
+}
+
 // Échappe le texte venant d'un visiteur avant de l'afficher dans une page
 function echapperHtml(texte) {
 
@@ -814,7 +826,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     const espaceLink = document.createElement("a");
                     espaceLink.className = "header-button header-space-button";
                     espaceLink.textContent = "🏠 Mon espace";
-                    espaceLink.href = role === "admin"
+                    espaceLink.href = role === "admin" && !niveauApercu()
                         ? "admin.html"
                         : role === "parent" ? "parent.html" : "eleve.html";
 
@@ -1403,6 +1415,14 @@ console.log("Page actuelle:", currentPage);
                 console.log("Rôle utilisateur :", userRole);
 
                 const allowedRoles = pageRoles[currentPage];
+
+                // Aperçu élève actif : le professeur voit le site comme un élève,
+                // donc aucune page d'administration (sortir avec « الخروج من المعاينة »)
+                if (userRole === "admin" && niveauApercu() && !allowedRoles.includes("eleve")) {
+                    document.body.style.visibility = "hidden";
+                    window.location.replace("eleve.html");
+                    return;
+                }
 
                 if (!allowedRoles.includes(userRole)) {
 
