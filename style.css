@@ -6011,6 +6011,39 @@ body > .footer:not(:has(.container)) p {
     font-size: 1.4rem;
 }
 
+.classe-choix {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+
+    margin-bottom: 28px;
+}
+
+.classe-choix label {
+    color: var(--dark);
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.classe-choix select {
+    min-width: 240px;
+    max-width: 100%;
+    padding: 12px 16px;
+
+    border: 2px solid var(--primary);
+    border-radius: 14px;
+
+    background: var(--white);
+    color: var(--dark);
+
+    font-family: inherit;
+    font-size: 1.05rem;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
 .classe-titre:first-child {
     margin-top: 0;
 }

@@ -1387,21 +1387,51 @@ console.log("Page actuelle:", currentPage);
             document.querySelector("#eleves-count-presentiel").textContent = `(${presentiels.length})`;
             document.querySelector("#eleves-count-distance").textContent = `(${distances.length})`;
 
-            const liste = mode === "distance" ? distances : presentiels;
+            const listeMode = mode === "distance" ? distances : presentiels;
+
+            // --- Choix de la classe (liste déroulante) ---
+            // Les 3 classes du cours sont toujours proposées ; une autre classe
+            // (ex. 7 أساسي à distance) n'apparaît que si elle a des élèves.
+            const groupes = grouperParClasse(listeMode, function (e) { return e.classe; });
+            const classesFixes = ["8 أساسي", "9 أساسي", "1 ثانوي"];
+            const classes = classesFixes.slice();
+
+            groupes.forEach(function (g) {
+                if (!classes.includes(g.classe)) {
+                    classes.push(g.classe);
+                }
+            });
+
+            classes.sort(trierClasses);
+
+            function nombreDans(classe) {
+                const g = groupes.find(function (x) { return x.classe === classe; });
+                return g ? g.items.length : 0;
+            }
+
+            if (!classes.includes(classeEleves)) {
+                classeEleves = classes[0];
+            }
+
+            if (classeChoix) {
+                classeChoix.innerHTML = classes.map(function (classe) {
+                    return `<option value="${classe}"${classe === classeEleves ? " selected" : ""}>\u2067${classe}\u2069 — ${nombreDans(classe)} élève(s)</option>`;
+                }).join("");
+            }
+
+            const liste = listeMode.filter(function (e) {
+                return (e.classe || "Sans classe") === classeEleves;
+            });
 
             if (liste.length === 0) {
-                elevesGrid.innerHTML = mode === "distance"
-                    ? "<p>Aucun élève inscrit à distance pour le moment.</p>"
-                    : "<p>Aucun élève en présentiel.</p>";
+                elevesGrid.innerHTML = `<p>Aucun élève ${mode === "distance" ? "à distance" : "en présentiel"} en <bdi>${classeEleves}</bdi>.</p>`;
                 return;
             }
 
-            elevesGrid.innerHTML = grouperParClasse(liste, function (e) { return e.classe; }).map(function (groupe) {
-                return `
-                    <h2 class="classe-titre"><bdi>${groupe.classe}</bdi> <span>${groupe.items.length} élève(s)</span></h2>
-                    <div class="student-dashboard-grid">${groupe.items.map(carteEleve).join("")}</div>
-                `;
-            }).join("");
+            elevesGrid.innerHTML = `
+                <h2 class="classe-titre"><bdi>${classeEleves}</bdi> <span>${liste.length} élève(s)</span></h2>
+                <div class="student-dashboard-grid">${liste.map(carteEleve).join("")}</div>
+            `;
 
             attachCardEvents(elevesCharges);
 
@@ -1409,6 +1439,27 @@ console.log("Page actuelle:", currentPage);
 
 
         let modeEleves = null;
+
+        const classeChoix = document.querySelector("#eleves-classe-choix");
+        let classeEleves = "8 أساسي";
+
+        try {
+            classeEleves = localStorage.getItem("profaycel_classe_eleves") || "8 أساسي";
+        } catch (e) {
+            // ignoré
+        }
+
+        if (classeChoix) {
+            classeChoix.addEventListener("change", function () {
+                classeEleves = classeChoix.value;
+                try {
+                    localStorage.setItem("profaycel_classe_eleves", classeEleves);
+                } catch (e) {
+                    // ignoré
+                }
+                afficherEleves();
+            });
+        }
 
 
         function loadEleves() {
