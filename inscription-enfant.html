@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Inscrire mon enfant | Profaycel</title>
+
+    <meta name="description"
+          content="Inscrire mon enfant aux cours de mathématiques à distance du professeur Faycel Khlifi.">
+
+    <link rel="stylesheet" href="style.css?v=13">
+    <link rel="canonical" href="https://profaycel.github.io/inscription-enfant.html">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+</head>
+
+<body>
+
+    <!-- ========================================
+         HEADER
+    ========================================= -->
+
+    <header class="header">
+
+        <div class="container header-container">
+
+            <!-- LOGO -->
+
+            <a href="index.html" class="logo">
+                Profaycel
+            </a>
+
+
+            <!-- BOUTON MOBILE -->
+
+            <button
+                class="mobile-menu-button"
+                type="button"
+                aria-label="Ouvrir le menu"
+                aria-expanded="false">
+
+                <span></span>
+                <span></span>
+                <span></span>
+
+            </button>
+
+
+            <!-- NAVIGATION -->
+
+            <nav class="navigation">
+
+                <ul>
+                    <li><a href="index.html">Accueil</a></li>
+                    <li><a href="index.html#apropos">Qui suis-je</a></li>
+                    <li><a href="index.html#offre">Mes cours</a></li>
+                    <li><a href="index.html#livres">Mes livres</a></li>
+                    <li><a href="index.html#contact">Contact</a></li>
+                </ul>
+
+            </nav>
+
+
+            <!-- ACTIONS -->
+
+            <div class="header-actions">
+
+                <a
+                    href="eleve.html"
+                    class="header-button">
+
+                    Espace Élève
+
+                </a>
+
+                <a
+                    href="parent.html"
+                    class="header-button">
+
+                    Espace Parent
+
+                </a>
+
+                <a
+                    href="admin.html"
+                    class="header-button">
+
+                    Administration
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <!-- ========================================
+         MAIN
+    ========================================= -->
+
+    <main>
+
+        <section class="auth-section">
+
+            <div class="auth-container">
+
+                <div class="auth-card">
+
+                    <!-- FORMULAIRE -->
+
+                    <div id="demande-contenu">
+
+                        <div class="auth-header">
+
+                            <div class="section-label">
+                                COURS À DISTANCE
+                            </div>
+
+                            <h1>
+                                Inscrire
+                                <br>
+                                mon enfant.
+                            </h1>
+
+                            <p>
+                                Remplissez ce formulaire : je vous contacterai sur WhatsApp pour confirmer l'inscription.
+                            </p>
+
+                        </div>
+
+                        <form class="auth-form" id="demande-form" novalidate>
+
+                            <div class="auth-form-group">
+
+                                <label for="d-prenom">
+                                    Prénom de l'élève
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="d-prenom"
+                                    name="prenom"
+                                    dir="auto"
+                                    maxlength="60"
+                                    autocomplete="off"
+                                    placeholder="Prénom">
+
+                            </div>
+
+                            <div class="auth-form-group">
+
+                                <label for="d-nom">
+                                    Nom de l'élève
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="d-nom"
+                                    name="nom"
+                                    dir="auto"
+                                    maxlength="60"
+                                    autocomplete="off"
+                                    placeholder="Nom de famille">
+
+                            </div>
+
+                            <div class="auth-form-group">
+
+                                <label for="d-niveau">
+                                    Niveau
+                                </label>
+
+                                <select id="d-niveau" name="niveau" class="auth-form-select">
+
+                                    <option value="">-- Choisir --</option>
+                                    <option value="7 أساسي">7 أساسي</option>
+                                    <option value="8 أساسي">8 أساسي</option>
+                                    <option value="9 أساسي">9 أساسي</option>
+                                    <option value="1 ثانوي">1 ثانوي</option>
+
+                                </select>
+
+                            </div>
+
+                            <div class="auth-form-group">
+
+                                <label for="d-etablissement">
+                                    Établissement scolaire
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="d-etablissement"
+                                    name="etablissement"
+                                    dir="auto"
+                                    maxlength="120"
+                                    autocomplete="off"
+                                    placeholder="Où étudie-t-il ? (école, collège ou lycée)">
+
+                            </div>
+
+                            <div class="auth-form-group">
+
+                                <span class="demande-label" id="d-maths-label">
+                                    Niveau en mathématiques
+                                </span>
+
+                                <div class="demande-choix" role="radiogroup" aria-labelledby="d-maths-label">
+
+                                    <label>
+                                        <input type="radio" name="maths" value="excellent">
+                                        <span>Excellent</span>
+                                    </label>
+
+                                    <label>
+                                        <input type="radio" name="maths" value="moyen">
+                                        <span>Moyen</span>
+                                    </label>
+
+                                    <label>
+                                        <input type="radio" name="maths" value="faible">
+                                        <span>Faible</span>
+                                    </label>
+
+                                </div>
+
+                            </div>
+
+                            <div class="auth-form-group">
+
+                                <label for="d-whatsapp">
+                                    Numéro WhatsApp du parent
+                                </label>
+
+                                <input
+                                    type="tel"
+                                    id="d-whatsapp"
+                                    name="whatsapp"
+                                    dir="ltr"
+                                    inputmode="tel"
+                                    maxlength="20"
+                                    autocomplete="tel"
+                                    placeholder="Ex : 97 699 271">
+
+                            </div>
+
+                            <div class="auth-form-group">
+
+                                <label for="d-message">
+                                    Message (facultatif)
+                                </label>
+
+                                <textarea
+                                    id="d-message"
+                                    name="message"
+                                    dir="auto"
+                                    rows="4"
+                                    maxlength="1000"
+                                    placeholder="Une précision, une question ou un message pour le professeur"></textarea>
+
+                            </div>
+
+                            <!-- piège anti-robot : les vraies personnes ne voient pas ce champ -->
+                            <div class="piege-robot" aria-hidden="true">
+                                <input type="text" name="site" tabindex="-1" autocomplete="off">
+                            </div>
+
+                            <button
+                                type="submit"
+                                class="button button-primary"
+                                id="d-envoyer">
+
+                                Envoyer ma demande →
+
+                            </button>
+
+                        </form>
+
+                    </div>
+
+
+                    <!-- MERCI -->
+
+                    <div class="demande-merci" id="demande-merci" hidden>
+
+                        <span class="demande-merci-ic">✅</span>
+
+                        <h2>
+                            Merci !
+                        </h2>
+
+                        <p>
+                            Votre demande a bien été envoyée. Je vous contacterai bientôt sur WhatsApp pour confirmer l'inscription.
+                        </p>
+
+                        <a href="index.html" class="button button-primary">
+                            Retour à l'accueil
+                        </a>
+
+                    </div>
+
+
+                    <a href="register.html" class="auth-back-link">
+                        ← Créer un compte élève
+                    </a>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- ========================================
+         FOOTER
+    ========================================= -->
+
+    <footer class="footer">
+
+        <div class="container">
+
+            <div class="footer-content">
+
+                <div>
+
+                    <a href="index.html" class="footer-logo">
+                        Profaycel
+                    </a>
+
+                    <p>
+                        Professeur Faycel Khlifi — Maths & Technologie
+                    </p>
+
+                </div>
+
+                <div class="footer-links">
+
+                    <a href="index.html">
+                        Accueil
+                    </a>
+
+                    <a href="index.html#contact">
+                        Contact
+                    </a>
+
+                    <a href="https://www.youtube.com/@profaycel" target="_blank" rel="noopener">
+                        ▶️ YouTube
+                    </a>
+
+                    <a href="confidentialite.html">
+                        Politique de confidentialité
+                    </a>
+
+                </div>
+
+            </div>
+
+            <div class="footer-bottom">
+
+                <p>
+                    © 2026 Profaycel. Tous droits réservés.
+                </p>
+
+            </div>
+
+        </div>
+
+    </footer>
+
+
+    <!-- ========================================
+         JAVASCRIPT
+    ========================================= -->
+
+    <script src="i18n.js?v=10"></script>
+    <script src="script.js?v=14"></script>
+
+</body>
+
+</html>

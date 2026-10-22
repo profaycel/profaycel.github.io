@@ -425,6 +425,18 @@ function trierClasses(a, b) {
 }
 
 // Regroupe une liste par classe, dans l'ordre des classes
+// Échappe le texte venant d'un visiteur avant de l'afficher dans une page
+function echapperHtml(texte) {
+
+    return String(texte == null ? "" : texte)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+
+}
+
 function grouperParClasse(liste, classeDe) {
 
     const groupes = {};
@@ -463,10 +475,12 @@ function setupModeTabs(onChange) {
             tab.setAttribute("aria-selected", tab.dataset.mode === mode ? "true" : "false");
         });
 
-        try {
-            localStorage.setItem("profaycel_mode_admin", mode);
-        } catch (e) {
-            // ignoré
+        if (mode !== "demandes") {
+            try {
+                localStorage.setItem("profaycel_mode_admin", mode);
+            } catch (e) {
+                // ignoré
+            }
         }
 
         onChange(mode);
@@ -780,6 +794,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     oldLogout.remove();
                 }
 
+                const ancienCta = document.querySelector(".header-cta-inscription");
+                if (ancienCta) {
+                    ancienCta.remove();
+                }
+
                 // Les anciens boutons « Espace Élève / Espace Parent / Administration »
                 // sont remplacés par un seul bouton « Mon espace » selon le rôle
                 headerActions.querySelectorAll(
@@ -822,6 +841,27 @@ document.addEventListener("DOMContentLoaded", function () {
                     );
 
                 } else {
+
+                    // Téléphone : bouton rouge qui clignote, visible tout de suite dans la barre du haut
+                    const pageActuelle = window.location.pathname.split("/").pop();
+
+                    if (pageActuelle !== "register.html" && pageActuelle !== "inscription-enfant.html") {
+
+                        const barre = document.querySelector(".header-container");
+                        const boutonMenu = barre ? barre.querySelector(".mobile-menu-button") : null;
+
+                        if (barre && boutonMenu) {
+
+                            const cta = document.createElement("a");
+                            cta.href = "register.html";
+                            cta.className = "header-cta-inscription";
+                            cta.textContent = "S'inscrire";
+
+                            barre.insertBefore(cta, boutonMenu);
+
+                        }
+
+                    }
 
                     const registerLink = document.createElement("a");
                     registerLink.href = "register.html";
@@ -895,16 +935,38 @@ document.addEventListener("DOMContentLoaded", function () {
     if (registerForm) {
 
         const roleSelectInscription = document.getElementById("role");
-        const niveauGroup = document.getElementById("niveau-group");
+        const nameGroup = document.getElementById("name-group");
 
-        function majChoixNiveau() {
-            const estEleve = roleSelectInscription.value === "eleve";
-            niveauGroup.hidden = !estEleve;
-            document.getElementById("niveau").required = estEleve;
+        // L'élève donne son nom et son niveau juste après l'inscription (dans son espace) ;
+        // le parent et l'enseignant donnent leur nom ici.
+        function majChampsRole() {
+            const estEleve = roleSelectInscription.value !== "parent" && roleSelectInscription.value !== "admin";
+            nameGroup.hidden = estEleve;
+            document.getElementById("name").required = !estEleve;
         }
 
-        roleSelectInscription.addEventListener("change", majChoixNiveau);
-        majChoixNiveau();
+        roleSelectInscription.addEventListener("change", majChampsRole);
+        majChampsRole();
+
+        // Déjà connecté : on ne redemande pas de s'inscrire
+        (function dejaConnecte() {
+
+            if (!window.supabaseClient) {
+                setTimeout(dejaConnecte, 200);
+                return;
+            }
+
+            window.supabaseClient.auth.getSession().then(function (result) {
+
+                const session = result.data && result.data.session;
+
+                if (session) {
+                    redirectByRole(session.user.user_metadata.role);
+                }
+
+            });
+
+        })();
 
         registerForm.addEventListener("submit", async function (event) {
 
@@ -915,7 +977,6 @@ document.addEventListener("DOMContentLoaded", function () {
             const password = document.getElementById("password").value;
             const passwordConfirm = document.getElementById("password-confirm").value;
             let role = document.getElementById("role").value;
-            const niveau = document.getElementById("niveau").value;
 
             if (role === "admin" && email !== ADMIN_EMAIL) {
                 showToast("Vous n'êtes pas autorisé à créer un compte Admin.", "error");
@@ -926,13 +987,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 role = "admin";
             }
 
-            if (!name || !email || !password || !passwordConfirm || !role) {
-                showToast("Veuillez remplir tous les champs.", "warning");
-                return;
-            }
+            const nomRequis = role === "parent" || role === "admin";
 
-            if (role === "eleve" && !niveau) {
-                showToast("Choisissez votre niveau.", "warning");
+            if ((nomRequis && !name) || !email || !password || !passwordConfirm || !role) {
+                showToast("Veuillez remplir tous les champs.", "warning");
                 return;
             }
 
@@ -956,9 +1014,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 password: password,
                 options: {
                     data: {
-                        nom: name,
+                        nom: nomRequis ? name : "",
                         role: role,
-                        niveau: role === "eleve" ? niveau : ""
+                        niveau: ""
                     }
                 }
             });
@@ -976,6 +1034,123 @@ document.addEventListener("DOMContentLoaded", function () {
             setTimeout(function () {
                 window.location.href = "login.html";
             }, 1500);
+
+        });
+
+    }
+
+
+    // =================================================
+    // 6b. DEMANDE D'INSCRIPTION D'UN ENFANT (inscription-enfant.html)
+    // =================================================
+
+    const demandeForm = document.getElementById("demande-form");
+
+    if (demandeForm) {
+
+        // Numéro tunisien à 8 chiffres → +216… ; un numéro étranger se tape avec « + »
+        function normaliserWhatsApp(saisie) {
+
+            const brut = saisie.trim();
+            let chiffres = brut.replace(/\D/g, "");
+
+            if (brut.startsWith("+")) {
+                return "+" + chiffres;
+            }
+
+            if (chiffres.startsWith("00")) {
+                return "+" + chiffres.slice(2);
+            }
+
+            if (chiffres.length === 8) {
+                return "+216" + chiffres;
+            }
+
+            if (chiffres.length === 11 && chiffres.startsWith("216")) {
+                return "+" + chiffres;
+            }
+
+            return "+" + chiffres;
+
+        }
+
+        function afficherMerci() {
+            document.getElementById("demande-contenu").hidden = true;
+            document.getElementById("demande-merci").hidden = false;
+            window.scrollTo(0, 0);
+        }
+
+        demandeForm.addEventListener("submit", async function (event) {
+
+            event.preventDefault();
+
+            // Un robot remplit le champ caché : on fait semblant que tout va bien
+            if (demandeForm.elements["site"].value) {
+                afficherMerci();
+                return;
+            }
+
+            const prenom = demandeForm.elements["prenom"].value.trim();
+            const nom = demandeForm.elements["nom"].value.trim();
+            const niveau = demandeForm.elements["niveau"].value;
+            const etablissement = demandeForm.elements["etablissement"].value.trim();
+            const mathsChoisi = demandeForm.querySelector('input[name="maths"]:checked');
+            const whatsapp = normaliserWhatsApp(demandeForm.elements["whatsapp"].value);
+            const message = demandeForm.elements["message"].value.trim();
+
+            if (prenom.length < 2 || nom.length < 2) {
+                showToast("Écrivez le prénom et le nom de l'élève.", "warning");
+                return;
+            }
+
+            if (!niveau) {
+                showToast("Choisissez le niveau.", "warning");
+                return;
+            }
+
+            if (etablissement.length < 2) {
+                showToast("Écrivez l'établissement scolaire.", "warning");
+                return;
+            }
+
+            if (!mathsChoisi) {
+                showToast("Choisissez le niveau en mathématiques.", "warning");
+                return;
+            }
+
+            if (!/^\+[0-9]{8,15}$/.test(whatsapp)) {
+                showToast("Numéro WhatsApp invalide.", "warning");
+                return;
+            }
+
+            if (!window.supabaseClient) {
+                showToast("Erreur : Supabase non connecté.", "error");
+                return;
+            }
+
+            const envoyer = document.getElementById("d-envoyer");
+            envoyer.disabled = true;
+
+            const { error } = await window.supabaseClient
+                .from("demandes_inscription")
+                .insert({
+                    prenom: prenom,
+                    nom: nom,
+                    niveau: niveau,
+                    etablissement: etablissement,
+                    niveau_maths: mathsChoisi.value,
+                    whatsapp: whatsapp,
+                    message: message || null
+                });
+
+            if (error) {
+                console.error("Erreur demande d'inscription:", error);
+                showToast("Impossible d'envoyer la demande. Réessayez dans un instant.", "error");
+                envoyer.disabled = false;
+                return;
+            }
+
+            afficherMerci();
 
         });
 
@@ -1080,18 +1255,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     return;
                 }
 
-                const niveauSelect = document.getElementById("niveau");
-
-                if (roleSelect.value === "eleve" && niveauSelect && !niveauSelect.value) {
-                    showToast("Choisissez votre niveau.", "warning");
-                    niveauSelect.focus();
-                    return;
-                }
-
                 try {
                     localStorage.setItem("profaycel_role_google", roleSelect.value);
-                    localStorage.setItem("profaycel_niveau_google",
-                        roleSelect.value === "eleve" && niveauSelect ? niveauSelect.value : "");
+                    localStorage.setItem("profaycel_niveau_google", "");
                 } catch (e) {
                     console.warn("localStorage indisponible:", e);
                 }
@@ -1345,13 +1511,13 @@ console.log("Page actuelle:", currentPage);
                                     👨‍🎓
                                 </div>
                                 <h3 dir="auto">
-                                    ${eleve.prenom} ${eleve.nom}
+                                    ${echapperHtml(eleve.prenom)} ${echapperHtml(eleve.nom)}
                                 </h3>
                                 <p>
                                     <strong>Classe :</strong> <bdi>${eleve.classe || "—"}</bdi>
                                     <br>
                                     ${eleve.mode === "distance"
-                                        ? `<strong>Email :</strong> ${eleve.email || "—"}
+                                        ? `<strong>Email :</strong> ${echapperHtml(eleve.email) || "—"}
                                     <br>
                                     <strong>Inscrit le :</strong> ${eleve.created_at ? eleve.created_at.slice(0, 10) : "—"}`
                                         : `<strong>Parent :</strong> <span dir="auto">${parent ? parent.prenom + (parent.lien_parente ? " (" + parent.lien_parente + ")" : "") : "—"}</span>
@@ -1372,7 +1538,165 @@ console.log("Page actuelle:", currentPage);
                     }
 
 
+        // --- Demandes d'inscription envoyées par les parents (page inscription-enfant.html) ---
+
+        const zoneClasse = document.querySelector("#classe-choix-zone");
+        let demandesChargees = null;
+
+        const LIBELLE_MATHS = { excellent: "Excellent", moyen: "Moyen", faible: "Faible" };
+
+        function carteDemande(d) {
+
+            const nouvelle = d.statut === "nouvelle";
+            const chiffres = String(d.whatsapp || "").replace(/\D/g, "");
+            const date = d.created_at ? d.created_at.slice(0, 10) : "—";
+
+            return `
+                <article class="student-dashboard-card demande-carte${nouvelle ? " demande-nouvelle" : ""}">
+                    <div class="dashboard-card-icon">
+                        📩
+                    </div>
+                    <h3 dir="auto">
+                        ${echapperHtml(d.prenom)} ${echapperHtml(d.nom)}
+                    </h3>
+                    <p>
+                        <strong>Statut :</strong> ${nouvelle ? "🆕 Nouvelle" : "✅ Traitée"}
+                        <br>
+                        <strong>Niveau :</strong> <bdi>${echapperHtml(d.niveau)}</bdi>
+                        <br>
+                        <strong>Établissement :</strong> <span dir="auto">${echapperHtml(d.etablissement)}</span>
+                        <br>
+                        <strong>Maths :</strong> ${LIBELLE_MATHS[d.niveau_maths] || "—"}
+                        <br>
+                        <strong>WhatsApp :</strong> <bdi>${echapperHtml(d.whatsapp)}</bdi>
+                        <br>
+                        <strong>Reçue le :</strong> ${date}
+                        ${d.message ? `<br><strong>Message :</strong> <span dir="auto">${echapperHtml(d.message)}</span>` : ""}
+                    </p>
+                    <a href="https://wa.me/${chiffres}" target="_blank" rel="noopener" class="button whatsapp-button">💬 Répondre sur WhatsApp</a>
+                    <div class="card-actions">
+                        <button type="button" class="btn-demande btn-demande-statut" data-id="${d.id}" data-statut="${nouvelle ? "traitee" : "nouvelle"}">
+                            ${nouvelle ? "✅ Marquer comme traitée" : "↩️ Remettre en nouvelle"}
+                        </button>
+                        <button type="button" class="btn-demande btn-demande-suppr" data-id="${d.id}">
+                            🗑️
+                        </button>
+                    </div>
+                </article>
+            `;
+
+        }
+
+        function afficherDemandes() {
+
+            if (!demandesChargees) {
+                elevesGrid.innerHTML = "<p>Chargement...</p>";
+                return;
+            }
+
+            if (demandesChargees.length === 0) {
+                elevesGrid.innerHTML = "<p>Aucune demande d'inscription pour le moment.</p>";
+                return;
+            }
+
+            elevesGrid.innerHTML = `<div class="student-dashboard-grid">${demandesChargees.map(carteDemande).join("")}</div>`;
+
+            elevesGrid.querySelectorAll(".btn-demande-statut").forEach(function (btn) {
+
+                btn.addEventListener("click", async function () {
+
+                    const { error } = await window.supabaseClient
+                        .from("demandes_inscription")
+                        .update({ statut: btn.dataset.statut })
+                        .eq("id", btn.dataset.id);
+
+                    if (error) {
+                        console.error("Erreur demande:", error);
+                        showToast("Erreur : " + error.message, "error");
+                        return;
+                    }
+
+                    loadDemandes();
+
+                });
+
+            });
+
+            elevesGrid.querySelectorAll(".btn-demande-suppr").forEach(function (btn) {
+
+                btn.addEventListener("click", async function () {
+
+                    if (!confirm("Voulez-vous vraiment supprimer cette demande ?")) {
+                        return;
+                    }
+
+                    const { error } = await window.supabaseClient
+                        .from("demandes_inscription")
+                        .delete()
+                        .eq("id", btn.dataset.id);
+
+                    if (error) {
+                        console.error("Erreur suppression demande:", error);
+                        showToast("Erreur : " + error.message, "error");
+                        return;
+                    }
+
+                    showToast("Demande supprimée !", "success");
+                    loadDemandes();
+
+                });
+
+            });
+
+        }
+
+        function loadDemandes() {
+
+            if (!window.supabaseClient) {
+                setTimeout(loadDemandes, 200);
+                return;
+            }
+
+            window.supabaseClient
+                .from("demandes_inscription")
+                .select("*")
+                .order("created_at", { ascending: false })
+                .then(function (result) {
+
+                    if (result.error) {
+                        console.error("Erreur chargement demandes:", result.error);
+                        return;
+                    }
+
+                    // les nouvelles d'abord
+                    demandesChargees = result.data.slice().sort(function (a, b) {
+                        return (a.statut === "nouvelle" ? 0 : 1) - (b.statut === "nouvelle" ? 0 : 1);
+                    });
+
+                    const nouvelles = demandesChargees.filter(function (d) { return d.statut === "nouvelle"; }).length;
+                    document.querySelector("#eleves-count-demandes").textContent = nouvelles > 0 ? `(${nouvelles} 🆕)` : `(${demandesChargees.length})`;
+
+                    if (modeEleves && modeEleves() === "demandes") {
+                        afficherDemandes();
+                    }
+
+                });
+
+        }
+
+
         function afficherEleves() {
+
+            const modeActuel = modeEleves ? modeEleves() : "presentiel";
+
+            if (zoneClasse) {
+                zoneClasse.hidden = modeActuel === "demandes";
+            }
+
+            if (modeActuel === "demandes") {
+                afficherDemandes();
+                return;
+            }
 
             if (!elevesCharges) {
                 elevesGrid.innerHTML = "<p>Chargement...</p>";
@@ -1846,7 +2170,7 @@ console.log("Page actuelle:", currentPage);
 
                 eleveForm.reset();
                 document.querySelector("#eleve-id").value = "";
-                document.querySelector("#eleve-mode").value = modeEleves ? modeEleves() : "presentiel";
+                document.querySelector("#eleve-mode").value = modeEleves && modeEleves() === "distance" ? "distance" : "presentiel";
 
                 modalTitle.textContent = "Ajouter un élève";
 
@@ -1986,6 +2310,7 @@ console.log("Page actuelle:", currentPage);
         loadClassesEleve();
 
         modeEleves = setupModeTabs(afficherEleves);
+        loadDemandes();
 
         loadEleves();
 
@@ -4490,11 +4815,16 @@ console.log("Page actuelle:", currentPage);
 
     if (eleveNameEl && eleveClasseEl && eleveStatutEl) {
 
+        // Première visite d'un élève inscrit en ligne : il écrit son nom, choisit son niveau, valide.
+        // Ce choix n'est demandé qu'une seule fois ; ensuite il ne voit que son niveau.
         const niveauChoix = document.querySelector("#niveau-choix");
+        const profilForm = document.querySelector("#profil-form");
 
-        if (niveauChoix) {
+        if (niveauChoix && profilForm) {
 
-            niveauChoix.addEventListener("click", async function (event) {
+            let niveauChoisi = "";
+
+            niveauChoix.addEventListener("click", function (event) {
 
                 const bouton = event.target.closest("button[data-niveau]");
 
@@ -4502,26 +4832,45 @@ console.log("Page actuelle:", currentPage);
                     return;
                 }
 
+                niveauChoisi = bouton.dataset.niveau;
+
                 niveauChoix.querySelectorAll("button").forEach(function (b) {
-                    b.disabled = true;
+                    b.classList.toggle("on", b === bouton);
                 });
 
-                bouton.classList.add("on");
+            });
 
-                const { error } = await window.supabaseClient
-                    .rpc("choisir_niveau", { niveau: bouton.dataset.niveau });
+            profilForm.addEventListener("submit", async function (event) {
 
-                if (error) {
-                    console.error("Erreur niveau:", error);
-                    showToast(error.message, "error");
-                    niveauChoix.querySelectorAll("button").forEach(function (b) {
-                        b.disabled = false;
-                    });
-                    bouton.classList.remove("on");
+                event.preventDefault();
+
+                const prenom = document.querySelector("#profil-prenom").value.trim();
+                const nom = document.querySelector("#profil-nom").value.trim();
+
+                if (prenom.length < 2 || nom.length < 2) {
+                    showToast("Écris ton prénom et ton nom.", "warning");
                     return;
                 }
 
-                showToast("Niveau enregistré ✅", "success");
+                if (!niveauChoisi) {
+                    showToast("Choisis ton niveau.", "warning");
+                    return;
+                }
+
+                const valider = document.querySelector("#profil-valider");
+                valider.disabled = true;
+
+                const { error } = await window.supabaseClient
+                    .rpc("completer_profil", { p_prenom: prenom, p_nom: nom, p_niveau: niveauChoisi });
+
+                if (error) {
+                    console.error("Erreur profil:", error);
+                    showToast(error.message, "error");
+                    valider.disabled = false;
+                    return;
+                }
+
+                showToast("Profil enregistré ✅", "success");
 
                 setTimeout(function () {
                     window.location.reload();
@@ -4603,8 +4952,20 @@ console.log("Page actuelle:", currentPage);
                 document.querySelector("#eleve-code-card").hidden = false;
 
                 if (!eleve.classe) {
+
+                    // Nom proposé : celui du compte Google, à corriger si besoin
+                    const meta = session.user.user_metadata || {};
+                    const complet = (meta.full_name || meta.name || "").trim();
+
+                    if (complet) {
+                        const mots = complet.split(/\s+/);
+                        document.querySelector("#profil-prenom").value = mots[0];
+                        document.querySelector("#profil-nom").value = mots.slice(1).join(" ");
+                    }
+
                     document.querySelector("#eleve-niveau-card").hidden = false;
                     document.body.classList.add("niveau-a-choisir");
+
                 }
 
             }

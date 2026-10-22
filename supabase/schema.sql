@@ -763,3 +763,73 @@ do $$ begin
     alter table public.annonces add constraint annonces_cible_check check (cible in ('tous', 'eleves', 'parents'));
 exception when duplicate_object then null; end $$;
 alter policy lecture_connectes on public.annonces using (statut = 'publie');
+
+
+-- =================================================
+-- 12. PROFIL DE L'ÉLÈVE À DISTANCE + DEMANDES D'INSCRIPTION DES PARENTS
+-- =================================================
+
+-- L'élève inscrit en ligne écrit son nom et choisit son niveau une seule fois (eleve.html)
+create or replace function public.completer_profil(p_prenom text, p_nom text, p_niveau text)
+returns json
+language plpgsql
+security definer
+set search_path = ''
+as $function$
+declare
+    uid uuid := auth.uid();
+    pr text := btrim(coalesce(p_prenom, ''));
+    nm text := btrim(coalesce(p_nom, ''));
+    n int;
+begin
+    if uid is null then
+        raise exception 'Non connecté';
+    end if;
+
+    if char_length(pr) < 2 or char_length(pr) > 60 or char_length(nm) < 2 or char_length(nm) > 60 then
+        raise exception 'Nom invalide';
+    end if;
+
+    if p_niveau not in ('7 أساسي', '8 أساسي', '9 أساسي', '1 ثانوي') then
+        raise exception 'Niveau inconnu';
+    end if;
+
+    update public.eleves
+        set prenom = pr, nom = nm, classe = p_niveau
+        where user_id = uid and mode = 'distance' and coalesce(classe, '') = '';
+
+    get diagnostics n = row_count;
+
+    if n = 0 then
+        raise exception 'Niveau déjà choisi : demandez au professeur pour le changer';
+    end if;
+
+    return json_build_object('prenom', pr, 'nom', nm, 'classe', p_niveau);
+end;
+$function$;
+
+revoke execute on function public.completer_profil(text, text, text) from anon, public;
+grant execute on function public.completer_profil(text, text, text) to authenticated;
+
+-- Demandes d'inscription envoyées par les parents (inscription-enfant.html → onglet « Demandes » de eleves.html)
+create table if not exists public.demandes_inscription (
+    id            bigint generated always as identity primary key,
+    prenom        text not null check (char_length(btrim(prenom)) between 2 and 60),
+    nom           text not null check (char_length(btrim(nom)) between 2 and 60),
+    niveau        text not null check (niveau in ('7 أساسي', '8 أساسي', '9 أساسي', '1 ثانوي')),
+    etablissement text not null check (char_length(btrim(etablissement)) between 2 and 120),
+    niveau_maths  text not null check (niveau_maths in ('excellent', 'moyen', 'faible')),
+    whatsapp      text not null check (whatsapp ~ '^\+?[0-9]{8,15}$'),
+    message       text check (message is null or char_length(message) <= 1000),
+    statut        text not null default 'nouvelle' check (statut in ('nouvelle', 'traitee')),
+    created_at    timestamptz not null default now()
+);
+
+alter table public.demandes_inscription enable row level security;
+
+create policy admin_tout on public.demandes_inscription
+    for all to authenticated using (public.is_admin()) with check (public.is_admin());
+
+-- les visiteurs peuvent seulement envoyer une demande (jamais lire celles des autres)
+create policy envoi_public on public.demandes_inscription
+    for insert to anon, authenticated with check (statut = 'nouvelle');

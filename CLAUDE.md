@@ -17,7 +17,13 @@
 
 ## Pages
 
-- Public : `index.html` (accueil), `register.html`, `login.html`, `confidentialite.html`
+- Public : `index.html` (accueil), `register.html`, `login.html`, `confidentialite.html`,
+  `inscription-enfant.html` (formulaire des parents : demande d'inscription à distance → table
+  `demandes_inscription`, visible dans l'onglet « 📩 Demandes » de `eleves.html`)
+  - Téléphone : bouton rouge qui clignote « S'inscrire » dans la barre du haut (`.header-cta-inscription`,
+    ajouté par `script.js` quand personne n'est connecté).
+  - Inscription élève : `register.html` ne demande plus ni nom ni niveau (élève) ; au premier passage dans
+    `eleve.html`, l'écran « Complète ton profil » (nom + niveau, fonction `completer_profil`) s'affiche une seule fois.
 - Élève : `eleve.html` (séances, documents par matière → trimestre, série + correction)
 - Parent : `parent.html` (code de l'enfant, présences, paiements)
 - Administration (en français) : `admin.html`, `eleves.html` (fiche élève + paiements),

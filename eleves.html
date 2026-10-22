@@ -17,7 +17,7 @@
         content="Gestion des élèves de la plateforme Profaycel."
     >
 
-    <link rel="stylesheet" href="style.css?v=12">
+    <link rel="stylesheet" href="style.css?v=13">
 
     <meta name="robots" content="noindex">
     <link rel="manifest" href="manifest.json">
@@ -197,9 +197,13 @@
                     💻 À distance <span class="mode-count" id="eleves-count-distance"></span>
                 </button>
 
+                <button type="button" class="mode-tab" data-mode="demandes" role="tab">
+                    📩 Demandes <span class="mode-count" id="eleves-count-demandes"></span>
+                </button>
+
             </div>
 
-            <div class="classe-choix">
+            <div class="classe-choix" id="classe-choix-zone">
 
                 <label for="eleves-classe-choix">
                     Choisir la classe :
@@ -468,7 +472,7 @@
     </footer>
 
 
-<script src="script.js?v=13"></script>
+<script src="script.js?v=14"></script>
 
 </body>
 
