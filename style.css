@@ -6020,6 +6020,10 @@ body > .footer:not(:has(.container)) p {
     margin-bottom: 28px;
 }
 
+.classe-choix[hidden] {
+    display: none;
+}
+
 .classe-choix label {
     color: var(--dark);
     font-size: 1rem;
@@ -7470,4 +7474,330 @@ body.niveau-a-choisir {
 
 .annonce-date {
     color: #94a3b8;
+}
+
+
+/* =========================================================
+   INSCRIPTION : BOUTON ROUGE (TÉLÉPHONE), BANDEAU PARENT,
+   PROFIL ÉLÈVE, DEMANDE D'INSCRIPTION D'UN ENFANT
+========================================================= */
+
+/* Bouton rouge qui clignote dans la barre du haut : visible sans ouvrir le menu ☰ */
+.header-cta-inscription {
+    display: none;
+}
+
+@keyframes cta-clignote {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7);
+        transform: scale(1);
+    }
+    50% {
+        box-shadow: 0 0 0 9px rgba(220, 38, 38, 0);
+        transform: scale(1.06);
+    }
+}
+
+@media (max-width: 800px) {
+
+    .header-cta-inscription {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        margin-inline-start: auto;
+        min-height: 44px;
+        padding: 0 18px;
+
+        border-radius: 10px;
+        background: #dc2626;
+        color: #ffffff;
+
+        font-size: 0.95rem;
+        font-weight: 800;
+        white-space: nowrap;
+
+        animation: cta-clignote 1.3s ease-in-out infinite;
+    }
+
+    .header-cta-inscription + .mobile-menu-button {
+        margin-left: 10px;
+        margin-right: 0;
+    }
+
+    html[dir="rtl"] .header-cta-inscription + .mobile-menu-button {
+        margin-left: 0;
+        margin-right: 10px;
+    }
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .header-cta-inscription {
+        animation: none;
+    }
+}
+
+
+/* Bandeau « parent » en haut de la page d'inscription */
+.auth-parent-banner {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    margin-bottom: 26px;
+    padding: 14px 16px;
+
+    border: 2px solid #fecaca;
+    border-radius: 14px;
+    background: #fef2f2;
+    color: var(--dark);
+}
+
+.auth-parent-banner:hover {
+    border-color: #dc2626;
+}
+
+.auth-parent-ic {
+    font-size: 30px;
+}
+
+.auth-parent-text {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    gap: 2px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.auth-parent-text strong {
+    color: #b91c1c;
+    font-size: 1rem;
+}
+
+.auth-parent-arrow {
+    color: #dc2626;
+    font-size: 1.4rem;
+    font-weight: 800;
+}
+
+html[dir="rtl"] .auth-parent-arrow {
+    transform: scaleX(-1);
+}
+
+
+/* Profil de l'élève : nom + niveau (une seule fois) */
+.profil-form {
+    text-align: start;
+}
+
+.profil-champs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.profil-champs label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    color: var(--dark);
+    font-size: 0.85rem;
+    font-weight: 800;
+}
+
+.profil-champs input {
+    width: 100%;
+    min-height: 52px;
+    padding: 0 14px;
+
+    color: var(--dark);
+    background: var(--white);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    outline: none;
+
+    font: inherit;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.profil-champs input:focus {
+    border-color: var(--primary);
+}
+
+.profil-etiquette {
+    margin: 0 0 10px !important;
+    color: var(--dark) !important;
+    font-size: 0.85rem;
+    font-weight: 800;
+}
+
+.profil-valider {
+    width: 100%;
+    justify-content: center;
+    margin-top: 22px;
+    min-height: 54px;
+    font-size: 1.05rem;
+}
+
+.profil-form .niveau-ecran-choix button {
+    padding: 20px 10px;
+    font-size: 20px;
+}
+
+@media (max-width: 420px) {
+    .profil-champs {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+/* Demande d'inscription d'un enfant */
+.auth-form-group textarea {
+    width: 100%;
+    padding: 14px 16px;
+
+    color: var(--dark);
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    outline: none;
+
+    font: inherit;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    resize: vertical;
+}
+
+.auth-form-group textarea:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
+}
+
+.demande-label {
+    display: block;
+    margin-bottom: 9px;
+    color: var(--dark);
+    font-size: 0.85rem;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+}
+
+.demande-choix {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.demande-choix label {
+    margin: 0;
+    cursor: pointer;
+}
+
+.demande-choix input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    min-height: 0;
+}
+
+.demande-choix span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 50px;
+
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    background: var(--white);
+    color: var(--dark);
+
+    font-size: 0.95rem;
+    font-weight: 800;
+    letter-spacing: 0;
+
+    transition: all 0.15s;
+}
+
+.demande-choix input:checked + span {
+    border-color: var(--primary);
+    background: var(--primary);
+    color: var(--white);
+}
+
+.demande-choix input:focus-visible + span {
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.25);
+}
+
+.piege-robot {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+    clip-path: inset(50%);
+}
+
+.demande-merci {
+    padding: 10px 0 6px;
+    text-align: center;
+}
+
+.demande-merci-ic {
+    font-size: 58px;
+}
+
+.demande-merci h2 {
+    margin: 8px 0 10px;
+    color: var(--dark);
+    font-size: 1.9rem;
+}
+
+.demande-merci p {
+    margin: 0 0 24px;
+    color: var(--text-light);
+    line-height: 1.8;
+}
+
+.demande-merci .button {
+    justify-content: center;
+}
+
+
+/* Administration : demandes d'inscription */
+.btn-demande {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 34px;
+    padding: 0 12px;
+
+    border: none;
+    border-radius: 8px;
+
+    font-size: 0.78rem;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.btn-demande-statut {
+    background: var(--primary-soft);
+    color: var(--primary);
+}
+
+.btn-demande-suppr {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.demande-nouvelle {
+    border: 2px solid #dc2626;
 }

@@ -10,7 +10,7 @@
     <meta name="description"
           content="Créez votre compte Profaycel : élève, parent ou administration.">
 
-    <link rel="stylesheet" href="style.css?v=12">
+    <link rel="stylesheet" href="style.css?v=13">
     <link rel="canonical" href="https://profaycel.github.io/register.html">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2563eb">
@@ -133,11 +133,27 @@
                     </div>
 
 
+                    <!-- PARENT : demande d'inscription à distance -->
+
+                    <a href="inscription-enfant.html" class="auth-parent-banner">
+
+                        <span class="auth-parent-ic">👨‍👩‍👧</span>
+
+                        <span class="auth-parent-text">
+                            <strong>Vous êtes parent ?</strong>
+                            <span>Inscrire mon enfant aux cours à distance</span>
+                        </span>
+
+                        <span class="auth-parent-arrow" aria-hidden="true">→</span>
+
+                    </a>
+
+
                     <!-- FORM -->
 
                     <form class="auth-form" id="register-form">
 
-                        <div class="auth-form-group">
+                        <div class="auth-form-group" id="name-group" hidden>
 
                             <label for="name">
                                 Nom complet
@@ -147,8 +163,7 @@
                                 type="text"
                                 id="name"
                                 name="name"
-                                placeholder="Votre nom complet"
-                                required>
+                                placeholder="Votre nom complet">
 
                         </div>
 
@@ -166,31 +181,9 @@
                                 required>
 
                                 <option value="">-- Choisir --</option>
-                                <option value="eleve">Élève</option>
+                                <option value="eleve" selected>Élève</option>
                                 <option value="parent">Parent</option>
                                 <option value="admin">Enseignant / Admin</option>
-
-                            </select>
-
-                        </div>
-
-
-                        <div class="auth-form-group" id="niveau-group" hidden>
-
-                            <label for="niveau">
-                                Mon niveau
-                            </label>
-
-                            <select
-                                id="niveau"
-                                name="niveau"
-                                class="auth-form-select">
-
-                                <option value="">-- Choisir --</option>
-                                <option value="7 أساسي">7 أساسي</option>
-                                <option value="8 أساسي">8 أساسي</option>
-                                <option value="9 أساسي">9 أساسي</option>
-                                <option value="1 ثانوي">1 ثانوي</option>
 
                             </select>
 
@@ -376,8 +369,8 @@
          JAVASCRIPT
     ========================================= -->
 
-    <script src="i18n.js?v=9"></script>
-    <script src="script.js?v=13"></script>
+    <script src="i18n.js?v=10"></script>
+    <script src="script.js?v=14"></script>
 
 </body>
 
