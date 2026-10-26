@@ -7801,3 +7801,54 @@ html[dir="rtl"] .auth-parent-arrow {
 .demande-nouvelle {
     border: 2px solid #dc2626;
 }
+
+/* boutons « ما قبل فرض المراقبة » côte à côte */
+.docs-dcs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+    direction: rtl;
+}
+
+.docs-dc-btn {
+    flex: 1 1 140px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 10px 12px;
+    border-radius: var(--radius-md);
+    border: 1px solid #d9c9ee;
+    background: #f5f0fb;
+    color: #7030a0;
+    font-family: inherit;
+    font-weight: 800;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.docs-dc-btn small {
+    font-weight: 600;
+    color: #6b5a7d;
+}
+
+.docs-dc-btn.on {
+    background: #7030a0;
+    border-color: #7030a0;
+    color: #fff;
+}
+
+.docs-dc-btn.on small {
+    color: #eadcf7;
+}
+
+.docs-dc-groupe {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.docs-dc-groupe[hidden] {
+    display: none;
+}
