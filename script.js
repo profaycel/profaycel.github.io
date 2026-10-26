@@ -4450,24 +4450,15 @@ console.log("Page actuelle:", currentPage);
         paires.sort(function (a, b) { return a.numero - b.numero; });
 
         // 5 séries par devoir de contrôle : 1–5 → avant le DC n°1, 6–10 → avant le DC n°2…
-        let dcCourant = 0;
+        // Un bouton par devoir de contrôle (côte à côte) ; on voit les séries du DC choisi (le plus récent par défaut).
 
-        return paires.map(function (paire) {
-
-            let titreDc = "";
-            if (paire.numero !== 999) {
-                const dc = Math.ceil(paire.numero / 5);
-                if (dc !== dcCourant) {
-                    dcCourant = dc;
-                    titreDc = `<div class="docs-dc">⭐ ما قبل فرض المراقبة عدد <bdi>${dc}</bdi><br><small>Avant le devoir de contrôle n°${dc}</small></div>`;
-                }
-            }
+        const htmlPaire = function (paire) {
 
             paire.docs.sort(function (a, b) {
                 return ORDRE_TYPES.indexOf(a.type_fichier) - ORDRE_TYPES.indexOf(b.type_fichier);
             });
 
-            return titreDc + `<div class="docs-paire">${paire.docs.map(function (doc) {
+            return `<div class="docs-paire">${paire.docs.map(function (doc) {
                 return `
                     <div class="docs-item${doc.type_fichier === "Correction" ? " docs-item-correction" : ""}">
                         <span class="docs-item-ic">${ICONES_TYPES[doc.type_fichier] || "📄"}</span>
@@ -4480,6 +4471,38 @@ console.log("Page actuelle:", currentPage);
                 `;
             }).join("")}</div>`;
 
+        };
+
+        const groupes = {};
+        const ordreDc = [];
+
+        paires.forEach(function (paire) {
+            const dc = paire.numero === 999 ? 0 : Math.ceil(paire.numero / 5);
+            if (!groupes[dc]) {
+                groupes[dc] = [];
+                ordreDc.push(dc);
+            }
+            groupes[dc].push(paire);
+        });
+
+        ordreDc.sort(function (a, b) { return a - b; });
+
+        const actif = ordreDc.filter(function (dc) { return dc > 0; }).pop() || ordreDc[0];
+
+        const titreDc = function (dc) {
+            return dc === 0 ? "📄 Autres" : `⭐ ما قبل فرض المراقبة عدد <bdi>${dc}</bdi>`;
+        };
+
+        if (ordreDc.length < 2) {
+            return ordreDc.map(function (dc) {
+                return (dc > 0 ? `<div class="docs-dc">${titreDc(dc)}<br><small>Avant le devoir de contrôle n°${dc}</small></div>` : "") + groupes[dc].map(htmlPaire).join("");
+            }).join("");
+        }
+
+        return `<div class="docs-dcs">${ordreDc.map(function (dc) {
+            return `<button type="button" class="docs-dc-btn${dc === actif ? " on" : ""}" data-dc="${dc}">${titreDc(dc)}${dc > 0 ? `<small>Avant le DC n°${dc}</small>` : ""}</button>`;
+        }).join("")}</div>` + ordreDc.map(function (dc) {
+            return `<div class="docs-dc-groupe" data-dc="${dc}"${dc === actif ? "" : " hidden"}>${groupes[dc].map(htmlPaire).join("")}</div>`;
         }).join("");
 
     }
@@ -4578,6 +4601,22 @@ console.log("Page actuelle:", currentPage);
 
             bloc.querySelectorAll(".docs-panneau").forEach(function (p) {
                 p.hidden = p.dataset.matiere !== matiere.dataset.matiere;
+            });
+
+        }
+
+        const dcBtn = event.target.closest(".docs-dc-btn");
+
+        if (dcBtn) {
+
+            const liste = dcBtn.closest(".docs-liste");
+
+            liste.querySelectorAll(".docs-dc-btn").forEach(function (b) {
+                b.classList.toggle("on", b === dcBtn);
+            });
+
+            liste.querySelectorAll(".docs-dc-groupe").forEach(function (g) {
+                g.hidden = g.dataset.dc !== dcBtn.dataset.dc;
             });
 
         }
