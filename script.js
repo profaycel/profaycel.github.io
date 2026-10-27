@@ -857,7 +857,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     // Téléphone : bouton rouge qui clignote, visible tout de suite dans la barre du haut
                     const pageActuelle = window.location.pathname.split("/").pop();
 
-                    if (pageActuelle !== "register.html" && pageActuelle !== "inscription-enfant.html") {
+                    if (pageActuelle !== "register.html") {
 
                         const barre = document.querySelector(".header-container");
                         const boutonMenu = barre ? barre.querySelector(".mobile-menu-button") : null;
@@ -1046,130 +1046,6 @@ document.addEventListener("DOMContentLoaded", function () {
             setTimeout(function () {
                 window.location.href = "login.html";
             }, 1500);
-
-        });
-
-    }
-
-
-    // =================================================
-    // 6b. DEMANDE D'INSCRIPTION D'UN ENFANT (inscription-enfant.html)
-    // =================================================
-
-    const demandeForm = document.getElementById("demande-form");
-
-    if (demandeForm) {
-
-        // Numéro tunisien à 8 chiffres → +216… ; un numéro étranger se tape avec « + »
-        function normaliserWhatsApp(saisie) {
-
-            const brut = saisie.trim();
-            let chiffres = brut.replace(/\D/g, "");
-
-            if (brut.startsWith("+")) {
-                return "+" + chiffres;
-            }
-
-            if (chiffres.startsWith("00")) {
-                return "+" + chiffres.slice(2);
-            }
-
-            if (chiffres.length === 8) {
-                return "+216" + chiffres;
-            }
-
-            if (chiffres.length === 11 && chiffres.startsWith("216")) {
-                return "+" + chiffres;
-            }
-
-            return "+" + chiffres;
-
-        }
-
-        function afficherMerci() {
-            document.getElementById("demande-contenu").hidden = true;
-            document.getElementById("demande-merci").hidden = false;
-            window.scrollTo(0, 0);
-        }
-
-        demandeForm.addEventListener("submit", async function (event) {
-
-            event.preventDefault();
-
-            // Un robot remplit le champ caché : on fait semblant que tout va bien
-            if (demandeForm.elements["site"].value) {
-                afficherMerci();
-                return;
-            }
-
-            const prenom = demandeForm.elements["prenom"].value.trim();
-            const nom = demandeForm.elements["nom"].value.trim();
-            const niveau = demandeForm.elements["niveau"].value;
-            const etablissement = demandeForm.elements["etablissement"].value.trim();
-            const mathsChoisi = demandeForm.querySelector('input[name="maths"]:checked');
-            const email = demandeForm.elements["email"].value.trim().toLowerCase();
-            const whatsapp = normaliserWhatsApp(demandeForm.elements["whatsapp"].value);
-            const message = demandeForm.elements["message"].value.trim();
-
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                showToast("Écrivez l'email utilisé pour créer le compte.", "warning");
-                return;
-            }
-
-            if (prenom.length < 2 || nom.length < 2) {
-                showToast("Écrivez le prénom et le nom de l'élève.", "warning");
-                return;
-            }
-
-            if (!niveau) {
-                showToast("Choisissez le niveau.", "warning");
-                return;
-            }
-
-            if (etablissement.length < 2) {
-                showToast("Écrivez l'établissement scolaire.", "warning");
-                return;
-            }
-
-            if (!mathsChoisi) {
-                showToast("Choisissez le niveau en mathématiques.", "warning");
-                return;
-            }
-
-            if (!/^\+[0-9]{8,15}$/.test(whatsapp)) {
-                showToast("Numéro WhatsApp invalide.", "warning");
-                return;
-            }
-
-            if (!window.supabaseClient) {
-                showToast("Erreur : Supabase non connecté.", "error");
-                return;
-            }
-
-            const envoyer = document.getElementById("d-envoyer");
-            envoyer.disabled = true;
-
-            const { error } = await window.supabaseClient
-                .from("demandes_inscription")
-                .insert({
-                    prenom: prenom,
-                    nom: nom,
-                    niveau: niveau,
-                    etablissement: etablissement,
-                    niveau_maths: mathsChoisi.value,
-                    whatsapp: whatsapp,
-                    email: email,
-                    message: message || null
-                });
-
-            if (error) {
-                console.error("Erreur demande d'inscription:", error);
-                showToast("Impossible d'envoyer la demande. Réessayez dans un instant.", "error");
-                envoyer.disabled = false;
-                return;
-            }
-
-            afficherMerci();
 
         });
 
@@ -1565,235 +1441,11 @@ console.log("Page actuelle:", currentPage);
                     }
 
 
-        // --- Demandes d'inscription envoyées par les parents (page inscription-enfant.html) ---
-
         const zoneClasse = document.querySelector("#classe-choix-zone");
-        let demandesChargees = null;
-
-        const LIBELLE_MATHS = { excellent: "Excellent", moyen: "Moyen", faible: "Faible" };
-
-        function carteDemande(d) {
-
-            const nouvelle = d.statut === "nouvelle";
-            const chiffres = String(d.whatsapp || "").replace(/\D/g, "");
-            const date = d.created_at ? d.created_at.slice(0, 10) : "—";
-
-            return `
-                <article class="student-dashboard-card demande-carte${nouvelle ? " demande-nouvelle" : ""}">
-                    <div class="dashboard-card-icon">
-                        📩
-                    </div>
-                    <h3 dir="auto">
-                        ${echapperHtml(d.prenom)} ${echapperHtml(d.nom)}
-                    </h3>
-                    <p>
-                        <strong>Statut :</strong> ${nouvelle ? "🆕 Nouvelle" : "✅ Traitée"}
-                        <br>
-                        <strong>Niveau :</strong> <bdi>${echapperHtml(d.niveau)}</bdi>
-                        <br>
-                        <strong>Établissement :</strong> <span dir="auto">${echapperHtml(d.etablissement)}</span>
-                        <br>
-                        <strong>Maths :</strong> ${LIBELLE_MATHS[d.niveau_maths] || "—"}
-                        <br>
-                        <strong>WhatsApp :</strong> <bdi>${echapperHtml(d.whatsapp)}</bdi>
-                        ${d.email ? `<br><strong>Email :</strong> <bdi>${echapperHtml(d.email)}</bdi>` : ""}
-                        <br>
-                        <strong>Reçue le :</strong> ${date}
-                        ${d.message ? `<br><strong>Message :</strong> <span dir="auto">${echapperHtml(d.message)}</span>` : ""}
-                    </p>
-                    <a href="https://wa.me/${chiffres}" target="_blank" rel="noopener" class="button whatsapp-button">💬 Répondre sur WhatsApp</a>
-                    <div class="card-actions">
-                        ${nouvelle && d.email ? `<button type="button" class="btn-demande btn-demande-accepter" data-id="${d.id}">✅ Accepter</button>` : ""}
-                        <button type="button" class="btn-demande btn-demande-statut" data-id="${d.id}" data-statut="${nouvelle ? "traitee" : "nouvelle"}">
-                            ${nouvelle ? "✅ Marquer comme traitée" : "↩️ Remettre en nouvelle"}
-                        </button>
-                        <button type="button" class="btn-demande btn-demande-suppr" data-id="${d.id}">
-                            🗑️
-                        </button>
-                    </div>
-                </article>
-            `;
-
-        }
-
-        function afficherDemandes() {
-
-            if (!demandesChargees) {
-                elevesGrid.innerHTML = "<p>Chargement...</p>";
-                return;
-            }
-
-            if (demandesChargees.length === 0) {
-                elevesGrid.innerHTML = "<p>Aucune demande d'inscription pour le moment.</p>";
-                return;
-            }
-
-            elevesGrid.innerHTML = `<div class="student-dashboard-grid">${demandesChargees.map(carteDemande).join("")}</div>`;
-
-            elevesGrid.querySelectorAll(".btn-demande-statut").forEach(function (btn) {
-
-                btn.addEventListener("click", async function () {
-
-                    const { error } = await window.supabaseClient
-                        .from("demandes_inscription")
-                        .update({ statut: btn.dataset.statut })
-                        .eq("id", btn.dataset.id);
-
-                    if (error) {
-                        console.error("Erreur demande:", error);
-                        showToast("Erreur : " + error.message, "error");
-                        return;
-                    }
-
-                    loadDemandes();
-
-                });
-
-            });
-
-            elevesGrid.querySelectorAll(".btn-demande-accepter").forEach(function (btn) {
-
-                btn.addEventListener("click", async function () {
-
-                    const d = demandesChargees.find(function (x) { return String(x.id) === btn.dataset.id; });
-
-                    if (!d || !d.email) {
-                        return;
-                    }
-
-                    btn.disabled = true;
-
-                    // Le compte créé en ligne a déjà une fiche « à distance » : on la retrouve par l'email
-                    const { data: fiches, error: erreurFiche } = await window.supabaseClient
-                        .from("eleves")
-                        .select("id, prenom, nom, classe")
-                        .ilike("email", d.email)
-                        .limit(1);
-
-                    if (erreurFiche) {
-                        console.error("Erreur recherche élève:", erreurFiche);
-                        showToast("Erreur : " + erreurFiche.message, "error");
-                        btn.disabled = false;
-                        return;
-                    }
-
-                    if (!fiches || fiches.length === 0) {
-                        showToast("Aucun compte avec cet email. Demandez à l'élève de créer son compte sur le site, puis réessayez.", "warning");
-                        btn.disabled = false;
-                        return;
-                    }
-
-                    const { error: erreurMaj } = await window.supabaseClient
-                        .from("eleves")
-                        .update({
-                            prenom: d.prenom,
-                            nom: d.nom,
-                            classe: d.niveau,
-                            telephone: d.whatsapp,
-                            mode: "distance",
-                            statut: "actif",
-                            date_debut: new Date().toISOString().slice(0, 10)
-                        })
-                        .eq("id", fiches[0].id);
-
-                    if (erreurMaj) {
-                        console.error("Erreur acceptation:", erreurMaj);
-                        showToast("Erreur : " + erreurMaj.message, "error");
-                        btn.disabled = false;
-                        return;
-                    }
-
-                    await window.supabaseClient
-                        .from("demandes_inscription")
-                        .update({ statut: "traitee" })
-                        .eq("id", d.id);
-
-                    showToast("Élève accepté : il est dans la liste « À distance » !", "success");
-                    loadDemandes();
-
-                    if (typeof loadEleves === "function") {
-                        loadEleves();
-                    }
-
-                });
-
-            });
-
-            elevesGrid.querySelectorAll(".btn-demande-suppr").forEach(function (btn) {
-
-                btn.addEventListener("click", async function () {
-
-                    if (!confirm("Voulez-vous vraiment supprimer cette demande ?")) {
-                        return;
-                    }
-
-                    const { error } = await window.supabaseClient
-                        .from("demandes_inscription")
-                        .delete()
-                        .eq("id", btn.dataset.id);
-
-                    if (error) {
-                        console.error("Erreur suppression demande:", error);
-                        showToast("Erreur : " + error.message, "error");
-                        return;
-                    }
-
-                    showToast("Demande supprimée !", "success");
-                    loadDemandes();
-
-                });
-
-            });
-
-        }
-
-        function loadDemandes() {
-
-            if (!window.supabaseClient) {
-                setTimeout(loadDemandes, 200);
-                return;
-            }
-
-            window.supabaseClient
-                .from("demandes_inscription")
-                .select("*")
-                .order("created_at", { ascending: false })
-                .then(function (result) {
-
-                    if (result.error) {
-                        console.error("Erreur chargement demandes:", result.error);
-                        return;
-                    }
-
-                    // les nouvelles d'abord
-                    demandesChargees = result.data.slice().sort(function (a, b) {
-                        return (a.statut === "nouvelle" ? 0 : 1) - (b.statut === "nouvelle" ? 0 : 1);
-                    });
-
-                    const nouvelles = demandesChargees.filter(function (d) { return d.statut === "nouvelle"; }).length;
-                    document.querySelector("#eleves-count-demandes").textContent = nouvelles > 0 ? `(${nouvelles} 🆕)` : `(${demandesChargees.length})`;
-
-                    if (modeEleves && modeEleves() === "demandes") {
-                        afficherDemandes();
-                    }
-
-                });
-
-        }
-
 
         function afficherEleves() {
 
             const modeActuel = modeEleves ? modeEleves() : "presentiel";
-
-            if (zoneClasse) {
-                zoneClasse.hidden = modeActuel === "demandes";
-            }
-
-            if (modeActuel === "demandes") {
-                afficherDemandes();
-                return;
-            }
 
             if (!elevesCharges) {
                 elevesGrid.innerHTML = "<p>Chargement...</p>";
@@ -2407,7 +2059,6 @@ console.log("Page actuelle:", currentPage);
         loadClassesEleve();
 
         modeEleves = setupModeTabs(afficherEleves);
-        loadDemandes();
 
         loadEleves();
 
@@ -5075,13 +4726,6 @@ console.log("Page actuelle:", currentPage);
             const eleve = eleves[0];
 
             console.log("Élève:", eleve);
-
-            // La demande de cours à distance n'a de sens que pour un élève en ligne pas encore accepté
-            const banniereDemande = document.querySelector("#eleve-demande-banner");
-
-            if (banniereDemande && (eleve.mode !== "distance" || eleve.date_debut)) {
-                banniereDemande.hidden = true;
-            }
 
             eleveNameEl.textContent = `${eleve.prenom} ${eleve.nom}`.trim();
             eleveClasseEl.innerHTML = eleve.classe
