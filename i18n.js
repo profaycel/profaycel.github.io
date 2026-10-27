@@ -230,10 +230,21 @@
         "Nom invalide": "الاسم غير صالح",
 
         // Demande d'inscription d'un enfant (parents)
-        "Inscrire mon enfant | Profaycel": "تسجيل ابني | Profaycel",
+        "Demande d'inscription | Profaycel": "طلب التسجيل | Profaycel",
         "COURS À DISTANCE": "دروس عن بُعد",
         "Inscrire": "سجّل",
         "mon enfant.": "ابني.",
+        "Demande d'inscription": "طلب التسجيل",
+        "aux cours à distance.": "في الدروس عن بُعد.",
+        "Créez d'abord votre compte sur le site, puis remplissez cette demande : je vous contacterai pour confirmer l'inscription.":
+            "أنشئ حسابك في الموقع أولًا ثم املأ هذا الطلب، وسأتواصل معك لتأكيد التسجيل.",
+        "Email utilisé pour créer le compte": "الإيميل الذي أنشأت به الحساب",
+        "Écrivez l'email utilisé pour créer le compte.": "اكتب الإيميل الذي أنشأت به الحساب.",
+        "Numéro de téléphone (WhatsApp)": "رقم الهاتف (واتساب)",
+        "Présences et absences de votre enfant en salle": "حضور وغياب ابنك في القاعة",
+        "Situation des paiements": "وضعية الخلاص",
+        "🔑 Réservé aux élèves en salle : le code d'accès vous est remis par le professeur": "🔑 خاص بتلاميذ القاعة: يسلّمك الأستاذ رمز الدخول",
+        "Crée ton compte et choisis ton niveau": "أنشئ حسابك واختر مستواك",
         "Remplissez ce formulaire : je vous contacterai sur WhatsApp pour confirmer l'inscription.":
             "املأ هذه الاستمارة وسأتواصل معك عبر واتساب لتأكيد التسجيل.",
         "Prénom de l'élève": "اسم التلميذ",
