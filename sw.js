@@ -2,7 +2,7 @@
 // PROFAYCEL — Service Worker (application installable)
 // =====================================================
 
-const CACHE_NAME = "profaycel-v37";
+const CACHE_NAME = "profaycel-v38";
 
 const PRECACHE = [
     "./",

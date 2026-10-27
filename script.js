@@ -5076,6 +5076,13 @@ console.log("Page actuelle:", currentPage);
 
             console.log("Élève:", eleve);
 
+            // La demande de cours à distance n'a de sens que pour un élève en ligne pas encore accepté
+            const banniereDemande = document.querySelector("#eleve-demande-banner");
+
+            if (banniereDemande && (eleve.mode !== "distance" || eleve.date_debut)) {
+                banniereDemande.hidden = true;
+            }
+
             eleveNameEl.textContent = `${eleve.prenom} ${eleve.nom}`.trim();
             eleveClasseEl.innerHTML = eleve.classe
                 ? `Niveau : <bdi>${eleve.classe}</bdi>`
