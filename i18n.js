@@ -125,8 +125,8 @@
         "Séances en direct par vidéo, et les séries de ton niveau dans ton espace.": "حصص مباشرة بالفيديو، وسلاسل مستواك في فضائك الخاص.",
         "La plateforme éducative": "المنصّة التعليمية",
         "Choisissez l'espace qui vous correspond": "اختر الفضاء المناسب لك",
-        "Une seule plateforme réunit l'élève, le parent et le professeur, pour un suivi précis et une communication continue.":
-            "منصّة واحدة تجمع التلميذ والوليّ والأستاذ، لمتابعة دقيقة وتواصل مستمر.",
+        "Une seule plateforme réunit l'élève et le professeur, pour un suivi précis et une communication continue.":
+            "منصّة واحدة تجمع التلميذ والأستاذ، لمتابعة دقيقة وتواصل مستمر.",
         "Espace élève": "فضاء التلميذ",
         "Séances à venir et lien en direct": "الحصص القادمة ورابط البثّ المباشر",
         "Les séries d'exercices de ton niveau": "سلاسل التمارين الخاصة بمستواك",

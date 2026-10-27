@@ -389,7 +389,7 @@
 
 .hm-spaces {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 18px;
 
     margin-top: 30px;
@@ -814,4 +814,10 @@
 .hm-inscrire-lien a {
     color: #dc2626;
     text-decoration: underline;
+}
+
+.hm-inscrire-banner {
+    max-width: 460px;
+    margin: 18px auto 0;
+    text-align: start;
 }
