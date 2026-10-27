@@ -811,7 +811,7 @@ $function$;
 revoke execute on function public.completer_profil(text, text, text) from anon, public;
 grant execute on function public.completer_profil(text, text, text) to authenticated;
 
--- Demandes d'inscription envoyées par les parents (inscription-enfant.html → onglet « Demandes » de eleves.html)
+-- Demandes d'inscription envoyées par les parents (ancienne page inscription-enfant.html, retirée du site le 28/10/2026 ; la table est conservée)
 create table if not exists public.demandes_inscription (
     id            bigint generated always as identity primary key,
     prenom        text not null check (char_length(btrim(prenom)) between 2 and 60),
