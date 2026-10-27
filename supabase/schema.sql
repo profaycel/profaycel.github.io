@@ -821,9 +821,12 @@ create table if not exists public.demandes_inscription (
     niveau_maths  text not null check (niveau_maths in ('excellent', 'moyen', 'faible')),
     whatsapp      text not null check (whatsapp ~ '^\+?[0-9]{8,15}$'),
     message       text check (message is null or char_length(message) <= 1000),
+    email         text check (email is null or char_length(email) <= 120),
     statut        text not null default 'nouvelle' check (statut in ('nouvelle', 'traitee')),
     created_at    timestamptz not null default now()
 );
+
+alter table public.demandes_inscription add column if not exists email text check (email is null or char_length(email) <= 120);
 
 alter table public.demandes_inscription enable row level security;
 
