@@ -1107,8 +1107,14 @@ document.addEventListener("DOMContentLoaded", function () {
             const niveau = demandeForm.elements["niveau"].value;
             const etablissement = demandeForm.elements["etablissement"].value.trim();
             const mathsChoisi = demandeForm.querySelector('input[name="maths"]:checked');
+            const email = demandeForm.elements["email"].value.trim().toLowerCase();
             const whatsapp = normaliserWhatsApp(demandeForm.elements["whatsapp"].value);
             const message = demandeForm.elements["message"].value.trim();
+
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showToast("Écrivez l'email utilisé pour créer le compte.", "warning");
+                return;
+            }
 
             if (prenom.length < 2 || nom.length < 2) {
                 showToast("Écrivez le prénom et le nom de l'élève.", "warning");
@@ -1152,6 +1158,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     etablissement: etablissement,
                     niveau_maths: mathsChoisi.value,
                     whatsapp: whatsapp,
+                    email: email,
                     message: message || null
                 });
 
@@ -1589,12 +1596,14 @@ console.log("Page actuelle:", currentPage);
                         <strong>Maths :</strong> ${LIBELLE_MATHS[d.niveau_maths] || "—"}
                         <br>
                         <strong>WhatsApp :</strong> <bdi>${echapperHtml(d.whatsapp)}</bdi>
+                        ${d.email ? `<br><strong>Email :</strong> <bdi>${echapperHtml(d.email)}</bdi>` : ""}
                         <br>
                         <strong>Reçue le :</strong> ${date}
                         ${d.message ? `<br><strong>Message :</strong> <span dir="auto">${echapperHtml(d.message)}</span>` : ""}
                     </p>
                     <a href="https://wa.me/${chiffres}" target="_blank" rel="noopener" class="button whatsapp-button">💬 Répondre sur WhatsApp</a>
                     <div class="card-actions">
+                        ${nouvelle && d.email ? `<button type="button" class="btn-demande btn-demande-accepter" data-id="${d.id}">✅ Accepter</button>` : ""}
                         <button type="button" class="btn-demande btn-demande-statut" data-id="${d.id}" data-statut="${nouvelle ? "traitee" : "nouvelle"}">
                             ${nouvelle ? "✅ Marquer comme traitée" : "↩️ Remettre en nouvelle"}
                         </button>
@@ -1637,6 +1646,74 @@ console.log("Page actuelle:", currentPage);
                     }
 
                     loadDemandes();
+
+                });
+
+            });
+
+            elevesGrid.querySelectorAll(".btn-demande-accepter").forEach(function (btn) {
+
+                btn.addEventListener("click", async function () {
+
+                    const d = demandesChargees.find(function (x) { return String(x.id) === btn.dataset.id; });
+
+                    if (!d || !d.email) {
+                        return;
+                    }
+
+                    btn.disabled = true;
+
+                    // Le compte créé en ligne a déjà une fiche « à distance » : on la retrouve par l'email
+                    const { data: fiches, error: erreurFiche } = await window.supabaseClient
+                        .from("eleves")
+                        .select("id, prenom, nom, classe")
+                        .ilike("email", d.email)
+                        .limit(1);
+
+                    if (erreurFiche) {
+                        console.error("Erreur recherche élève:", erreurFiche);
+                        showToast("Erreur : " + erreurFiche.message, "error");
+                        btn.disabled = false;
+                        return;
+                    }
+
+                    if (!fiches || fiches.length === 0) {
+                        showToast("Aucun compte avec cet email. Demandez à l'élève de créer son compte sur le site, puis réessayez.", "warning");
+                        btn.disabled = false;
+                        return;
+                    }
+
+                    const { error: erreurMaj } = await window.supabaseClient
+                        .from("eleves")
+                        .update({
+                            prenom: d.prenom,
+                            nom: d.nom,
+                            classe: d.niveau,
+                            telephone: d.whatsapp,
+                            mode: "distance",
+                            statut: "actif",
+                            date_debut: new Date().toISOString().slice(0, 10)
+                        })
+                        .eq("id", fiches[0].id);
+
+                    if (erreurMaj) {
+                        console.error("Erreur acceptation:", erreurMaj);
+                        showToast("Erreur : " + erreurMaj.message, "error");
+                        btn.disabled = false;
+                        return;
+                    }
+
+                    await window.supabaseClient
+                        .from("demandes_inscription")
+                        .update({ statut: "traitee" })
+                        .eq("id", d.id);
+
+                    showToast("Élève accepté : il est dans la liste « À distance » !", "success");
+                    loadDemandes();
+
+                    if (typeof loadEleves === "function") {
+                        loadEleves();
+                    }
 
                 });
 
