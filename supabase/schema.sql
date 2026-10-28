@@ -836,3 +836,21 @@ create policy admin_tout on public.demandes_inscription
 -- les visiteurs peuvent seulement envoyer une demande (jamais lire celles des autres)
 create policy envoi_public on public.demandes_inscription
     for insert to anon, authenticated with check (statut = 'nouvelle');
+
+-- Élèves dont l'email n'est pas confirmé (administrateur seulement) : masqués dans la liste « À distance »
+create or replace function public.eleves_non_confirmes()
+returns setof bigint
+language sql
+stable
+security definer
+set search_path = ''
+as $function$
+    select e.id
+    from public.eleves e
+    join auth.users u on u.id = e.user_id
+    where public.is_admin()
+      and u.email_confirmed_at is null;
+$function$;
+
+revoke execute on function public.eleves_non_confirmes() from anon, public;
+grant execute on function public.eleves_non_confirmes() to authenticated;
