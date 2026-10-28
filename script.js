@@ -1787,7 +1787,7 @@ console.log("Page actuelle:", currentPage);
             const modeActuel = modeEleves ? modeEleves() : "presentiel";
 
             if (zoneClasse) {
-                zoneClasse.hidden = modeActuel === "demandes";
+                zoneClasse.hidden = modeActuel === "demandes" || modeActuel === "attente";
             }
 
             if (modeActuel === "demandes") {
@@ -1803,10 +1803,30 @@ console.log("Page actuelle:", currentPage);
             const mode = modeEleves ? modeEleves() : "presentiel";
 
             const presentiels = elevesCharges.filter(function (e) { return e.mode !== "distance"; });
-            const distances = elevesCharges.filter(function (e) { return e.mode === "distance"; });
+            // À distance : seulement ceux qui ont choisi leur niveau ; les autres attendent à part
+            const distances = elevesCharges.filter(function (e) { return e.mode === "distance" && e.classe; });
+            const enAttente = elevesCharges.filter(function (e) { return e.mode === "distance" && !e.classe; });
 
             document.querySelector("#eleves-count-presentiel").textContent = `(${presentiels.length})`;
             document.querySelector("#eleves-count-distance").textContent = `(${distances.length})`;
+            document.querySelector("#eleves-count-attente").textContent = `(${enAttente.length})`;
+
+            if (mode === "attente") {
+
+                if (enAttente.length === 0) {
+                    elevesGrid.innerHTML = "<p>Tous les élèves inscrits en ligne ont choisi leur niveau.</p>";
+                    return;
+                }
+
+                elevesGrid.innerHTML = `
+                    <h2 class="classe-titre">Inscrits sans niveau <span>${enAttente.length} élève(s)</span></h2>
+                    <p>Ces élèves ont créé leur compte mais n'ont pas encore choisi leur niveau. Ils le font à leur prochaine connexion.</p>
+                    <div class="student-dashboard-grid">${enAttente.map(carteEleve).join("")}</div>
+                `;
+
+                attachCardEvents(elevesCharges);
+                return;
+            }
 
             const listeMode = mode === "distance" ? distances : presentiels;
 
