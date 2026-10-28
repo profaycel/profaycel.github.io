@@ -1787,7 +1787,7 @@ console.log("Page actuelle:", currentPage);
             const modeActuel = modeEleves ? modeEleves() : "presentiel";
 
             if (zoneClasse) {
-                zoneClasse.hidden = modeActuel === "demandes" || modeActuel === "attente";
+                zoneClasse.hidden = modeActuel === "demandes";
             }
 
             if (modeActuel === "demandes") {
@@ -1803,30 +1803,13 @@ console.log("Page actuelle:", currentPage);
             const mode = modeEleves ? modeEleves() : "presentiel";
 
             const presentiels = elevesCharges.filter(function (e) { return e.mode !== "distance"; });
-            // À distance : seulement ceux qui ont choisi leur niveau ; les autres attendent à part
-            const distances = elevesCharges.filter(function (e) { return e.mode === "distance" && e.classe; });
-            const enAttente = elevesCharges.filter(function (e) { return e.mode === "distance" && !e.classe; });
+            // À distance : seulement les vrais inscrits (email confirmé) qui ont choisi leur niveau
+            const distances = elevesCharges.filter(function (e) {
+                return e.mode === "distance" && e.classe && !nonConfirmes.has(e.id);
+            });
 
             document.querySelector("#eleves-count-presentiel").textContent = `(${presentiels.length})`;
             document.querySelector("#eleves-count-distance").textContent = `(${distances.length})`;
-            document.querySelector("#eleves-count-attente").textContent = `(${enAttente.length})`;
-
-            if (mode === "attente") {
-
-                if (enAttente.length === 0) {
-                    elevesGrid.innerHTML = "<p>Tous les élèves inscrits en ligne ont choisi leur niveau.</p>";
-                    return;
-                }
-
-                elevesGrid.innerHTML = `
-                    <h2 class="classe-titre">Inscrits sans niveau <span>${enAttente.length} élève(s)</span></h2>
-                    <p>Ces élèves ont créé leur compte mais n'ont pas encore choisi leur niveau. Ils le font à leur prochaine connexion.</p>
-                    <div class="student-dashboard-grid">${enAttente.map(carteEleve).join("")}</div>
-                `;
-
-                attachCardEvents(elevesCharges);
-                return;
-            }
 
             const listeMode = mode === "distance" ? distances : presentiels;
 
@@ -1903,6 +1886,9 @@ console.log("Page actuelle:", currentPage);
         }
 
 
+        // Élèves dont l'email n'est pas encore confirmé : pas de vraie inscription, on ne les montre pas
+        let nonConfirmes = new Set();
+
         function loadEleves() {
 
             if (!window.supabaseClient) {
@@ -1927,7 +1913,15 @@ console.log("Page actuelle:", currentPage);
                     console.log("Élèves chargés:", eleves.length);
 
                     elevesCharges = eleves;
-                    afficherEleves();
+
+                    window.supabaseClient.rpc("eleves_non_confirmes").then(function (r) {
+
+                        nonConfirmes = new Set(r.error || !r.data ? [] : r.data);
+                        afficherEleves();
+
+                    }, function () {
+                        afficherEleves();
+                    });
 
                 });
 
