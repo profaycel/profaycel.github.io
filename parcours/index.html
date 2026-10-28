@@ -27,13 +27,14 @@
 <header class="top"><div class="wrap"><div><h1>دروسي التفاعليّة</h1><small id="sousTitre">رياضيات · الثلاثي الأوّل</small></div></div></header>
 <main class="wrap" id="app"><div class="carte chargement">⏳ تحميل…</div></main>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js" integrity="sha384-TcHRA3zBbn+Lexh5n+Oil4guNPOS3rjNDpGRAN46u/s/mB2IZ50ceC6TYDU2yvgK" crossorigin="anonymous"></script>
 <script src="../supabase.js"></script>
 <script src="catalogue.js?v=15"></script>
 <script src="../apercu.js?v=1"></script>
 <script>
 const sb = () => window.supabaseClient;
 const N = s => `<span class="ltr">${s}</span>`;
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 async function lancer() {
     for (let i = 0; i < 100 && !sb(); i++) await new Promise(r => setTimeout(r, 100));
@@ -57,8 +58,8 @@ async function lancer() {
     const certParId = Object.fromEntries((certs.data || []).map(c => [c.lecon, c]));
 
     // Leçons du niveau de l'élève (tout pour l'administrateur ou si le niveau n'est pas encore connu)
-    const voirTout = (admin && !apercu) || new URLSearchParams(location.search).has("tout");
-    let lecons = window.CATALOGUE.filter(l => voirTout || !eleve.classe || l.niveau === eleve.classe);
+    const voirTout = admin && !apercu;
+    let lecons = window.CATALOGUE.filter(l => voirTout || (eleve.classe && l.niveau === eleve.classe));
     if (eleve.classe) document.getElementById("sousTitre").innerHTML = "رياضيات · <bdi>" + eleve.classe + "</bdi> · الثلاثي الأوّل";
 
     let faits = 0, tous = 0;
@@ -89,7 +90,7 @@ async function lancer() {
     const section = (part, niv) => lecons.filter(l => l.partie === part && l.niveau === niv).map(carteLecon).join("")
         + parties.filter(pa => pa.partie === part && pa.niveau === niv).map(cartePartie).join("");
     const pt = tous ? Math.round(100 * faits / tous) : 0;
-    const prenom = eleve.prenom || (user.user_metadata || {}).full_name || "";
+    const prenom = esc(eleve.prenom || (user.user_metadata || {}).full_name || "");
 
     let h = `<div class="carte">
         <h2>مرحبا ${prenom} 👋</h2>
@@ -97,7 +98,9 @@ async function lancer() {
         <div class="prog"><div style="width:${pt}%"></div></div>
         <small style="color:var(--gris)">تقدّمك: ${N(pt + "%")} · الشهادات: ${N((certs.data || []).length + " / " + parties.length)} 🎓</small>
       </div>`;
-    if (!lecons.length) {
+    if (!eleve.classe && !voirTout) {
+        h += `<div class="carte centre"><h3>اختر مستواك أوّلا 📚</h3><p>لا تظهر الدروس إلا بعد اختيار المستوى الدراسي في فضائك.</p><a class="btn" href="../eleve.html" style="text-decoration:none">← فضائي</a></div>`;
+    } else if (!lecons.length) {
         h += `<div class="carte centre"><h3>دروس مستواك في الطريق ✍️</h3><p>الدروس التفاعليّة متوفّرة حاليّا للسنة الثامنة والسنة التاسعة أساسي، ودروس مستواك قادمة قريبا.</p><a href="?tout=1">عرض كلّ الدروس</a></div>`;
     } else {
         niveaux.forEach(niv => {
