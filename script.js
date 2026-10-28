@@ -1803,7 +1803,10 @@ console.log("Page actuelle:", currentPage);
             const mode = modeEleves ? modeEleves() : "presentiel";
 
             const presentiels = elevesCharges.filter(function (e) { return e.mode !== "distance"; });
-            const distances = elevesCharges.filter(function (e) { return e.mode === "distance"; });
+            // À distance : seulement les vrais inscrits (email confirmé) qui ont choisi leur niveau
+            const distances = elevesCharges.filter(function (e) {
+                return e.mode === "distance" && e.classe && !nonConfirmes.has(e.id);
+            });
 
             document.querySelector("#eleves-count-presentiel").textContent = `(${presentiels.length})`;
             document.querySelector("#eleves-count-distance").textContent = `(${distances.length})`;
@@ -1883,6 +1886,9 @@ console.log("Page actuelle:", currentPage);
         }
 
 
+        // Élèves dont l'email n'est pas encore confirmé : pas de vraie inscription, on ne les montre pas
+        let nonConfirmes = new Set();
+
         function loadEleves() {
 
             if (!window.supabaseClient) {
@@ -1907,7 +1913,15 @@ console.log("Page actuelle:", currentPage);
                     console.log("Élèves chargés:", eleves.length);
 
                     elevesCharges = eleves;
-                    afficherEleves();
+
+                    window.supabaseClient.rpc("eleves_non_confirmes").then(function (r) {
+
+                        nonConfirmes = new Set(r.error || !r.data ? [] : r.data);
+                        afficherEleves();
+
+                    }, function () {
+                        afficherEleves();
+                    });
 
                 });
 
