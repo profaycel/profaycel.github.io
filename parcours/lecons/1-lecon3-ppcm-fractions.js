@@ -1,5 +1,5 @@
-// م.م.أ والكسور غير القابلة للاختزال — 1 ثانوي (الثلاثي الأوّل)
-// المصادر: دروس «أنشطة عدديّة 1» (الأولى ثانوي)، سلسلة Pyramide (فرض المراقبة عدد 1)، سلاسل الأولى ثانوي
+// PPCM et fractions irréductibles — 1ère année secondaire (1er trimestre)
+// Sources : cours « Activités numériques I » (1ère année), série Pyramide (devoir de contrôle n°1), séries de 1ère année
 (function () {
 const S   = (a, n) => n === 1 ? String(a) : `${a}<sup>${n}</sup>`;
 const choisir = (L, f) => L.map((x, i) => f(x) ? i : -1).filter(i => i >= 0);
@@ -8,232 +8,233 @@ const factTxt = n => fact(n).map(([p, e]) => S(p, e)).join(" × ");
 const ppcm = (a, b) => a / pgcd(a, b) * b;
 const mult = (a, k) => Array.from({ length: k }, (_, i) => a * (i + 1));
 const red = (a, b) => `${a / pgcd(a, b)}/${b / pgcd(a, b)}`;
-const liste = L => L.map(x => N(x)).join(" ، ");
+const liste = L => L.map(x => N(x)).join(" ; ");
+const OK = "✅", KO = "❌";
 
 const LECON = {
   id: "1-maths-ppcm-fractions",
-  titre: "م.م.أ والكسور غير القابلة للاختزال",
+  langue: "fr",
+  titre: "PPCM et fractions irréductibles",
   niveaux: [
     // ---------------------------------------------------------------- 0
     {
-      titre: "المضاعفات وم.م.أ",
-      sous: "أصغر مضاعف مشترك غير معدوم",
+      titre: "Multiples et PPCM",
+      sous: "Le plus petit multiple commun non nul",
       cours: `
-        <div class="regle"><b>تعريف:</b> أصغر مضاعف مشترك <b>غير معدوم</b> للعددين الصحيحين الطبيعيّين غير المعدومين ${N("a")} و${N("b")} هو أصغر عدد يقبل القسمة على ${N("a")} وعلى ${N("b")} معا. نرمز له ${N("PPCM(a , b)")} (م.م.أ).</div>
-        <div class="exemple"><b>مثال:</b> م.م.أ ${N("(12 ; 18)")}:<br>
-          مضاعفات ${N("12")}: ${N("12 , 24 , 36 , 48 , 60 , 72 , …")}<br>
-          مضاعفات ${N("18")}: ${N("18 , 36 , 54 , 72 , …")}<br>
-          المضاعفات المشتركة: ${N("36 , 72 , …")} ← م.م.أ ${N("= 36")}.</div>
-        <div class="astuce"><b>ملاحظات:</b><br>
-          • م.م.أ ${N("(a ; b)")} أكبر من أو يساوي كلّا من ${N("a")} و${N("b")}.<br>
-          • إذا كان ${N("a")} من مضاعفات ${N("b")} فإنّ م.م.أ ${N("(a ; b) = a")}.</div>`,
+        <div class="regle"><b>Définition :</b> le <b>PPCM</b> de deux entiers naturels non nuls ${N("a")} et ${N("b")} est le plus petit entier non nul qui est à la fois un multiple de ${N("a")} et de ${N("b")}. On le note ${N("PPCM(a , b)")}.</div>
+        <div class="exemple"><b>Exemple :</b> ${N("PPCM(12 ; 18)")} :<br>
+          multiples de ${N("12")} : ${N("12 , 24 , 36 , 48 , 60 , 72 , …")}<br>
+          multiples de ${N("18")} : ${N("18 , 36 , 54 , 72 , …")}<br>
+          multiples communs : ${N("36 , 72 , …")} donc ${N("PPCM(12 ; 18) = 36")}.</div>
+        <div class="astuce"><b>Remarques :</b><br>
+          • ${N("PPCM(a ; b)")} est supérieur ou égal à ${N("a")} et à ${N("b")}.<br>
+          • Si ${N("a")} est un multiple de ${N("b")}, alors ${N("PPCM(a ; b) = a")}.</div>`,
       questions: [
-        { type:"nombre", enonce:`ما هو م.م.أ للعددين ${N("6")} و${N("8")}؟`, rep:[ppcm(6,8)],
-          indice:`مضاعفات ${N("8")}: ${N("8 , 16 , 24 , …")} — أيّها يقبل القسمة على ${N("6")}؟`,
-          expl:`مضاعفات ${N("8")}: ${liste(mult(8,4))} ← أوّل مضاعف لـ${N("6")} هو ${N(ppcm(6,8))}.` },
-        { type:"nombre", enonce:`ما هو م.م.أ للعددين ${N("12")} و${N("15")}؟`, rep:[ppcm(12,15)],
-          indice:`مضاعفات ${N("15")}: ${N("15 , 30 , 45 , 60 …")}`,
-          expl:`${liste(mult(15,4))} ← ${N("60 = 12 × 5")} ← م.م.أ ${N("= " + ppcm(12,15))}.` },
-        { type:"nombre", enonce:`ما هو م.م.أ للعددين ${N("9")} و${N("27")}؟`, rep:[ppcm(9,27)],
-          indice:`هل ${N("27")} من مضاعفات ${N("9")}؟`,
-          expl:`${N("27 = 9 × 3")} ← م.م.أ ${N("(9 ; 27) = 27")}.` },
-        { type:"multi", enonce:`اختر <u>كلّ</u> الأعداد التي هي مضاعفات مشتركة للعددين ${N("4")} و${N("6")}:`, options:["12","16","18","24","30","36"], rep:choisir([12,16,18,24,30,36], m => m % 4 === 0 && m % 6 === 0),
-          indice:`يجب أن يقبل العدد القسمة على ${N("4")} وعلى ${N("6")}.`,
-          expl:`${N("12 , 24 , 36")} ✅ (مضاعفات ${N("12 = PPCM(4 ; 6)")}). ${N("16")} لا يقبل القسمة على ${N("6")}، و${N("18 , 30")} لا يقبلان القسمة على ${N("4")}.` },
-        { type:"vf", enonce:`م.م.أ للعددين ${N("7")} و${N("21")} هو ${N("21")}.`, rep:ppcm(7,21) === 21,
+        { type:"nombre", enonce:`Quel est le PPCM de ${N("6")} et ${N("8")} ?`, rep:[ppcm(6,8)],
+          indice:`Multiples de ${N("8")} : ${N("8 , 16 , 24 , …")}. Lequel est divisible par ${N("6")} ?`,
+          expl:`Multiples de ${N("8")} : ${liste(mult(8,4))}. Le premier multiple de ${N("6")} est ${N(ppcm(6,8))}.` },
+        { type:"nombre", enonce:`Quel est le PPCM de ${N("12")} et ${N("15")} ?`, rep:[ppcm(12,15)],
+          indice:`Multiples de ${N("15")} : ${N("15 , 30 , 45 , 60 …")}`,
+          expl:`${liste(mult(15,4))} : ${N("60 = 12 × 5")} donc ${N("PPCM = " + ppcm(12,15))}.` },
+        { type:"nombre", enonce:`Quel est le PPCM de ${N("9")} et ${N("27")} ?`, rep:[ppcm(9,27)],
+          indice:`${N("27")} est-il un multiple de ${N("9")} ?`,
+          expl:`${N("27 = 9 × 3")} donc ${N("PPCM(9 ; 27) = 27")}.` },
+        { type:"multi", enonce:`Choisir <u>tous</u> les multiples communs de ${N("4")} et ${N("6")} :`, options:["12","16","18","24","30","36"], rep:choisir([12,16,18,24,30,36], m => m % 4 === 0 && m % 6 === 0),
+          indice:`Le nombre doit être divisible par ${N("4")} et par ${N("6")}.`,
+          expl:`${N("12 , 24 , 36")} ${OK} (multiples de ${N("12 = PPCM(4 ; 6)")}). ${N("16")} n'est pas divisible par ${N("6")} ; ${N("18")} et ${N("30")} ne sont pas divisibles par ${N("4")}.` },
+        { type:"vf", enonce:`Le PPCM de ${N("7")} et ${N("21")} est ${N("21")}.`, rep:ppcm(7,21) === 21,
           indice:`${N("21 = 7 × 3")}.`,
-          expl:`صحيح: ${N("21")} من مضاعفات ${N("7")}، فهو أصغر مضاعف مشترك.` },
-        { type:"vf", enonce:`م.م.أ للعددين ${N("10")} و${N("4")} يمكن أن يكون أصغر من ${N("10")}.`, rep:false,
-          indice:`المضاعف المشترك هو مضاعف لـ${N("10")}.`,
-          expl:`خطأ: هو مضاعف لـ${N("10")} فهو أكبر من أو يساوي ${N("10")}. فعلا م.م.أ ${N("(10 ; 4) = " + ppcm(10,4))}.` },
+          expl:`Vrai : ${N("21")} est un multiple de ${N("7")}, c'est donc le plus petit multiple commun.` },
+        { type:"vf", enonce:`Le PPCM de ${N("10")} et ${N("4")} peut être inférieur à ${N("10")}.`, rep:false,
+          indice:`Un multiple commun est un multiple de ${N("10")}.`,
+          expl:`Faux : c'est un multiple de ${N("10")}, donc il est supérieur ou égal à ${N("10")}. En fait ${N("PPCM(10 ; 4) = " + ppcm(10,4))}.` },
       ]
     },
     // ---------------------------------------------------------------- 1
     {
-      titre: "م.م.أ بالتفكيك",
-      sous: "كلّ العوامل بأكبر أسّ",
+      titre: "PPCM par décomposition",
+      sous: "Tous les facteurs avec leur plus grand exposant",
       cours: `
-        <div class="regle"><b>الطريقة:</b> نفكّك العددين إلى جذاء عوامل أوّليّة، ثمّ نأخذ <b>كلّ العوامل</b> (المشتركة وغير المشتركة) بـ<b>أكبر أسّ</b>.</div>
-        <div class="exemple"><b>مثال:</b> م.م.أ ${N("(210 ; 126)")}:<br>
-          ${N("210 = " + factTxt(210))} و${N("126 = " + factTxt(126))}<br>
+        <div class="regle"><b>Méthode :</b> on décompose les deux nombres en produit de facteurs premiers, puis on prend <b>tous les facteurs</b> (communs et non communs) avec leur <b>plus grand exposant</b>.</div>
+        <div class="exemple"><b>Exemple :</b> ${N("PPCM(210 ; 126)")} :<br>
+          ${N("210 = " + factTxt(210))} et ${N("126 = " + factTxt(126))}<br>
           ${N("PPCM = 2 × " + S(3,2) + " × 5 × 7 = " + ppcm(210,126))}.</div>
-        <div class="astuce"><b>للمقارنة:</b> ق.م.أ ← العوامل <b>المشتركة</b> بـ<b>أصغر</b> أسّ ؛ م.م.أ ← <b>كلّ</b> العوامل بـ<b>أكبر</b> أسّ.</div>`,
+        <div class="astuce"><b>Pour comparer :</b> PGCD → facteurs <b>communs</b> avec le <b>plus petit</b> exposant ; PPCM → <b>tous</b> les facteurs avec le <b>plus grand</b> exposant.</div>`,
       questions: [
-        { type:"nombre", enonce:`ما هو م.م.أ للعددين ${N("210")} و${N("126")}؟`, rep:[ppcm(210,126)],
-          indice:`${N("210 = " + factTxt(210))} و${N("126 = " + factTxt(126))}.`,
+        { type:"nombre", enonce:`Quel est le PPCM de ${N("210")} et ${N("126")} ?`, rep:[ppcm(210,126)],
+          indice:`${N("210 = " + factTxt(210))} et ${N("126 = " + factTxt(126))}.`,
           expl:`${N("2 × " + S(3,2) + " × 5 × 7 = " + ppcm(210,126))}.` },
-        { type:"nombre", enonce:`ما هو م.م.أ للعددين ${N("72")} و${N("60")}؟`, rep:[ppcm(72,60)],
-          indice:`${N("72 = " + factTxt(72))} و${N("60 = " + factTxt(60))}.`,
+        { type:"nombre", enonce:`Quel est le PPCM de ${N("72")} et ${N("60")} ?`, rep:[ppcm(72,60)],
+          indice:`${N("72 = " + factTxt(72))} et ${N("60 = " + factTxt(60))}.`,
           expl:`${N(S(2,3) + " × " + S(3,2) + " × 5 = " + ppcm(72,60))}.` },
-        { type:"nombre", enonce:`ما هو م.م.أ للعددين ${N("45")} و${N("50")}؟`, rep:[ppcm(45,50)],
-          indice:`${N("45 = " + factTxt(45))} و${N("50 = " + factTxt(50))}.`,
+        { type:"nombre", enonce:`Quel est le PPCM de ${N("45")} et ${N("50")} ?`, rep:[ppcm(45,50)],
+          indice:`${N("45 = " + factTxt(45))} et ${N("50 = " + factTxt(50))}.`,
           expl:`${N("2 × " + S(3,2) + " × " + S(5,2) + " = " + ppcm(45,50))}.` },
-        { type:"nombre", enonce:`ما هو م.م.أ للعددين ${N("264")} و${N("630")}؟`, rep:[ppcm(264,630)],
-          indice:`${N("264 = " + factTxt(264))} و${N("630 = " + factTxt(630))}.`,
+        { type:"nombre", enonce:`Quel est le PPCM de ${N("264")} et ${N("630")} ?`, rep:[ppcm(264,630)],
+          indice:`${N("264 = " + factTxt(264))} et ${N("630 = " + factTxt(630))}.`,
           expl:`${N(S(2,3) + " × " + S(3,2) + " × 5 × 7 × 11 = " + ppcm(264,630))}.` },
         (function () {
           const O = [N(S(2,3) + " × " + S(3,2) + " × 5"), N(S(2,2) + " × 3 × 5"), N(S(2,3) + " × 3 × 5"), N(S(2,2) + " × " + S(3,2) + " × 5")];
-          const v = n => n === 360;
           const vals = [8*9*5, 4*3*5, 8*3*5, 4*9*5];
-          return { type:"qcm", enonce:`م.م.أ للعددين ${N("24 = " + factTxt(24))} و${N("45 = " + factTxt(45))} هو:`, options:O, rep:vals.findIndex(x => x === ppcm(24,45)),
-            indice:`نأخذ كلّ العوامل بأكبر أسّ: ${N("2")} و${N("3")} و${N("5")}.`,
+          return { type:"qcm", enonce:`Le PPCM de ${N("24 = " + factTxt(24))} et ${N("45 = " + factTxt(45))} est :`, options:O, rep:vals.findIndex(x => x === ppcm(24,45)),
+            indice:`On prend tous les facteurs avec le plus grand exposant : ${N("2")}, ${N("3")} et ${N("5")}.`,
             expl:`${N(S(2,3) + " × " + S(3,2) + " × 5 = " + ppcm(24,45))}.` };
         })(),
-        { type:"vf", enonce:`في الكتابة بالتفكيك، م.م.أ يحتوي على كلّ العوامل الأوّليّة التي تظهر في ${N("a")} أو في ${N("b")}.`, rep:true,
-          indice:`راجع الطريقة في الدرس.`,
-          expl:`صحيح: نأخذ كلّ العوامل (المشتركة وغير المشتركة) بأكبر أسّ.` },
+        { type:"vf", enonce:`Dans la décomposition du PPCM, on trouve tous les facteurs premiers qui apparaissent dans ${N("a")} ou dans ${N("b")}.`, rep:true,
+          indice:`Relis la méthode du cours.`,
+          expl:`Vrai : on prend tous les facteurs (communs et non communs) avec leur plus grand exposant.` },
       ]
     },
     // ---------------------------------------------------------------- 2
     {
-      titre: "العلاقة بين ق.م.أ وم.م.أ",
-      sous: "ق.م.أ × م.م.أ = a × b",
+      titre: "Relation entre PGCD et PPCM",
+      sous: "PGCD × PPCM = a × b",
       cours: `
-        <div class="regle"><b>خاصيّة:</b> لكلّ عددين صحيحين طبيعيّين غير معدومين ${N("a")} و${N("b")}:
+        <div class="regle"><b>Propriété :</b> pour tous entiers naturels non nuls ${N("a")} et ${N("b")} :
           <div style="text-align:center;margin:8px 0">${N("PGCD(a , b) × PPCM(a , b) = a × b")}</div></div>
-        <div class="exemple"><b>مثال:</b> ${N("PGCD(264 ; 630) = 6")} و${N("264 × 630 = 166320")}<br>
-          إذن ${N("PPCM(264 ; 630) = 166320 ÷ 6 = 27720")}.</div>
-        <div class="astuce"><b>حالتان خاصّتان:</b><br>
-          • إذا كان ${N("a")} و${N("b")} أوّليّين فيما بينهما فإنّ ${N("PPCM(a ; b) = a × b")}.<br>
-          • إذا كان ${N("a")} من مضاعفات ${N("b")} فإنّ ${N("PGCD(a ; b) = b")} و${N("PPCM(a ; b) = a")}.</div>`,
+        <div class="exemple"><b>Exemple :</b> ${N("PGCD(264 ; 630) = 6")} et ${N("264 × 630 = 166320")}<br>
+          donc ${N("PPCM(264 ; 630) = 166320 ÷ 6 = 27720")}.</div>
+        <div class="astuce"><b>Deux cas particuliers :</b><br>
+          • si ${N("a")} et ${N("b")} sont premiers entre eux, alors ${N("PPCM(a ; b) = a × b")} ;<br>
+          • si ${N("a")} est un multiple de ${N("b")}, alors ${N("PGCD(a ; b) = b")} et ${N("PPCM(a ; b) = a")}.</div>`,
       questions: [
-        { type:"nombre", enonce:`ق.م.أ ${N("(36 ; 60) = 12")}. ما هو م.م.أ للعددين ${N("36")} و${N("60")}؟`, rep:[36*60/12],
+        { type:"nombre", enonce:`${N("PGCD(36 ; 60) = 12")}. Quel est le PPCM de ${N("36")} et ${N("60")} ?`, rep:[36*60/12],
           indice:`${N("PPCM = (a × b) ÷ PGCD")}.`,
-          expl:`${N("36 × 60 = 2160")} ← ${N("2160 ÷ 12 = 180")}.` },
-        { type:"nombre", enonce:`ما هو م.م.أ للعددين ${N("35")} و${N("26")}؟ (استعمل أنّهما أوّليّان فيما بينهما)`, rep:[35*26],
-          indice:`ق.م.أ ${N("(35 ; 26) = 1")}.`,
+          expl:`${N("36 × 60 = 2160")} donc ${N("2160 ÷ 12 = 180")}.` },
+        { type:"nombre", enonce:`Quel est le PPCM de ${N("35")} et ${N("26")} ? (utilise le fait qu'ils sont premiers entre eux)`, rep:[35*26],
+          indice:`${N("PGCD(35 ; 26) = 1")}.`,
           expl:`${N("PPCM = 35 × 26 = " + (35*26))}.` },
-        { type:"nombre", enonce:`ق.م.أ للعددين ${N("48")} و${N("180")} هو ${N("12")}. ما هو م.م.أ لهما؟`, rep:[48*180/pgcd(48,180)],
-          indice:`احسب ${N("48 × 180")} ثمّ اقسم على ${N("12")}.`,
-          expl:`${N("48 × 180 = 8640")} ← ${N("8640 ÷ 12 = " + ppcm(48,180))}.` },
-        { type:"nombre", enonce:`عددان ${N("a")} و${N("b")} ق.م.أ لهما ${N("7")} وم.م.أ لهما ${N("210")}. إذا كان ${N("a = 21")} فما هو ${N("b")}؟`, rep:[7*210/21],
+        { type:"nombre", enonce:`Le PGCD de ${N("48")} et ${N("180")} est ${N("12")}. Quel est leur PPCM ?`, rep:[48*180/pgcd(48,180)],
+          indice:`Calcule ${N("48 × 180")} puis divise par ${N("12")}.`,
+          expl:`${N("48 × 180 = 8640")} donc ${N("8640 ÷ 12 = " + ppcm(48,180))}.` },
+        { type:"nombre", enonce:`Deux entiers ${N("a")} et ${N("b")} ont pour PGCD ${N("7")} et pour PPCM ${N("210")}. Si ${N("a = 21")}, quelle est la valeur de ${N("b")} ?`, rep:[7*210/21],
           indice:`${N("a × b = PGCD × PPCM = 7 × 210")}.`,
-          expl:`${N("a × b = 7 × 210 = 1470")} ← ${N("b = 1470 ÷ 21 = 70")}. (تحقّق: ق.م.أ ${N("(21 ; 70) = 7")} ✅)` },
-        { type:"vf", enonce:`إذا كان ${N("b")} من مضاعفات ${N("a")} فإنّ ${N("PPCM(a ; b) = b")}.`, rep:true,
-          indice:`مثال: ${N("a = 6")} و${N("b = 18")}.`,
-          expl:`صحيح: ${N("b")} مضاعف لـ${N("a")} ولـ${N("b")}، وهو أصغر مضاعف ممكن. مثال: م.م.أ ${N("(6 ; 18) = 18")}.` },
-        { type:"vf", enonce:`م.م.أ للعددين ${N("12")} و${N("30")} يساوي ${N("12 × 30 = 360")}.`, rep:ppcm(12,30) === 360,
-          indice:`هل ${N("12")} و${N("30")} أوّليّان فيما بينهما؟`,
-          expl:`خطأ: ق.م.أ ${N("(12 ; 30) = 6")} ← م.م.أ ${N("= 360 ÷ 6 = " + ppcm(12,30))}.` },
+          expl:`${N("a × b = 7 × 210 = 1470")} donc ${N("b = 1470 ÷ 21 = 70")}. (Vérification : ${N("PGCD(21 ; 70) = 7")} ${OK})` },
+        { type:"vf", enonce:`Si ${N("b")} est un multiple de ${N("a")}, alors ${N("PPCM(a ; b) = b")}.`, rep:true,
+          indice:`Exemple : ${N("a = 6")} et ${N("b = 18")}.`,
+          expl:`Vrai : ${N("b")} est un multiple de ${N("a")} et de ${N("b")}, et c'est le plus petit possible. Par exemple ${N("PPCM(6 ; 18) = 18")}.` },
+        { type:"vf", enonce:`Le PPCM de ${N("12")} et ${N("30")} est égal à ${N("12 × 30 = 360")}.`, rep:ppcm(12,30) === 360,
+          indice:`${N("12")} et ${N("30")} sont-ils premiers entre eux ?`,
+          expl:`Faux : ${N("PGCD(12 ; 30) = 6")} donc ${N("PPCM = 360 ÷ 6 = " + ppcm(12,30))}.` },
       ]
     },
     // ---------------------------------------------------------------- 3
     {
-      titre: "الكسر غير القابل للاختزال",
-      sous: "نقسم البسط والمقام على ق.م.أ",
+      titre: "Fraction irréductible",
+      sous: "On divise numérateur et dénominateur par leur PGCD",
       cours: `
-        <div class="regle"><b>تعريف:</b> نقول إنّ الكسر ${F("a","b")} <b>غير قابل للاختزال</b> إذا كان ${N("PGCD(a ; b) = 1")}.</div>
-        <div class="regle"><b>لجعل كسر غير قابل للاختزال:</b> نقسم البسط والمقام على ق.م.أ لهما.<br>
-          إذا كان ${N("PGCD(a ; b) = d")} فإنّ ${F("a","b")} ${N("=")} ${F("a ÷ d","b ÷ d")} وهذا الكسر غير قابل للاختزال.</div>
-        <div class="exemple"><b>مثال:</b> ${N("PGCD(385 ; 140) = 35")} ← ${F("385","140")} ${N("=")} ${F("385 ÷ 35","140 ÷ 35")} ${N("=")} ${F("11","4")}.</div>`,
+        <div class="regle"><b>Définition :</b> la fraction ${F("a","b")} est <b>irréductible</b> si ${N("PGCD(a ; b) = 1")}.</div>
+        <div class="regle"><b>Rendre une fraction irréductible :</b> on divise le numérateur et le dénominateur par leur PGCD.<br>
+          Si ${N("PGCD(a ; b) = d")}, alors ${F("a","b")} ${N("=")} ${F("a ÷ d","b ÷ d")} et cette dernière fraction est irréductible.</div>
+        <div class="exemple"><b>Exemple :</b> ${N("PGCD(385 ; 140) = 35")} donc ${F("385","140")} ${N("=")} ${F("385 ÷ 35","140 ÷ 35")} ${N("=")} ${F("11","4")}.</div>`,
       questions: [
-        { type:"nombre", enonce:`اكتب الكسر ${F("385","140")} في شكل كسر غير قابل للاختزال (مثال الكتابة: ${N("3/4")}).`, rep:[red(385,140)], irr:true,
-          indice:`ق.م.أ ${N("(385 ; 140) = 35")}.`,
-          expl:`${N("385 ÷ 35 = 11")} و${N("140 ÷ 35 = 4")} ← ${F("11","4")}.` },
-        { type:"nombre", enonce:`اكتب الكسر ${F("330","378")} في شكل كسر غير قابل للاختزال.`, rep:[red(330,378)], irr:true,
-          indice:`${N("330 = " + factTxt(330))} و${N("378 = " + factTxt(378))}.`,
-          expl:`ق.م.أ ${N("= " + pgcd(330,378))} ← ${N("330 ÷ 6 = 55")} و${N("378 ÷ 6 = 63")} ← ${F("55","63")}.` },
-        { type:"nombre", enonce:`اكتب الكسر ${F("168","180")} في شكل كسر غير قابل للاختزال.`, rep:[red(168,180)], irr:true,
-          indice:`ق.م.أ ${N("(168 ; 180) = 12")}.`,
-          expl:`${N("168 ÷ 12 = 14")} و${N("180 ÷ 12 = 15")} ← ${F("14","15")}.` },
+        { type:"nombre", enonce:`Écrire la fraction ${F("385","140")} sous forme irréductible (écrire par exemple ${N("3/4")}).`, rep:[red(385,140)], irr:true,
+          indice:`${N("PGCD(385 ; 140) = 35")}.`,
+          expl:`${N("385 ÷ 35 = 11")} et ${N("140 ÷ 35 = 4")} donc ${F("11","4")}.` },
+        { type:"nombre", enonce:`Écrire la fraction ${F("330","378")} sous forme irréductible.`, rep:[red(330,378)], irr:true,
+          indice:`${N("330 = " + factTxt(330))} et ${N("378 = " + factTxt(378))}.`,
+          expl:`${N("PGCD = " + pgcd(330,378))} donc ${N("330 ÷ 6 = 55")} et ${N("378 ÷ 6 = 63")} : ${F("55","63")}.` },
+        { type:"nombre", enonce:`Écrire la fraction ${F("168","180")} sous forme irréductible.`, rep:[red(168,180)], irr:true,
+          indice:`${N("PGCD(168 ; 180) = 12")}.`,
+          expl:`${N("168 ÷ 12 = 14")} et ${N("180 ÷ 12 = 15")} donc ${F("14","15")}.` },
         (function () {
           const L = [[6,35],[12,18],[9,28],[15,25],[21,22]];
-          return { type:"multi", enonce:`اختر <u>كلّ</u> الكسور غير القابلة للاختزال:`, options:L.map(o => `${o[0]}/${o[1]}`), rep:choisir(L, o => pgcd(o[0], o[1]) === 1),
-            indice:`الكسر ${F("a","b")} غير قابل للاختزال إذا كان ${N("PGCD(a ; b) = 1")}.`,
-            expl:L.map(o => `${N(o[0] + " , " + o[1])}: ق.م.أ ${N(pgcd(o[0], o[1]))} ${pgcd(o[0], o[1]) === 1 ? "✅" : "❌"}`).join(" ، ") };
+          return { type:"multi", enonce:`Choisir <u>toutes</u> les fractions irréductibles :`, options:L.map(o => `${o[0]}/${o[1]}`), rep:choisir(L, o => pgcd(o[0], o[1]) === 1),
+            indice:`La fraction ${F("a","b")} est irréductible si ${N("PGCD(a ; b) = 1")}.`,
+            expl:L.map(o => `${N(o[0] + " , " + o[1])} : PGCD ${N(pgcd(o[0], o[1]))} ${pgcd(o[0], o[1]) === 1 ? OK : KO}`).join(" ; ") };
         })(),
-        { type:"vf", enonce:`الكسر ${F("1155","15")} هو عدد صحيح طبيعي.`, rep:1155 % 15 === 0,
-          indice:`هل ${N("15")} يقسم ${N("1155")}؟`,
-          expl:`${N("1155 = 15 × 77")} ← الكسر يساوي ${N("77")}.` },
+        { type:"vf", enonce:`La fraction ${F("1155","15")} est un entier naturel.`, rep:1155 % 15 === 0,
+          indice:`${N("15")} divise-t-il ${N("1155")} ?`,
+          expl:`${N("1155 = 15 × 77")} donc la fraction est égale à ${N("77")}.` },
         { type:"vf", enonce:`${F("330","378")} ${N("=")} ${F("55","63")}.`, rep:true,
-          indice:`${N("330 ÷ 6")} و${N("378 ÷ 6")}.`,
-          expl:`صحيح: ${N("330 = 6 × 55")} و${N("378 = 6 × 63")} و${N("PGCD(55 ; 63) = 1")}.` },
+          indice:`${N("330 ÷ 6")} et ${N("378 ÷ 6")}.`,
+          expl:`Vrai : ${N("330 = 6 × 55")}, ${N("378 = 6 × 63")} et ${N("PGCD(55 ; 63) = 1")}.` },
       ]
     },
     // ---------------------------------------------------------------- 4
     {
-      titre: "مسائل م.م.أ",
-      sous: "متى يحدث الأمر مرّة أخرى معا؟",
+      titre: "Problèmes de PPCM",
+      sous: "Quand les deux événements coïncident-ils à nouveau ?",
       cours: `
-        <div class="regle"><b>متى نستعمل م.م.أ؟</b> عندما يتعلّق السؤال بـ<b>أوّل مرّة</b> يتزامن فيها حدثان يتكرّران بدورين مختلفين، أو بأصغر طول/عدد يقبل القسمة على عددين.</div>
-        <div class="exemple"><b>مثال:</b> ضوءان يومضان الأوّل كلّ ${N("12")} ثانية والثاني كلّ ${N("18")} ثانية، ويومضان معا الآن. بعد كم ثانية يومضان معا من جديد؟<br>
-          الجواب: م.م.أ ${N("(12 ; 18) = 36")} ثانية.</div>`,
+        <div class="regle"><b>Quand utiliser le PPCM ?</b> Quand on cherche <b>la première fois</b> que deux événements de périodes différentes coïncident, ou le plus petit nombre divisible par deux nombres.</div>
+        <div class="exemple"><b>Exemple :</b> deux feux clignotent, l'un toutes les ${N("12")} secondes et l'autre toutes les ${N("18")} secondes ; ils clignotent ensemble maintenant. Dans combien de secondes clignoteront-ils de nouveau ensemble ?<br>
+          Réponse : ${N("PPCM(12 ; 18) = 36")} secondes.</div>`,
       questions: [
-        { type:"nombre", enonce:`حافلتان تغادران المحطّة معا الآن، الأولى كلّ ${N("15")} دقيقة والثانية كلّ ${N("20")} دقيقة. بعد كم دقيقة تغادران معا من جديد؟`, rep:[ppcm(15,20)],
-          indice:`نبحث عن م.م.أ للعددين ${N("15")} و${N("20")}.`,
-          expl:`${N("15 = 3 × 5")} و${N("20 = " + factTxt(20))} ← م.م.أ ${N("= " + ppcm(15,20))} دقيقة.` },
-        { type:"nombre", enonce:`في الوضعيّة السابقة، كم مرّة تغادر الحافلة الأولى خلال هذه المدّة (دون احتساب المغادرة الأولى التي كانت عند الانطلاق)؟`, rep:[ppcm(15,20)/15],
+        { type:"nombre", enonce:`Deux bus quittent la gare ensemble maintenant. Le premier part toutes les ${N("15")} minutes et le second toutes les ${N("20")} minutes. Dans combien de minutes repartiront-ils ensemble ?`, rep:[ppcm(15,20)],
+          indice:`On cherche le PPCM de ${N("15")} et ${N("20")}.`,
+          expl:`${N("15 = 3 × 5")} et ${N("20 = " + factTxt(20))} donc ${N("PPCM = " + ppcm(15,20))} minutes.` },
+        { type:"nombre", enonce:`Dans la situation précédente, combien de fois le premier bus part-il pendant cette durée (sans compter le départ initial) ?`, rep:[ppcm(15,20)/15],
           indice:`${N("60 ÷ 15")}.`,
-          expl:`${N("60 ÷ 15 = 4")} مرّات (الأخيرة هي المغادرة المشتركة).` },
-        { type:"nombre", enonce:`نريد رصف مستطيلات أبعادها ${N("12")} سم و${N("18")} سم لتكوين <b>أصغر مربّع</b> ممكن. ما هو ضلع هذا المربّع بالسنتيمتر؟`, rep:[ppcm(12,18)],
-          indice:`الضلع يجب أن يكون من مضاعفات ${N("12")} ومن مضاعفات ${N("18")}.`,
-          expl:`م.م.أ ${N("(12 ; 18) = 36")} سم.` },
-        { type:"nombre", enonce:`كم مستطيلا (${N("12 × 18")}) نحتاج لتكوين ذلك المربّع الذي ضلعه ${N("36")} سم؟`, rep:[(36/12)*(36/18)],
-          indice:`على الطول ${N("36 ÷ 18")} وعلى العرض ${N("36 ÷ 12")}.`,
-          expl:`${N("(36 ÷ 12) × (36 ÷ 18) = 3 × 2 = 6")} مستطيلات.` },
-        { type:"nombre", enonce:`ما هو أصغر عدد صحيح طبيعي غير معدوم يقبل القسمة على ${N("12")} وعلى ${N("15")} وعلى ${N("20")}؟`, rep:[ppcm(ppcm(12,15),20)],
-          indice:`م.م.أ ${N("(12 ; 15) = 60")} ثمّ م.م.أ ${N("(60 ; 20)")}.`,
-          expl:`${N("12 = " + factTxt(12))} ، ${N("15 = 3 × 5")} ، ${N("20 = " + factTxt(20))} ← ${N(S(2,2) + " × 3 × 5 = 60")}.` },
-        { type:"vf", enonce:`إذا كان لدينا عمودان ينطلقان معا بدوريّن ${N("a")} و${N("b")}، فإنّهما يلتقيان من جديد بعد م.م.أ ${N("(a ; b)")}.`, rep:true,
-          indice:`راجع المثال.`,
-          expl:`صحيح: هو أوّل زمن مضاعف لكلا الدورين.` },
+          expl:`${N("60 ÷ 15 = 4")} départs (le dernier est le départ commun).` },
+        { type:"nombre", enonce:`On veut assembler des rectangles de ${N("12")} cm sur ${N("18")} cm pour former le <b>plus petit carré</b> possible. Quel est le côté de ce carré, en cm ?`, rep:[ppcm(12,18)],
+          indice:`Le côté doit être un multiple de ${N("12")} et un multiple de ${N("18")}.`,
+          expl:`${N("PPCM(12 ; 18) = 36")} cm.` },
+        { type:"nombre", enonce:`Combien de rectangles (${N("12 × 18")}) faut-il pour former ce carré de côté ${N("36")} cm ?`, rep:[(36/12)*(36/18)],
+          indice:`Dans la longueur ${N("36 ÷ 18")}, dans la largeur ${N("36 ÷ 12")}.`,
+          expl:`${N("(36 ÷ 12) × (36 ÷ 18) = 3 × 2 = 6")} rectangles.` },
+        { type:"nombre", enonce:`Quel est le plus petit entier non nul divisible par ${N("12")}, par ${N("15")} et par ${N("20")} ?`, rep:[ppcm(ppcm(12,15),20)],
+          indice:`${N("PPCM(12 ; 15) = 60")}, puis ${N("PPCM(60 ; 20)")}.`,
+          expl:`${N("12 = " + factTxt(12))}, ${N("15 = 3 × 5")}, ${N("20 = " + factTxt(20))} donc ${N(S(2,2) + " × 3 × 5 = 60")}.` },
+        { type:"vf", enonce:`Si deux événements de périodes ${N("a")} et ${N("b")} ont lieu ensemble maintenant, ils coïncident de nouveau après ${N("PPCM(a ; b)")}.`, rep:true,
+          indice:`Relis l'exemple.`,
+          expl:`Vrai : c'est le premier instant qui est un multiple des deux périodes.` },
       ]
     },
     // ---------------------------------------------------------------- 5
     {
-      titre: "ق.م.أ أم م.م.أ؟",
-      sous: "نختار الأداة المناسبة ثمّ نحسب",
+      titre: "PGCD ou PPCM ?",
+      sous: "Choisir le bon outil puis calculer",
       cours: `
-        <div class="regle"><b>كيف نختار؟</b><br>
-          • «أكبر عدد يقسم…» ، «أكبر ضلع»، «تقسيم إلى أكبر عدد ممكن من المجموعات المتماثلة» ← <b>ق.م.أ</b>.<br>
-          • «أصغر عدد يقبل القسمة على…» ، «بعد كم من الزمن يتزامنان من جديد» ← <b>م.م.أ</b>.</div>
-        <div class="exemple"><b>مثال:</b> ${N("84")} تفّاحة و${N("126")} برتقالة تُوزّع على أكبر عدد ممكن من الأطباق متماثلة المحتوى ← ق.م.أ ${N("(84 ; 126) = 42")} ← ${N("42")} طبقا، في كلّ طبق ${N("2")} تفّاح و${N("3")} برتقال.</div>`,
+        <div class="regle"><b>Comment choisir ?</b><br>
+          • « le plus grand nombre qui divise… », « le plus grand côté », « partager en le plus grand nombre possible de groupes identiques » → <b>PGCD</b>.<br>
+          • « le plus petit nombre divisible par… », « dans combien de temps coïncident-ils à nouveau ? » → <b>PPCM</b>.</div>
+        <div class="exemple"><b>Exemple :</b> on partage ${N("84")} pommes et ${N("126")} oranges dans le plus grand nombre possible d'assiettes identiques → ${N("PGCD(84 ; 126) = 42")} : ${N("42")} assiettes, avec ${N("2")} pommes et ${N("3")} oranges dans chacune.</div>`,
       questions: [
-        { type:"qcm", enonce:`نريد تقسيم ${N("84")} تفّاحة و${N("126")} برتقالة على أكبر عدد ممكن من الأطباق المتماثلة. نحسب:`, options:["ق.م.أ","م.م.أ"], rep:0,
-          indice:`«أكبر عدد» من الأطباق: هل نبحث عن قاسم أم عن مضاعف؟`,
-          expl:`عدد الأطباق يقسم ${N("84")} ويقسم ${N("126")} ← ق.م.أ.` },
-        { type:"nombre", enonce:`كم طبقا نحصل عليه في الوضعيّة السابقة؟`, rep:[pgcd(84,126)],
-          indice:`ق.م.أ ${N("(84 ; 126)")}.`,
-          expl:`${N("PGCD(84 ; 126) = " + pgcd(84,126))} طبقا.` },
-        { type:"qcm", enonce:`ضوءان يومضان كلّ ${N("8")} ثوانٍ وكلّ ${N("12")} ثانية. لمعرفة متى يومضان معا من جديد نحسب:`, options:["ق.م.أ","م.م.أ"], rep:1,
-          indice:`نبحث عن أوّل زمن مضاعف للدورين.`,
-          expl:`نبحث عن مضاعف مشترك أصغر ما يمكن ← م.م.أ.` },
-        { type:"nombre", enonce:`بعد كم ثانية يومض الضوءان معا من جديد؟`, rep:[ppcm(8,12)],
-          indice:`${N("8 = " + factTxt(8))} و${N("12 = " + factTxt(12))}.`,
-          expl:`${N("PPCM(8 ; 12) = " + S(2,3) + " × 3 = " + ppcm(8,12))} ثانية.` },
-        { type:"nombre", enonce:`نقطع حبلا طوله ${N("360")} سم وحبلا طوله ${N("420")} سم إلى قطع متساوية الطول، أكبر ما يمكن، دون بقايا. ما هو طول القطعة بالسنتيمتر؟`, rep:[pgcd(360,420)],
-          indice:`طول القطعة يقسم ${N("360")} ويقسم ${N("420")}.`,
-          expl:`${N("PGCD(360 ; 420) = " + pgcd(360,420))} سم.` },
-        { type:"nombre", enonce:`كم قطعة نحصل عليها في المجموع في الوضعيّة السابقة؟`, rep:[(360 + 420) / pgcd(360,420)],
-          indice:`${N("360 ÷ 60")} و${N("420 ÷ 60")}.`,
-          expl:`${N("360 ÷ 60 = 6")} و${N("420 ÷ 60 = 7")} ← ${N("6 + 7 = 13")} قطعة.` },
+        { type:"qcm", enonce:`On partage ${N("84")} pommes et ${N("126")} oranges dans le plus grand nombre possible d'assiettes identiques. On calcule :`, options:["le PGCD","le PPCM"], rep:0,
+          indice:`« Le plus grand nombre » d'assiettes : cherche-t-on un diviseur ou un multiple ?`,
+          expl:`Le nombre d'assiettes divise ${N("84")} et ${N("126")} → PGCD.` },
+        { type:"nombre", enonce:`Combien d'assiettes obtient-on dans la situation précédente ?`, rep:[pgcd(84,126)],
+          indice:`${N("PGCD(84 ; 126)")}.`,
+          expl:`${N("PGCD(84 ; 126) = " + pgcd(84,126))} assiettes.` },
+        { type:"qcm", enonce:`Deux feux clignotent toutes les ${N("8")} secondes et toutes les ${N("12")} secondes. Pour savoir quand ils clignotent de nouveau ensemble, on calcule :`, options:["le PGCD","le PPCM"], rep:1,
+          indice:`On cherche le premier instant multiple des deux périodes.`,
+          expl:`On cherche le plus petit multiple commun → PPCM.` },
+        { type:"nombre", enonce:`Dans combien de secondes les deux feux clignotent-ils de nouveau ensemble ?`, rep:[ppcm(8,12)],
+          indice:`${N("8 = " + factTxt(8))} et ${N("12 = " + factTxt(12))}.`,
+          expl:`${N("PPCM(8 ; 12) = " + S(2,3) + " × 3 = " + ppcm(8,12))} secondes.` },
+        { type:"nombre", enonce:`On coupe une corde de ${N("360")} cm et une corde de ${N("420")} cm en morceaux de même longueur, la plus grande possible, sans chute. Quelle est la longueur d'un morceau, en cm ?`, rep:[pgcd(360,420)],
+          indice:`La longueur divise ${N("360")} et ${N("420")}.`,
+          expl:`${N("PGCD(360 ; 420) = " + pgcd(360,420))} cm.` },
+        { type:"nombre", enonce:`Combien de morceaux obtient-on au total dans la situation précédente ?`, rep:[(360 + 420) / pgcd(360,420)],
+          indice:`${N("360 ÷ 60")} et ${N("420 ÷ 60")}.`,
+          expl:`${N("360 ÷ 60 = 6")} et ${N("420 ÷ 60 = 7")} donc ${N("6 + 7 = 13")} morceaux.` },
       ]
     },
   ],
-  // -------------------------------------------------------------------- الامتحان
+  // -------------------------------------------------------------------- Examen
   examen: {
-    titre: "الامتحان النهائي",
+    titre: "Examen final",
     seuil: 6,
     questions: [
-      { type:"nombre", enonce:`ما هو م.م.أ للعددين ${N("18")} و${N("24")}؟`, rep:[ppcm(18,24)],
-        expl:`${N("18 = 2 × " + S(3,2))} و${N("24 = " + factTxt(24))} ← ${N(S(2,3) + " × " + S(3,2) + " = " + ppcm(18,24))}.` },
-      { type:"nombre", enonce:`ما هو م.م.أ للعددين ${N("210")} و${N("126")}؟`, rep:[ppcm(210,126)],
+      { type:"nombre", enonce:`Quel est le PPCM de ${N("18")} et ${N("24")} ?`, rep:[ppcm(18,24)],
+        expl:`${N("18 = 2 × " + S(3,2))} et ${N("24 = " + factTxt(24))} donc ${N(S(2,3) + " × " + S(3,2) + " = " + ppcm(18,24))}.` },
+      { type:"nombre", enonce:`Quel est le PPCM de ${N("210")} et ${N("126")} ?`, rep:[ppcm(210,126)],
         expl:`${N("2 × " + S(3,2) + " × 5 × 7 = " + ppcm(210,126))}.` },
-      { type:"nombre", enonce:`ق.م.أ ${N("(264 ; 630) = 6")}. ما هو م.م.أ لهما؟`, rep:[ppcm(264,630)],
+      { type:"nombre", enonce:`${N("PGCD(264 ; 630) = 6")}. Quel est leur PPCM ?`, rep:[ppcm(264,630)],
         expl:`${N("264 × 630 ÷ 6 = " + ppcm(264,630))}.` },
-      { type:"vf", enonce:`إذا كان ${N("a")} و${N("b")} أوّليّين فيما بينهما فإنّ ${N("PPCM(a ; b) = a × b")}.`, rep:true,
-        expl:`لأنّ ${N("PGCD × PPCM = a × b")} و${N("PGCD = 1")}.` },
-      { type:"nombre", enonce:`اكتب الكسر ${F("330","378")} في شكل كسر غير قابل للاختزال (مثال الكتابة: ${N("3/4")}).`, rep:[red(330,378)], irr:true,
-        expl:`ق.م.أ ${N("= 6")} ← ${F("55","63")}.` },
+      { type:"vf", enonce:`Si ${N("a")} et ${N("b")} sont premiers entre eux, alors ${N("PPCM(a ; b) = a × b")}.`, rep:true,
+        expl:`Car ${N("PGCD × PPCM = a × b")} et ${N("PGCD = 1")}.` },
+      { type:"nombre", enonce:`Écrire la fraction ${F("330","378")} sous forme irréductible (écrire par exemple ${N("3/4")}).`, rep:[red(330,378)], irr:true,
+        expl:`${N("PGCD = 6")} donc ${F("55","63")}.` },
       (function () {
         const L = [[14,15],[8,12],[21,35],[9,16],[18,25]];
-        return { type:"multi", enonce:`اختر <u>كلّ</u> الأزواج المكوّنة من عددين أوّليّين فيما بينهما:`, options:L.map(o => `${o[0]} و ${o[1]}`), rep:choisir(L, o => pgcd(o[0], o[1]) === 1),
-          expl:L.map(o => `${N(o[0] + " , " + o[1])}: ${N(pgcd(o[0], o[1]))} ${pgcd(o[0], o[1]) === 1 ? "✅" : "❌"}`).join(" ، ") };
+        return { type:"multi", enonce:`Choisir <u>tous</u> les couples formés de deux nombres premiers entre eux :`, options:L.map(o => `${o[0]} et ${o[1]}`), rep:choisir(L, o => pgcd(o[0], o[1]) === 1),
+          expl:L.map(o => `${N(o[0] + " , " + o[1])} : ${N(pgcd(o[0], o[1]))} ${pgcd(o[0], o[1]) === 1 ? OK : KO}`).join(" ; ") };
       })(),
-      { type:"nombre", enonce:`حافلتان تغادران المحطّة معا الآن، الأولى كلّ ${N("12")} دقيقة والثانية كلّ ${N("16")} دقيقة. بعد كم دقيقة تغادران معا من جديد؟`, rep:[ppcm(12,16)],
-        expl:`${N("PPCM(12 ; 16) = " + ppcm(12,16))} دقيقة.` },
-      { type:"nombre", enonce:`نوزّع ${N("96")} قلما و${N("72")} كرّاسا على أكبر عدد ممكن من الحزم المتماثلة. كم كرّاسا في كلّ حزمة؟`, rep:[72 / pgcd(96,72)],
-        expl:`${N("PGCD(96 ; 72) = " + pgcd(96,72))} حزمة، في كلّ حزمة ${N("96 ÷ 24 = 4")} أقلام و${N("72 ÷ 24 = 3")} كرّاسات.` },
+      { type:"nombre", enonce:`Deux bus quittent la gare ensemble maintenant. Le premier part toutes les ${N("12")} minutes et le second toutes les ${N("16")} minutes. Dans combien de minutes repartiront-ils ensemble ?`, rep:[ppcm(12,16)],
+        expl:`${N("PPCM(12 ; 16) = " + ppcm(12,16))} minutes.` },
+      { type:"nombre", enonce:`On répartit ${N("96")} stylos et ${N("72")} cahiers dans le plus grand nombre possible de paquets identiques. Combien de cahiers y a-t-il dans chaque paquet ?`, rep:[72 / pgcd(96,72)],
+        expl:`${N("PGCD(96 ; 72) = " + pgcd(96,72))} paquets ; chaque paquet contient ${N("96 ÷ 24 = 4")} stylos et ${N("72 ÷ 24 = 3")} cahiers.` },
     ]
   }
 };

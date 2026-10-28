@@ -51,6 +51,10 @@
   - Réponses numériques : le moteur accepte une unité facultative à la fin (« 60° », « 3 cm »).
   - Niveaux en ligne (trimestre 1) : 8 أساسي (8 leçons) et 9 أساسي (9 leçons : 6 algèbre `9-lecon*.js`,
     3 géométrie `9-geo*.js`), avec les parties `8-algebre-t1`, `8-geometrie-t1`, `9-algebre-t1`, `9-geometrie-t1`.
+  - 1 ثانوي (trimestre 1, **en français** car c'est la langue d'enseignement en Tunisie) : 8 leçons d'algèbre `1-lecon1…8-*.js` et 5 de géométrie `1-geo1…5-*.js`,
+    parties `1-algebre-t1` / `1-geometrie-t1` (certificats en arabe). Une leçon française déclare `langue: "fr"` : le moteur affiche le contenu en LTR
+    (fonctions `T()` / `B()`, classe `.fr` dans `moteur.css`), les boutons et messages restent en arabe. Titres du catalogue en français.
+    Trimestres 2 et 3 de 1 ثانوي : pas encore faits.
   - Aperçu « comme un élève » (`apercu.js`, administrateur uniquement) : barre en haut de `admin.html`,
     `eleve.html`, `parcours/` et `parcours-admin.html` ; le niveau choisi (7, 8, 9 أساسي, 1 ثانوي) est gardé
     dans le navigateur (`localStorage` « pf_apercu ») et affiche un « تلميذ مستوى … (تجريبي) ».

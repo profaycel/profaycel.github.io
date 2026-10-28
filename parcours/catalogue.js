@@ -36,9 +36,19 @@ window.CATALOGUE = [
     { id: "9-geo-milieux",                   f: "9-geo2-milieux",               niveau: "9 أساسي", partie: "geometrie", n: 6, titre: "المستقيم المارّ من منتصفي ضلعين", sous: "مبرهنة المنتصفين، شبه المنحرف، المثلّث القائم ومركز الثقل" },
     { id: "9-geo-thales",                    f: "9-geo3-thales",                niveau: "9 أساسي", partie: "geometrie", n: 6, titre: "مبرهنة طالس",               sous: "طالس في المثلّث، شكل الفراشة، المستقيمات المتوازية، تجزئة قطعة" },
     // ----- 1 ثانوي (الثلاثي الأوّل) -----
-    { id: "1-maths-division-divisibilite",   f: "1-lecon1-division-divisibilite", niveau: "1 ثانوي", partie: "algebre", n: 6, titre: "القسمة الأقليديّة وقابليّة القسمة", sous: "المقسوم والخارج والباقي، القسمة على 2 و3 و5 و9 و4 و25 و8، الأرقام الناقصة، القسمة على 6 و12 و15 و45" },
-    { id: "1-maths-premiers-pgcd",           f: "1-lecon2-premiers-pgcd",       niveau: "1 ثانوي", partie: "algebre", n: 6, titre: "الأعداد الأوّليّة والقواسم وق.م.أ", sous: "العدد الأوّلي، التفكيك، مجموعة القواسم، ق.م.أ بالتفكيك وبخوارزميّة أقليدس، الأوّليّان فيما بينهما" },
-    { id: "1-maths-ppcm-fractions",          f: "1-lecon3-ppcm-fractions",      niveau: "1 ثانوي", partie: "algebre", n: 6, titre: "م.م.أ والكسور غير القابلة للاختزال", sous: "المضاعفات، م.م.أ، العلاقة مع ق.م.أ، اختزال الكسر، مسائل" }
+    { id: "1-maths-division-divisibilite",   f: "1-lecon1-division-divisibilite", niveau: "1 ثانوي", partie: "algebre", n: 6, titre: "Division euclidienne et divisibilité", sous: "Quotient et reste, critères de divisibilité (2, 3, 5, 9, 4, 25, 8, 6, 12, 15, 45), chiffres manquants" },
+    { id: "1-maths-premiers-pgcd",           f: "1-lecon2-premiers-pgcd",       niveau: "1 ثانوي", partie: "algebre", n: 6, titre: "Nombres premiers, diviseurs et PGCD", sous: "Nombre premier, décomposition, diviseurs, PGCD (décomposition et algorithme d'Euclide), nombres premiers entre eux" },
+    { id: "1-maths-ppcm-fractions",          f: "1-lecon3-ppcm-fractions",      niveau: "1 ثانوي", partie: "algebre", n: 6, titre: "PPCM et fractions irréductibles", sous: "Multiples, PPCM, lien avec le PGCD, fractions irréductibles, problèmes" },
+    { id: "1-maths-puissances-sci", f: "1-lecon4-puissances-scientifique", niveau: "1 ثانوي", partie: "algebre", n: 5, titre: "Puissances, notation scientifique, valeurs approchées", sous: "Puissances et règles de calcul, puissances de 10, notation scientifique, troncature et arrondi" },
+    { id: "1-maths-racines-carrees", f: "1-lecon5-racines-carrees", niveau: "1 ثانوي", partie: "algebre", n: 5, titre: "Racines carrées", sous: "Définition, produit et quotient, simplification, calculs, équations x² = a" },
+    { id: "1-maths-identites-remarquables", f: "1-lecon6-identites-remarquables", niveau: "1 ثانوي", partie: "algebre", n: 5, titre: "Développement, factorisation et identités remarquables", sous: "Distributivité, (a ± b)², (a + b)(a − b), facteur commun, équations produit nul" },
+    { id: "1-maths-ordre-valeur-absolue", f: "1-lecon7-ordre-valeur-absolue", niveau: "1 ثانوي", partie: "algebre", n: 4, titre: "Ordre dans ℝ et valeur absolue", sous: "Comparer des réels, valeur absolue, distance, équations et inégalités avec |x − a|" },
+    { id: "1-maths-intervalles-encadrement", f: "1-lecon8-intervalles-encadrement", niveau: "1 ثانوي", partie: "algebre", n: 4, titre: "Intervalles et encadrement", sous: "Intervalles, intersection et réunion, encadrement d'une somme, d'un produit" },
+    { id: "1-maths-angles", f: "1-geo1-angles", niveau: "1 ثانوي", partie: "geometrie", n: 4, titre: "Angles", sous: "Parallèles et sécante, angles d'un triangle, angle au centre et angle inscrit" },
+    { id: "1-maths-milieux", f: "1-geo2-milieux", niveau: "1 ثانوي", partie: "geometrie", n: 3, titre: "Théorème des milieux", sous: "Théorème et réciproque, droite des milieux dans un trapèze" },
+    { id: "1-maths-thales", f: "1-geo3-thales", niveau: "1 ثانوي", partie: "geometrie", n: 4, titre: "Théorème de Thalès et sa réciproque", sous: "Rapports égaux, calculs de longueurs, parallélisme, configuration papillon" },
+    { id: "1-maths-trigonometrie", f: "1-geo4-trigonometrie", niveau: "1 ثانوي", partie: "geometrie", n: 4, titre: "Rapports trigonométriques d'un angle aigu", sous: "Sinus, cosinus, tangente, valeurs remarquables, calculs de longueurs et d'angles" },
+    { id: "1-maths-relations-metriques", f: "1-geo5-relations-metriques", niveau: "1 ثانوي", partie: "geometrie", n: 3, titre: "Relations métriques dans un triangle rectangle", sous: "Pythagore, hauteur relative à l'hypoténuse, problèmes" }
 ];
 
 window.CATALOGUE_PAR_ID = Object.fromEntries(window.CATALOGUE.map(function (l) { return [l.id, l]; }));
@@ -58,6 +68,11 @@ window.PARTIES = [
     { id: "9-algebre-t1",   titre: "الجبر والحساب", niveau: "9 أساسي", partie: "algebre",
       lecons: ["9-maths-divisibilite", "9-maths-denombrement", "9-maths-reels", "9-maths-operations-r", "9-maths-inverse-valeur-absolue", "9-maths-produits-remarquables"] },
     { id: "9-geometrie-t1", titre: "الهندسة",       niveau: "9 أساسي", partie: "geometrie",
-      lecons: ["9-geo-reperage", "9-geo-milieux", "9-geo-thales"] }
+      lecons: ["9-geo-reperage", "9-geo-milieux", "9-geo-thales"] },
+    // 1 ثانوي (بالفرنسية ؛ 8 دروس جبر و5 دروس هندسة ؛ الشهادة بعد نجاح كلّ الدروس)
+    { id: "1-algebre-t1",   titre: "الجبر والحساب", niveau: "1 ثانوي", partie: "algebre",
+      lecons: ["1-maths-division-divisibilite", "1-maths-premiers-pgcd", "1-maths-ppcm-fractions", "1-maths-puissances-sci", "1-maths-racines-carrees", "1-maths-identites-remarquables", "1-maths-ordre-valeur-absolue", "1-maths-intervalles-encadrement"] },
+    { id: "1-geometrie-t1", titre: "الهندسة",       niveau: "1 ثانوي", partie: "geometrie",
+      lecons: ["1-maths-angles", "1-maths-milieux", "1-maths-thales", "1-maths-trigonometrie", "1-maths-relations-metriques"] }
 ];
 window.partieDe = function (lid) { return window.PARTIES.find(function (p) { return p.lecons.includes(lid); }); };
