@@ -34,7 +34,11 @@ window.CATALOGUE = [
     { id: "9-maths-produits-remarquables",   f: "9-lecon6-produits-remarquables", niveau: "9 أساسي", partie: "algebre", n: 7, titre: "الجداءات المعتبرة",          sous: "المتطابقات الثلاث، النشر، التفكيك، الجذاء المعدوم" },
     { id: "9-geo-reperage",                  f: "9-geo1-reperage",              niveau: "9 أساسي", partie: "geometrie", n: 7, titre: "التعيين في المستوى",        sous: "الإحداثيّات، التناظر، المنتصف، متوازي الأضلاع، البعد" },
     { id: "9-geo-milieux",                   f: "9-geo2-milieux",               niveau: "9 أساسي", partie: "geometrie", n: 6, titre: "المستقيم المارّ من منتصفي ضلعين", sous: "مبرهنة المنتصفين، شبه المنحرف، المثلّث القائم ومركز الثقل" },
-    { id: "9-geo-thales",                    f: "9-geo3-thales",                niveau: "9 أساسي", partie: "geometrie", n: 6, titre: "مبرهنة طالس",               sous: "طالس في المثلّث، شكل الفراشة، المستقيمات المتوازية، تجزئة قطعة" }
+    { id: "9-geo-thales",                    f: "9-geo3-thales",                niveau: "9 أساسي", partie: "geometrie", n: 6, titre: "مبرهنة طالس",               sous: "طالس في المثلّث، شكل الفراشة، المستقيمات المتوازية، تجزئة قطعة" },
+    // ----- 1 ثانوي (الثلاثي الأوّل) -----
+    { id: "1-maths-division-divisibilite",   f: "1-lecon1-division-divisibilite", niveau: "1 ثانوي", partie: "algebre", n: 6, titre: "القسمة الأقليديّة وقابليّة القسمة", sous: "المقسوم والخارج والباقي، القسمة على 2 و3 و5 و9 و4 و25 و8، الأرقام الناقصة، القسمة على 6 و12 و15 و45" },
+    { id: "1-maths-premiers-pgcd",           f: "1-lecon2-premiers-pgcd",       niveau: "1 ثانوي", partie: "algebre", n: 6, titre: "الأعداد الأوّليّة والقواسم وق.م.أ", sous: "العدد الأوّلي، التفكيك، مجموعة القواسم، ق.م.أ بالتفكيك وبخوارزميّة أقليدس، الأوّليّان فيما بينهما" },
+    { id: "1-maths-ppcm-fractions",          f: "1-lecon3-ppcm-fractions",      niveau: "1 ثانوي", partie: "algebre", n: 6, titre: "م.م.أ والكسور غير القابلة للاختزال", sous: "المضاعفات، م.م.أ، العلاقة مع ق.م.أ، اختزال الكسر، مسائل" }
 ];
 
 window.CATALOGUE_PAR_ID = Object.fromEntries(window.CATALOGUE.map(function (l) { return [l.id, l]; }));
