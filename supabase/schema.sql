@@ -854,3 +854,331 @@ $function$;
 
 revoke execute on function public.eleves_non_confirmes() from anon, public;
 grant execute on function public.eleves_non_confirmes() to authenticated;
+
+
+
+-- =====================================================
+-- 11. DURCISSEMENT (28/10/2026) — déjà appliqué sur le projet Supabase
+-- (migration « durcissement_niveaux_securite_20261028 »)
+-- =====================================================
+
+-- =====================================================
+-- DURCISSEMENT 28/10/2026
+--  1. chaque élève / parent ne voit que le contenu de son niveau
+--  2. policies sans doublons (performance) + initplan
+--  3. nettoyage des textes saisis par les visiteurs (anti-XSS)
+--  4. certificats : niveau vérifié + numéro non devinable
+--  5. droits inutiles retirés, index manquants, anti-spam des demandes
+-- =====================================================
+
+-- ---------- 1. Niveaux autorisés de l'utilisateur connecté ----------
+create or replace function prive.niveaux_autorises()
+returns text[]
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+    select coalesce(array_agg(distinct e.classe) filter (where coalesce(e.classe, '') <> ''), array[]::text[])
+    from public.eleves e
+    where e.statut is distinct from 'archive'
+      and (
+            e.user_id = (select auth.uid())
+         or e.parent_id in (select p.id from public.parents p where p.user_id = (select auth.uid()))
+      );
+$$;
+revoke all on function prive.niveaux_autorises() from public, anon;
+grant execute on function prive.niveaux_autorises() to authenticated;
+
+-- ---------- 2. Policies ----------
+-- 2a. Écriture réservée à l'administrateur (une policy par action : plus de doublons)
+do $$
+declare t text;
+begin
+    foreach t in array array['annonces','certificats','classes','cours','devoirs','documents','eleves',
+                             'paiements','parents','parties','presences','resultats','seances'] loop
+        execute format('drop policy if exists admin_tout on public.%I', t);
+        execute format('drop policy if exists admin_ecriture_insert on public.%I', t);
+        execute format('drop policy if exists admin_ecriture_update on public.%I', t);
+        execute format('drop policy if exists admin_ecriture_delete on public.%I', t);
+        execute format('create policy admin_ecriture_insert on public.%I for insert to authenticated with check ((select public.is_admin()))', t);
+        execute format('create policy admin_ecriture_update on public.%I for update to authenticated using ((select public.is_admin())) with check ((select public.is_admin()))', t);
+        execute format('create policy admin_ecriture_delete on public.%I for delete to authenticated using ((select public.is_admin()))', t);
+    end loop;
+end $$;
+
+-- 2b. Lecture : contenu limité au niveau de l'élève (ou de ses enfants pour un parent)
+drop policy if exists lecture_connectes on public.documents;
+create policy documents_lecture on public.documents for select to authenticated using (
+    (select public.is_admin())
+    or (statut = 'publie' and (coalesce(classe, '') = '' or classe = any (((select prive.niveaux_autorises()))::text[])))
+);
+
+drop policy if exists lecture_connectes on public.seances;
+create policy seances_lecture on public.seances for select to authenticated using (
+    (select public.is_admin())
+    or (classe is not null and classe = any (((select prive.niveaux_autorises()))::text[]))
+);
+
+drop policy if exists lecture_connectes on public.annonces;
+create policy annonces_lecture on public.annonces for select to authenticated using (
+    (select public.is_admin())
+    or (statut = 'publie' and (coalesce(niveau, '') = '' or niveau = any (((select prive.niveaux_autorises()))::text[])))
+);
+
+drop policy if exists lecture_connectes on public.cours;
+create policy cours_lecture on public.cours for select to authenticated using (
+    (select public.is_admin())
+    or (coalesce(statut, 'publie') = 'publie'
+        and (coalesce(coalesce(classe, niveau), '') = '' or coalesce(classe, niveau) = any (((select prive.niveaux_autorises()))::text[])))
+);
+
+drop policy if exists lecture_connectes on public.devoirs;
+create policy devoirs_lecture on public.devoirs for select to authenticated using (
+    (select public.is_admin())
+    or (coalesce(classe, '') = '' or classe = any (((select prive.niveaux_autorises()))::text[]))
+);
+
+drop policy if exists lecture_connectes on public.parties;
+create policy parties_lecture on public.parties for select to authenticated using (
+    (select public.is_admin())
+    or (niveau is not null and niveau = any (((select prive.niveaux_autorises()))::text[]))
+);
+
+-- 2c. Fiches personnelles (administrateur + propriétaire + parent)
+drop policy if exists eleve_sa_fiche on public.eleves;
+create policy eleves_lecture on public.eleves for select to authenticated using (
+    (select public.is_admin())
+    or user_id = (select auth.uid())
+    or parent_id in (select p.id from public.parents p where p.user_id = (select auth.uid()))
+);
+
+drop policy if exists parent_sa_fiche on public.parents;
+create policy parents_lecture on public.parents for select to authenticated using (
+    (select public.is_admin()) or user_id = (select auth.uid())
+);
+
+drop policy if exists paiements_eleve_parent on public.paiements;
+create policy paiements_lecture on public.paiements for select to authenticated using (
+    (select public.is_admin())
+    or eleve_id in (select e.id from public.eleves e
+                    where e.user_id = (select auth.uid())
+                       or e.parent_id in (select p.id from public.parents p where p.user_id = (select auth.uid())))
+);
+
+drop policy if exists presences_eleve_parent on public.presences;
+create policy presences_lecture on public.presences for select to authenticated using (
+    (select public.is_admin())
+    or eleve_id in (select e.id from public.eleves e
+                    where e.user_id = (select auth.uid())
+                       or e.parent_id in (select p.id from public.parents p where p.user_id = (select auth.uid())))
+);
+
+drop policy if exists resultats_eleve_parent on public.resultats;
+create policy resultats_lecture on public.resultats for select to authenticated using (
+    (select public.is_admin())
+    or eleve_id in (select e.id from public.eleves e
+                    where e.user_id = (select auth.uid())
+                       or e.parent_id in (select p.id from public.parents p where p.user_id = (select auth.uid())))
+);
+
+drop policy if exists certificats_lecture on public.certificats;
+create policy certificats_lecture on public.certificats for select to authenticated using (
+    (select public.is_admin())
+    or user_id = (select auth.uid())
+    or user_id in (select e.user_id from public.eleves e
+                   join public.parents p on p.id = e.parent_id
+                   where p.user_id = (select auth.uid()))
+);
+
+-- 2d. Progression (l'élève écrit la sienne ; le parent lit celle de ses enfants)
+drop policy if exists admin_tout on public.progression;
+drop policy if exists progression_eleve on public.progression;
+drop policy if exists progression_parent on public.progression;
+create policy progression_lecture on public.progression for select to authenticated using (
+    (select public.is_admin())
+    or user_id = (select auth.uid())
+    or user_id in (select e.user_id from public.eleves e
+                   join public.parents p on p.id = e.parent_id
+                   where p.user_id = (select auth.uid()))
+);
+create policy progression_insert on public.progression for insert to authenticated
+    with check ((select public.is_admin()) or user_id = (select auth.uid()));
+create policy progression_update on public.progression for update to authenticated
+    using ((select public.is_admin()) or user_id = (select auth.uid()))
+    with check ((select public.is_admin()) or user_id = (select auth.uid()));
+create policy progression_delete on public.progression for delete to authenticated
+    using ((select public.is_admin()) or user_id = (select auth.uid()));
+
+-- 2e. Demandes d'inscription (formulaire public : envoi seulement ; lecture = admin)
+drop policy if exists admin_tout on public.demandes_inscription;
+create policy demandes_lecture on public.demandes_inscription for select to authenticated using ((select public.is_admin()));
+create policy demandes_modif on public.demandes_inscription for update to authenticated
+    using ((select public.is_admin())) with check ((select public.is_admin()));
+create policy demandes_suppr on public.demandes_inscription for delete to authenticated using ((select public.is_admin()));
+
+-- ---------- 3. Textes saisis par les visiteurs : on retire < > " ` ----------
+create or replace function prive.nettoyer_eleves()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+    new.prenom    := regexp_replace(new.prenom,    '[<>"`]', '', 'g');
+    new.nom       := regexp_replace(new.nom,       '[<>"`]', '', 'g');
+    new.email     := regexp_replace(new.email,     '[<>"`]', '', 'g');
+    new.telephone := regexp_replace(new.telephone, '[<>"`]', '', 'g');
+    new.classe    := regexp_replace(new.classe,    '[<>"`]', '', 'g');
+    return new;
+end;
+$$;
+drop trigger if exists eleves_a_nettoyer on public.eleves;
+create trigger eleves_a_nettoyer before insert or update on public.eleves
+    for each row execute function prive.nettoyer_eleves();
+
+create or replace function prive.nettoyer_parents()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+    new.prenom       := regexp_replace(new.prenom,       '[<>"`]', '', 'g');
+    new.nom          := regexp_replace(new.nom,          '[<>"`]', '', 'g');
+    new.email        := regexp_replace(new.email,        '[<>"`]', '', 'g');
+    new.telephone    := regexp_replace(new.telephone,    '[<>"`]', '', 'g');
+    new.lien_parente := regexp_replace(new.lien_parente, '[<>"`]', '', 'g');
+    return new;
+end;
+$$;
+drop trigger if exists parents_a_nettoyer on public.parents;
+create trigger parents_a_nettoyer before insert or update on public.parents
+    for each row execute function prive.nettoyer_parents();
+
+-- Demandes d'inscription : nettoyage + anti-spam (3 par numéro WhatsApp et par jour, 40 par heure)
+create or replace function prive.controler_demande()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+    new.prenom        := regexp_replace(new.prenom,        '[<>"`]', '', 'g');
+    new.nom           := regexp_replace(new.nom,           '[<>"`]', '', 'g');
+    new.etablissement := regexp_replace(new.etablissement, '[<>"`]', '', 'g');
+    new.message       := regexp_replace(new.message,       '[<>"`]', '', 'g');
+    new.email         := regexp_replace(new.email,         '[<>"`]', '', 'g');
+    if tg_op = 'INSERT' then
+        if (select count(*) from public.demandes_inscription
+             where whatsapp = new.whatsapp and created_at > now() - interval '1 day') >= 3 then
+            raise exception 'Trop de demandes avec ce numéro. Réessayez demain.';
+        end if;
+        if (select count(*) from public.demandes_inscription
+             where created_at > now() - interval '1 hour') >= 40 then
+            raise exception 'Trop de demandes en ce moment. Réessayez dans une heure.';
+        end if;
+    end if;
+    return new;
+end;
+$$;
+drop trigger if exists demandes_a_controler on public.demandes_inscription;
+create trigger demandes_a_controler before insert or update on public.demandes_inscription
+    for each row execute function prive.controler_demande();
+
+-- Progression : « erreurs » ne doit contenir que des nombres
+create or replace function prive.valider_progression()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+    if jsonb_typeof(new.erreurs) is distinct from 'object'
+       or exists (select 1 from jsonb_each(new.erreurs) j where jsonb_typeof(j.value) <> 'number') then
+        raise exception 'Données de progression invalides';
+    end if;
+    return new;
+end;
+$$;
+drop trigger if exists progression_a_valider on public.progression;
+create trigger progression_a_valider before insert or update on public.progression
+    for each row execute function prive.valider_progression();
+
+-- ---------- 4. Certificats : niveau vérifié + numéro non devinable ----------
+create or replace function public.delivrer_certificat_partie(p_partie text)
+returns json
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+    uid uuid := auth.uid();
+    pa public.parties;
+    c public.certificats;
+    e public.eleves;
+    nom text;
+    nb_ok int; v_score int; v_total int; v_et int; v_etmax int;
+begin
+    if uid is null then
+        raise exception 'Non connecté';
+    end if;
+
+    select * into c from public.certificats where user_id = uid and lecon = p_partie;
+    if found then
+        return row_to_json(c);
+    end if;
+
+    select * into pa from public.parties where id = p_partie;
+    if not found then
+        raise exception 'Partie inconnue';
+    end if;
+
+    select * into e from public.eleves where user_id = uid and statut is distinct from 'archive' order by id limit 1;
+
+    -- un élève ne reçoit que les certificats de son niveau (l'administrateur peut tout tester)
+    if not public.is_admin() and coalesce(e.classe, '') is distinct from coalesce(pa.niveau, '') then
+        raise exception 'Cette partie ne correspond pas à votre niveau';
+    end if;
+
+    select count(*), coalesce(sum(examen_score), 0), coalesce(sum(examen_total), 0),
+           coalesce(sum((select coalesce(sum(x), 0) from unnest(etoiles) as x)), 0),
+           coalesce(sum(coalesce(array_length(etoiles, 1), 0) * 3), 0)
+      into nb_ok, v_score, v_total, v_et, v_etmax
+      from public.progression
+     where user_id = uid and lecon = any(pa.lecons) and examen_score is not null;
+
+    if nb_ok < array_length(pa.lecons, 1) then
+        raise exception 'Toutes les leçons ne sont pas encore réussies';
+    end if;
+
+    nom := trim(coalesce(e.prenom, '') || ' ' || coalesce(e.nom, ''));
+    if nom = '' then
+        select trim(coalesce(raw_user_meta_data ->> 'full_name', raw_user_meta_data ->> 'nom', ''))
+            into nom from auth.users where id = uid;
+        nom := regexp_replace(coalesce(nom, ''), '[<>"`]', '', 'g');
+    end if;
+    if coalesce(nom, '') = '' then
+        nom := 'تلميذ(ة) Profaycel';
+    end if;
+
+    insert into public.certificats (numero, user_id, lecon, titre, detail, nom_complet, niveau, score, total, etoiles, etoiles_max)
+    values ('PF-' || to_char(now(), 'YYYY') || '-' || lpad(nextval('public.certificat_seq')::text, 4, '0')
+                || '-' || upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 6)),
+            uid, p_partie, pa.titre, pa.detail, nom, coalesce(e.classe, pa.niveau), v_score, v_total, v_et, v_etmax)
+    returning * into c;
+
+    return row_to_json(c);
+end;
+$$;
+revoke all on function public.delivrer_certificat_partie(text) from public, anon;
+grant execute on function public.delivrer_certificat_partie(text) to authenticated;
+
+-- ---------- 5. Droits, index ----------
+revoke truncate, references, trigger on all tables in schema public from anon, authenticated;
+revoke insert, update, delete on all tables in schema public from anon;
+grant insert on public.demandes_inscription to anon;
+
+create index if not exists eleves_parent_id_idx    on public.eleves (parent_id);
+create index if not exists eleves_user_id_idx      on public.eleves (user_id);
+create index if not exists paiements_eleve_id_idx  on public.paiements (eleve_id);
+create index if not exists parents_user_id_idx     on public.parents (user_id);
+create index if not exists presences_eleve_id_idx  on public.presences (eleve_id);
+create index if not exists resultats_eleve_id_idx  on public.resultats (eleve_id);
