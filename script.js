@@ -1933,6 +1933,103 @@ console.log("Page actuelle:", currentPage);
         const ficheModal = document.querySelector("#fiche-modal");
         const ficheContenu = document.querySelector("#fiche-contenu");
         let ficheEleveId = null;
+        let fichePdfDonnees = null;
+
+        // Fiche de suivi en PDF (pour l'envoyer au parent) : on imprime une page propre → « Enregistrer au format PDF »
+        function echapperFiche(texte) {
+            return String(texte == null ? "" : texte).replace(/[&<>"]/g, function (ch) {
+                return { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;" }[ch];
+            });
+        }
+
+        function telechargerFichePdf() {
+
+            if (!fichePdfDonnees) {
+                return;
+            }
+
+            const { eleve, suivi, repartition, paiements } = fichePdfDonnees;
+            const nom = `${eleve.prenom} ${eleve.nom}`.trim();
+
+            function dates(liste) {
+                return liste.length
+                    ? liste.slice().reverse().map(function (p) { return `<span class="pastille">${dateFr(p.seances.date_seance)}</span>`; }).join("")
+                    : "<em>Aucune</em>";
+            }
+
+            const lignesPaiements = paiements.length
+                ? `<table><thead><tr><th>Date</th><th>Séances</th><th>Montant</th></tr></thead><tbody>${paiements.map(function (p) {
+                    return `<tr><td>${dateFr(p.date_paiement)}</td><td>${p.seances || 4}</td><td>${p.montant} DT</td></tr>`;
+                }).join("")}</tbody></table>`
+                : "<em>Aucun paiement enregistré.</em>";
+
+            const html = `<!DOCTYPE html>
+<html lang="fr"><head><meta charset="UTF-8"><title>Fiche de suivi - ${echapperFiche(nom)}</title>
+<style>
+    body { font-family: Arial, "Segoe UI", sans-serif; color: #0f172a; margin: 28px; line-height: 1.5; }
+    h1 { margin: 0 0 4px; font-size: 24px; }
+    .marque { color: #2563eb; font-weight: 700; margin-bottom: 18px; }
+    .infos { color: #475569; margin-bottom: 16px; }
+    .chiffres { display: flex; gap: 12px; margin: 16px 0; }
+    .chiffres div { flex: 1; border: 1px solid #cbd5e1; border-radius: 10px; padding: 10px; text-align: center; }
+    .chiffres strong { display: block; font-size: 26px; }
+    .bilan { border: 1px solid #cbd5e1; border-radius: 10px; padding: 10px 12px; margin-bottom: 14px; font-weight: 700; }
+    h2 { font-size: 16px; margin: 20px 0 6px; border-bottom: 2px solid #e2e8f0; padding-bottom: 4px; }
+    .pastille { display: inline-block; border: 1px solid #cbd5e1; border-radius: 999px; padding: 2px 10px; margin: 2px 4px 2px 0; font-size: 13px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #cbd5e1; padding: 6px 10px; text-align: left; font-size: 14px; }
+    th { background: #f1f5f9; }
+    .pied { margin-top: 28px; color: #64748b; font-size: 12px; }
+</style></head><body>
+    <div class="marque">Profaycel — Professeur Faycel Khlifi</div>
+    <h1 dir="auto">${echapperFiche(nom)}</h1>
+    <div class="infos"><bdi>${echapperFiche(eleve.classe || "—")}</bdi> · ${eleve.mode === "distance" ? "À distance" : "Présentiel"}${eleve.date_debut ? ` · depuis le ${dateFr(eleve.date_debut)}` : ""}</div>
+
+    <div class="chiffres">
+        <div><strong>${suivi.suivies}</strong>séance(s) suivie(s)</div>
+        <div><strong>${suivi.absences}</strong>absence(s)</div>
+        <div><strong>${suivi.payees}</strong>séance(s) payée(s)</div>
+    </div>
+
+    ${suivi.paiement && suivi.paiement !== "—" ? `<div class="bilan">${echapperFiche(suivi.paiement)}</div>` : ""}
+
+    <h2>Séances payées (${repartition.payees.length})</h2>${dates(repartition.payees)}
+    <h2>Séances à payer (${repartition.aPayer.length})</h2>${dates(repartition.aPayer)}
+    ${repartition.avance > 0 ? `<p>${repartition.avance} séance(s) déjà payée(s) d'avance.</p>` : ""}
+    <h2>Absences (${repartition.absences.length})</h2>${dates(repartition.absences)}
+    <h2>Paiements</h2>${lignesPaiements}
+
+    <div class="pied">Fiche établie le ${dateFr(new Date().toISOString().slice(0, 10))}</div>
+</body></html>`;
+
+            const cadre = document.createElement("iframe");
+            cadre.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;";
+            document.body.appendChild(cadre);
+
+            const doc = cadre.contentWindow.document;
+            doc.open();
+            doc.write(html);
+            doc.close();
+
+            const ancienTitre = document.title;
+            document.title = "Fiche de suivi - " + nom;
+
+            setTimeout(function () {
+                cadre.contentWindow.focus();
+                cadre.contentWindow.print();
+                setTimeout(function () {
+                    document.title = ancienTitre;
+                    cadre.remove();
+                }, 1500);
+            }, 300);
+
+        }
+
+        const boutonFichePdf = document.querySelector("#fiche-pdf");
+
+        if (boutonFichePdf) {
+            boutonFichePdf.addEventListener("click", telechargerFichePdf);
+        }
 
         function fermerFiche() {
             ficheModal.classList.remove("active");
@@ -2097,6 +2194,9 @@ console.log("Page actuelle:", currentPage);
                 : (suivi.paiement !== "—" ? `<div class="fiche-ok">${suivi.paiement}</div>` : "");
 
             const repartition = repartitionSeances(eleve);
+
+            fichePdfDonnees = { eleve: eleve, suivi: suivi, repartition: repartition, paiements: paiements };
+            document.querySelector("#fiche-pdf").hidden = false;
 
             function puces(liste, classe, icone) {
                 return `<div class="fiche-seances">${liste.slice().reverse().map(function (p) {
