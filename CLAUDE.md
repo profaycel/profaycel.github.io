@@ -84,3 +84,19 @@
 - Le schéma de la base est tenu à jour dans `supabase/schema.sql`.
 - Ne pas supprimer `googled179e0f4796b59bb.html` ni `google25415fdafefb95f9.html`
   (validation Google Search Console).
+
+## Sécurité (28/10/2026)
+
+- **Chaque élève ne voit que son niveau** (et un parent, celui de ses enfants) : fonction `prive.niveaux_autorises()` et
+  policies `*_lecture` (documents, séances, annonces, cours, devoirs, parties). Un nouveau tableau qui contient un
+  niveau doit suivre le même modèle. Une fiche élève « archive » ne donne plus accès au contenu.
+- **Texte venant d'un visiteur** (noms, email, téléphone, message…) : toujours afficher avec `echapperHtml()` dans
+  `script.js`. En plus, la base retire `< > " \`` à l'écriture (triggers `prive.nettoyer_*`, `prive.controler_demande`).
+- `demandes_inscription` : 3 demandes max par numéro WhatsApp et par jour, 40 par heure (anti-spam).
+- Certificats : numéro `PF-AAAA-NNNN-XXXXXX` (suffixe aléatoire, non devinable) ; un élève ne reçoit que les
+  certificats de son niveau.
+- `supabase-js` est épinglé (version 2.118.0) avec une empreinte SRI dans `script.js` et les pages `parcours/`.
+  Pour changer de version, recalculer l'empreinte (sha384) du fichier `dist/umd/supabase.js` correspondant.
+- Limite connue : `series/*.pdf` et `parcours/lecons/*.js` sont des fichiers publics de GitHub Pages (accessibles par
+  leur adresse exacte, même sans compte). Les cacher vraiment demande un stockage privé (Supabase Storage + liens signés).
+- À activer dans Supabase (Authentication → Policies/Passwords) : « Leaked password protection ».

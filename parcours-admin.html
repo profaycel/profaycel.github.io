@@ -260,7 +260,7 @@
     </footer>
 
 
-<script src="script.js?v=24"></script>
+<script src="script.js?v=25"></script>
 <script src="apercu.js?v=1"></script>
 <script src="parcours/moteur.js?v=4"></script>
 <script src="parcours/geo.js?v=2"></script>
@@ -408,7 +408,7 @@
 
         // Ses erreurs les plus fréquentes
         const erreurs = [];
-        Object.values(pr).forEach(p => Object.entries(p.erreurs || {}).forEach(([cle, n]) => erreurs.push({ lid: p.lecon, cle, n })));
+        Object.values(pr).forEach(p => Object.entries(p.erreurs || {}).forEach(([cle, n]) => erreurs.push({ lid: p.lecon, cle, n: Number(n) || 0 })));
         erreurs.sort((a, b) => b.n - a.n);
         h += `<h3 style="margin-top:18px">Ses questions les plus ratées</h3>` + (erreurs.length
             ? erreurs.slice(0, 5).map(x => blocQuestion(x.lid, x.cle, `❌ ${x.n} erreur(s) · <span class="pa-ar">${esc(window.CATALOGUE_PAR_ID[x.lid] ? window.CATALOGUE_PAR_ID[x.lid].titre : x.lid)}</span>`)).join("")
@@ -422,7 +422,7 @@
         const lid = $("#pa-lecon").value, l = window.CATALOGUE_PAR_ID[lid];
         const lignes = D.prog.filter(p => p.lecon === lid);
         const total = {}, eleves = {};
-        lignes.forEach(p => Object.entries(p.erreurs || {}).forEach(([cle, n]) => { total[cle] = (total[cle] || 0) + n; eleves[cle] = (eleves[cle] || 0) + 1; }));
+        lignes.forEach(p => Object.entries(p.erreurs || {}).forEach(([cle, n]) => { total[cle] = (total[cle] || 0) + (Number(n) || 0); eleves[cle] = (eleves[cle] || 0) + 1; }));
         const top = Object.keys(total).sort((a, b) => total[b] - total[a]).slice(0, 8);
         const reussis = lignes.filter(p => p.examen_score != null).length;
         let h = `<div class="pa-stats"><div class="pa-stat"><b>${lignes.length}</b><span>élèves ont commencé</span></div>
