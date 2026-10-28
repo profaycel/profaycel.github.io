@@ -1966,7 +1966,8 @@ console.log("Page actuelle:", currentPage);
             const html = `<!DOCTYPE html>
 <html lang="fr"><head><meta charset="UTF-8"><title>Fiche de suivi - ${echapperFiche(nom)}</title>
 <style>
-    body { font-family: Arial, "Segoe UI", sans-serif; color: #0f172a; margin: 28px; line-height: 1.5; }
+    html, body { margin: 0; background: #ffffff; }
+    .fiche-pdf { font-family: Arial, "Segoe UI", sans-serif; color: #0f172a; padding: 28px; line-height: 1.5; width: 738px; background: #ffffff; }
     h1 { margin: 0 0 4px; font-size: 24px; }
     .marque { color: #2563eb; font-weight: 700; margin-bottom: 18px; }
     .infos { color: #475569; margin-bottom: 16px; }
@@ -1980,7 +1981,7 @@ console.log("Page actuelle:", currentPage);
     th, td { border: 1px solid #cbd5e1; padding: 6px 10px; text-align: left; font-size: 14px; }
     th { background: #f1f5f9; }
     .pied { margin-top: 28px; color: #64748b; font-size: 12px; }
-</style></head><body>
+</style></head><body><div class="fiche-pdf">
     <div class="marque">Profaycel — Professeur Faycel Khlifi</div>
     <h1 dir="auto">${echapperFiche(nom)}</h1>
     <div class="infos"><bdi>${echapperFiche(eleve.classe || "—")}</bdi> · ${eleve.mode === "distance" ? "À distance" : "Présentiel"}${eleve.date_debut ? ` · depuis le ${dateFr(eleve.date_debut)}` : ""}</div>
@@ -2000,10 +2001,10 @@ console.log("Page actuelle:", currentPage);
     <h2>Paiements</h2>${lignesPaiements}
 
     <div class="pied">Fiche établie le ${dateFr(new Date().toISOString().slice(0, 10))}</div>
-</body></html>`;
+</div></body></html>`;
 
             const cadre = document.createElement("iframe");
-            cadre.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;";
+            cadre.style.cssText = "position:fixed;left:-10000px;top:0;width:794px;height:1123px;border:0;background:#fff;";
             document.body.appendChild(cadre);
 
             const doc = cadre.contentWindow.document;
@@ -2011,17 +2012,178 @@ console.log("Page actuelle:", currentPage);
             doc.write(html);
             doc.close();
 
-            const ancienTitre = document.title;
-            document.title = "Fiche de suivi - " + nom;
+            const bouton = document.querySelector("#fiche-pdf");
+            const texteBouton = bouton.textContent;
+            bouton.disabled = true;
+            bouton.textContent = "⏳ PDF...";
 
+            function terminer() {
+                bouton.disabled = false;
+                bouton.textContent = texteBouton;
+                cadre.remove();
+            }
+
+            // Vrai fichier PDF téléchargé directement : la page est dessinée sur une image, puis mise dans un PDF
             setTimeout(function () {
-                cadre.contentWindow.focus();
-                cadre.contentWindow.print();
-                setTimeout(function () {
-                    document.title = ancienTitre;
-                    cadre.remove();
-                }, 1500);
+
+                const zone = doc.querySelector(".fiche-pdf");
+                const largeur = 794;
+                const hauteur = Math.max(zone.offsetHeight + 4, 400);
+                const styles = Array.from(doc.querySelectorAll("style")).map(function (st) { return st.textContent; }).join("\n");
+                const contenu = new XMLSerializer().serializeToString(zone);
+
+                const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${largeur}" height="${hauteur}">
+                    <foreignObject width="100%" height="100%">
+                        <div xmlns="http://www.w3.org/1999/xhtml"><style>${styles}</style>${contenu}</div>
+                    </foreignObject></svg>`;
+
+                const image = new Image();
+
+                image.onload = function () {
+
+                    try {
+
+                        const echelle = 2;
+                        const canvas = document.createElement("canvas");
+                        canvas.width = largeur * echelle;
+                        canvas.height = hauteur * echelle;
+                        const ctx = canvas.getContext("2d");
+                        ctx.fillStyle = "#ffffff";
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+                        const pixelsParPage = Math.floor(canvas.width * 297 / 210);
+                        const pages = [];
+
+                        for (let y = 0; y < canvas.height; y += pixelsParPage) {
+
+                            const h = Math.min(pixelsParPage, canvas.height - y);
+                            const tranche = document.createElement("canvas");
+                            tranche.width = canvas.width;
+                            tranche.height = h;
+                            const tctx = tranche.getContext("2d");
+                            tctx.fillStyle = "#ffffff";
+                            tctx.fillRect(0, 0, tranche.width, tranche.height);
+                            tctx.drawImage(canvas, 0, y, canvas.width, h, 0, 0, canvas.width, h);
+
+                            pages.push({
+                                jpeg: dataUrlVersOctets(tranche.toDataURL("image/jpeg", 0.92)),
+                                largeur: tranche.width,
+                                hauteur: h
+                            });
+
+                        }
+
+                        const lien = document.createElement("a");
+                        lien.href = URL.createObjectURL(new Blob([construirePdf(pages)], { type: "application/pdf" }));
+                        lien.download = "Fiche de suivi - " + nom.replace(/[\\/:*?"<>|]/g, " ").trim() + ".pdf";
+                        document.body.appendChild(lien);
+                        lien.click();
+
+                        setTimeout(function () {
+                            URL.revokeObjectURL(lien.href);
+                            lien.remove();
+                        }, 2000);
+
+                    } catch (erreur) {
+
+                        console.error("Erreur PDF:", erreur);
+                        showToast("Impossible de créer le PDF.", "error");
+
+                    }
+
+                    terminer();
+
+                };
+
+                image.onerror = function () {
+                    showToast("Impossible de créer le PDF.", "error");
+                    terminer();
+                };
+
+                image.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+
             }, 300);
+
+        }
+
+        function dataUrlVersOctets(dataUrl) {
+
+            const binaire = atob(dataUrl.split(",")[1]);
+            const octets = new Uint8Array(binaire.length);
+
+            for (let i = 0; i < binaire.length; i++) {
+                octets[i] = binaire.charCodeAt(i);
+            }
+
+            return octets;
+
+        }
+
+        // Petit écrivain de PDF : une image JPEG par page A4
+        function construirePdf(pages) {
+
+            const encodeur = new TextEncoder();
+            const morceaux = [];
+            const positions = [];
+            let longueur = 0;
+
+            function ecrire(contenu) {
+                const octets = typeof contenu === "string" ? encodeur.encode(contenu) : contenu;
+                morceaux.push(octets);
+                longueur += octets.length;
+            }
+
+            function objet(numero, corps) {
+                positions[numero] = longueur;
+                ecrire(`${numero} 0 obj\n${corps}\nendobj\n`);
+            }
+
+            const LARGEUR_PT = 595.28;
+            const HAUTEUR_PT = 841.89;
+
+            ecrire("%PDF-1.4\n");
+
+            objet(1, "<< /Type /Catalog /Pages 2 0 R >>");
+            objet(2, `<< /Type /Pages /Kids [${pages.map(function (p, i) { return (3 + i * 3) + " 0 R"; }).join(" ")}] /Count ${pages.length} >>`);
+
+            pages.forEach(function (page, i) {
+
+                const numPage = 3 + i * 3;
+                const numContenu = numPage + 1;
+                const numImage = numPage + 2;
+                const hauteurPt = page.hauteur * LARGEUR_PT / page.largeur;
+                const flux = `q ${LARGEUR_PT} 0 0 ${hauteurPt.toFixed(2)} 0 ${(HAUTEUR_PT - hauteurPt).toFixed(2)} cm /Im0 Do Q`;
+
+                objet(numPage, `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${LARGEUR_PT} ${HAUTEUR_PT}] /Resources << /XObject << /Im0 ${numImage} 0 R >> >> /Contents ${numContenu} 0 R >>`);
+                objet(numContenu, `<< /Length ${flux.length} >>\nstream\n${flux}\nendstream`);
+
+                positions[numImage] = longueur;
+                ecrire(`${numImage} 0 obj\n<< /Type /XObject /Subtype /Image /Width ${page.largeur} /Height ${page.hauteur} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${page.jpeg.length} >>\nstream\n`);
+                ecrire(page.jpeg);
+                ecrire("\nendstream\nendobj\n");
+
+            });
+
+            const total = 3 + pages.length * 3;
+            const debutXref = longueur;
+            let xref = `xref\n0 ${total}\n0000000000 65535 f \n`;
+
+            for (let n = 1; n < total; n++) {
+                xref += String(positions[n]).padStart(10, "0") + " 00000 n \n";
+            }
+
+            ecrire(xref + `trailer\n<< /Size ${total} /Root 1 0 R >>\nstartxref\n${debutXref}\n%%EOF\n`);
+
+            const sortie = new Uint8Array(longueur);
+            let decalage = 0;
+
+            morceaux.forEach(function (m) {
+                sortie.set(m, decalage);
+                decalage += m.length;
+            });
+
+            return sortie;
 
         }
 
