@@ -7852,3 +7852,7 @@ html[dir="rtl"] .auth-parent-arrow {
 .docs-dc-groupe[hidden] {
     display: none;
 }
+
+.auth-parent-banner[hidden] {
+    display: none;
+}
