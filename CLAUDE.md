@@ -17,7 +17,9 @@
 
 ## Pages
 
-- Public : `index.html` (accueil), `register.html`, `login.html`, `confidentialite.html`. Plus de formulaire de demande d'inscription : tout le monde crée son compte (`register.html`) ; les élèves en salle sont ajoutés par Faycel depuis `eleves.html`.
+- Public : `index.html` (accueil), `register.html`, `login.html`, `confidentialite.html`,
+  `inscription-enfant.html` (demande d'inscription aux cours à distance payants, avec l'email du compte ; bouton « ✅ Accepter » dans « 📩 Demandes » qui complète la fiche élève trouvée par l'email → table
+  `demandes_inscription`, visible dans l'onglet « 📩 Demandes » de `eleves.html`)
   - Téléphone : bouton rouge qui clignote « S'inscrire » dans la barre du haut (`.header-cta-inscription`,
     ajouté par `script.js` quand personne n'est connecté).
   - Inscription élève : `register.html` ne demande plus ni nom ni niveau (élève) ; au premier passage dans
