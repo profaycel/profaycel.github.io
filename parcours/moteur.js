@@ -23,6 +23,10 @@ function fmt(r){
   const m = t.match(/^(−?)(\d+)\/(\d+)$/);
   return m ? N(m[1] + F(m[2], m[3])) : N(t);
 }
+// Leçons en français (1 ثانوي) : le contenu s'affiche de gauche à droite, l'interface reste en arabe
+const FR = () => !!(window.LECON && window.LECON.langue === "fr");
+const T = h => FR() ? `<div class="fr" dir="ltr" lang="fr">${h}</div>` : h;
+const B = t => FR() ? `<bdi dir="ltr" lang="fr">${t}</bdi>` : t;
 const opt = o => /^−?\d+\/\d+$/.test(o) ? fmt(o) : estNum(o) ? N(o) : o;
 
 // ============================================================
@@ -66,7 +70,7 @@ function pct(){ return Math.round(100 * (etat.etoiles.filter(x=>x>0).length + (e
 function carte(){
   const total = etat.etoiles.reduce((a,b)=>a+(b||0),0);
   let h = `<div class="carte">
-    <h2>${LECON.titre}</h2>
+    <h2>${B(LECON.titre)}</h2>
     <div style="color:var(--gris)">أكمل المستويات بالترتيب. كلّ مستوى يُفتح عندما تجيب عن أسئلة المستوى الذي قبله.</div>
     <div class="prog"><div style="width:${pct()}%"></div></div>
     <small style="color:var(--gris)">التقدّم: ${pct()}% · النجوم: ${total} / ${nbNiv*3} ⭐</small>
@@ -75,14 +79,14 @@ function carte(){
     const fait = etat.etoiles[i] > 0, ouvert = niveauOuvert(i);
     h += `<button class="niveau ${fait?"fait":ouvert?"":"ferme"}" ${ouvert?`onclick="ouvrirNiveau(${i})"`:"disabled"}>
       <span class="num">${fait?"✓":ouvert?i:"🔒"}</span>
-      <span class="info"><span class="titre">المستوى ${i}: ${nv.titre}</span><br><span class="sous">${nv.sous}</span></span>
+      <span class="info"><span class="titre">المستوى ${i}: ${B(nv.titre)}</span><br><span class="sous">${B(nv.sous)}</span></span>
       ${fait?`<span class="etoiles">${etoilesTxt(etat.etoiles[i])}</span>`:""}
     </button>`;
   });
   const exOuvert = etat.etoiles.filter(x=>x>0).length === nbNiv;
   h += `<button class="niveau ${etat.examen?"fait":exOuvert?"":"ferme"}" ${exOuvert?`onclick="ouvrirExamen()"`:"disabled"}>
       <span class="num">${etat.examen?"🎓":exOuvert?"🏁":"🔒"}</span>
-      <span class="info"><span class="titre">${LECON.examen.titre}</span><br><span class="sous">${LECON.examen.questions.length} أسئلة · تنجح بـ ${LECON.examen.seuil} إجابات صحيحة على الأقلّ</span></span>
+      <span class="info"><span class="titre">${B(LECON.examen.titre)}</span><br><span class="sous">${LECON.examen.questions.length} أسئلة · تنجح بـ ${LECON.examen.seuil} إجابات صحيحة على الأقلّ</span></span>
       ${etat.examen?`<span class="etoiles">${etat.examen.score}/${LECON.examen.questions.length}</span>`:""}
     </button>`;
   h += `<div id="partieEtat"></div>`;
@@ -123,7 +127,7 @@ function ouvrirNiveau(i){
   const nv = LECON.niveaux[i];
   app.innerHTML = `<div class="carte">
       <div class="qhead"><span>المستوى ${i}</span><span>📖 الدرس</span></div>
-      <h2>${nv.titre}</h2>${nv.cours}
+      ${T(`<h2>${nv.titre}</h2>${nv.cours}`)}
       <div class="actions"><button class="btn" onclick="commencer(${i})">فهمت، نبدأ الأسئلة ✏️</button>
       <button class="btn sec" onclick="carte()">رجوع</button></div></div>`;
   scrollTo(0,0);
@@ -135,7 +139,7 @@ function commencer(i){
 function ouvrirExamen(){
   const qs = LECON.examen.questions.map((q,k)=>Object.assign({}, q, { __k:k })).sort(()=>Math.random()-.5);
   session = { mode:"examen", qs, q:0, score:0 };
-  app.innerHTML = `<div class="carte centre"><div class="grand">🏁</div><h2>${LECON.examen.titre}</h2>
+  app.innerHTML = `<div class="carte centre"><div class="grand">🏁</div><h2>${B(LECON.examen.titre)}</h2>
     <p>${qs.length} أسئلة تجمع كلّ المستويات.<br><b>محاولة واحدة لكلّ سؤال، وبدون تلميحات.</b><br>تنجح إذا أجبت عن ${LECON.examen.seuil} أسئلة على الأقلّ إجابة صحيحة.</p>
     <div class="actions" style="justify-content:center"><button class="btn" onclick="question()">ابدأ الامتحان</button><button class="btn sec" onclick="carte()">رجوع</button></div></div>`;
   scrollTo(0,0);
@@ -148,7 +152,7 @@ function question(){
   s.essais = 0;
   let zone = "";
   if (q.type === "qcm" || q.type === "multi"){
-    zone = `<div class="opts">${q.options.map((o,k)=>`<button class="opt" data-k="${k}" onclick="choisir(this)">${opt(o)}</button>`).join("")}</div>`;
+    zone = `<div class="opts">${q.options.map((o,k)=>`<button class="opt" data-k="${k}"${FR() ? ' dir="ltr" lang="fr"' : ""} onclick="choisir(this)">${opt(o)}</button>`).join("")}</div>`;
   } else if (q.type === "vf"){
     zone = `<div class="opts"><button class="opt" data-k="1" onclick="choisir(this)">✔️ صحيح</button><button class="opt" data-k="0" onclick="choisir(this)">✖️ خطأ</button></div>`;
   } else if (q.type === "chiffres"){
@@ -165,11 +169,11 @@ function question(){
       + (q.type==="coord" ? '<small style="color:var(--gris)">اكتب <b>الفاصلة</b> ثمّ <b>الترتيبة</b> بينهما فاصلة: <span class="ltr">(-3 , 2)</span></small>' : "")
       + (q.type==="ensemble" ? '<small style="color:var(--gris)">اكتب العناصر مفصولة بفاصلة ( , ) وبأيّ ترتيب.</small>' : "");
   }
-  const titre = s.mode === "examen" ? LECON.examen.titre : `المستوى ${s.i}: ${LECON.niveaux[s.i].titre}`;
+  const titre = s.mode === "examen" ? B(LECON.examen.titre) : `المستوى ${s.i}: ${B(LECON.niveaux[s.i].titre)}`;
   app.innerHTML = `<div class="carte">
     <div class="qhead"><span>${titre}</span><span style="white-space:nowrap">سؤال ${s.q+1} / ${s.qs.length}</span></div>
     <div class="prog"><div style="width:${100*s.q/s.qs.length}%"></div></div>
-    <div class="enonce">${q.enonce}</div>
+    <div class="enonce"${FR() ? ' dir="ltr" lang="fr"' : ""}>${q.enonce}</div>
     ${q.type==="multi"||q.type==="chiffres"?'<small style="color:var(--gris)">يمكن اختيار أكثر من إجابة.</small>':""}
     ${zone}
     <div class="retour" id="retour"></div>
@@ -262,19 +266,19 @@ function verifier(){
     if (ok) s.score++;
     bloquer(q, true);
     r.className = "retour " + (ok?"ok":"ko");
-    r.innerHTML = (ok ? "✅ إجابة صحيحة! " : "❌ إجابة خاطئة. ") + (q.expl ? "<br>" + q.expl : "");
+    r.innerHTML = (ok ? "✅ إجابة صحيحة! " : "❌ إجابة خاطئة. ") + (q.expl ? (FR() ? T(q.expl) : "<br>" + q.expl) : "");
     suivantBtn(); return;
   }
   if (ok){
     bloquer(q, true);
     r.className = "retour ok";
-    r.innerHTML = `✅ ${["ممتاز!","برافو!","أحسنت!","رائع!"][Math.floor(Math.random()*4)]}<br>${q.expl}`;
+    r.innerHTML = `✅ ${["ممتاز!","برافو!","أحسنت!","رائع!"][Math.floor(Math.random()*4)]}${FR() ? T(q.expl) : "<br>" + q.expl}`;
     suivantBtn();
   } else {
     s.erreurs++; s.essais++;
     marquerFaux(q);
-    if (s.essais === 1){ r.className = "retour indice"; r.innerHTML = `🤔 ليست الإجابة الصحيحة بعد. <b>تلميح:</b> ${q.indice}` }
-    else { r.className = "retour ko"; r.innerHTML = `❌ ما زالت خاطئة. ارجع إلى الدرس 📖 ثمّ حاول من جديد.<br><b>تلميح:</b> ${q.indice}` }
+    if (s.essais === 1){ r.className = "retour indice"; r.innerHTML = `🤔 ليست الإجابة الصحيحة بعد. <b>تلميح:</b> ${B(q.indice)}` }
+    else { r.className = "retour ko"; r.innerHTML = `❌ ما زالت خاطئة. ارجع إلى الدرس 📖 ثمّ حاول من جديد.<br><b>تلميح:</b> ${B(q.indice)}` }
   }
 }
 function noterErreur(cle){
@@ -354,11 +358,11 @@ function reponseTxt(q){
 function blocQuestions(qs){
   return qs.map((q,k)=>`<div style="border-top:1px solid var(--bord);padding:12px 0">
       <div class="qhead"><span>سؤال ${k+1}</span><span>${NOMS_TYPES[q.type]}</span></div>
-      <div style="font-weight:600;margin:4px 0">${q.enonce}</div>
-      ${q.options?`<div style="color:var(--gris);font-size:16px">الاختيارات: ${q.options.map(opt).join(" · ")}</div>`:""}
-      <div style="background:var(--vert-clair);padding:6px 10px;border-radius:8px;margin:6px 0">✅ <b>الإجابة:</b> ${reponseTxt(q)}</div>
-      ${q.indice?`<div style="font-size:16px;color:#78350f">💡 <b>التلميح:</b> ${q.indice}</div>`:""}
-      <div style="font-size:16px;color:var(--gris)">📝 <b>الشرح:</b> ${q.expl}</div>
+      <div style="font-weight:600;margin:4px 0">${T(q.enonce)}</div>
+      ${q.options?`<div style="color:var(--gris);font-size:16px">الاختيارات: ${B(q.options.map(opt).join(" · "))}</div>`:""}
+      <div style="background:var(--vert-clair);padding:6px 10px;border-radius:8px;margin:6px 0">✅ <b>الإجابة:</b> ${B(reponseTxt(q))}</div>
+      ${q.indice?`<div style="font-size:16px;color:#78350f">💡 <b>التلميح:</b> ${B(q.indice)}</div>`:""}
+      <div style="font-size:16px;color:var(--gris)">📝 <b>الشرح:</b> ${T(q.expl)}</div>
     </div>`).join("");
 }
 function toutesQuestions(){
@@ -366,11 +370,11 @@ function toutesQuestions(){
     <div style="color:var(--gris)">كلّ الأسئلة مع الإجابات الصحيحة والتلميحات. (هذه الصفحة لن يراها التلاميذ في الموقع.)</div>
     <div class="actions no-print"><button class="btn sec" onclick="carte()">رجوع</button><button class="btn sec" onclick="print()">🖨️ طباعة</button></div></div>`;
   LECON.niveaux.forEach((nv,i)=>{
-    h += `<div class="carte"><h3>المستوى ${i}: ${nv.titre}</h3>
-      <details><summary style="cursor:pointer;color:var(--bleu)">📖 عرض الدرس</summary>${nv.cours}</details>
+    h += `<div class="carte"><h3>المستوى ${i}: ${B(nv.titre)}</h3>
+      <details><summary style="cursor:pointer;color:var(--bleu)">📖 عرض الدرس</summary>${T(nv.cours)}</details>
       ${blocQuestions(nv.questions)}</div>`;
   });
-  h += `<div class="carte"><h3>🏁 ${LECON.examen.titre} (ينجح بـ ${LECON.examen.seuil} / ${LECON.examen.questions.length})</h3>${blocQuestions(LECON.examen.questions)}</div>
+  h += `<div class="carte"><h3>🏁 ${B(LECON.examen.titre)} (ينجح بـ ${LECON.examen.seuil} / ${LECON.examen.questions.length})</h3>${blocQuestions(LECON.examen.questions)}</div>
     <div class="actions no-print"><button class="btn sec" onclick="carte()">رجوع</button></div>`;
   app.innerHTML = h; scrollTo(0,0);
 }

@@ -124,3 +124,13 @@ input.rep:focus{outline:none;border-color:var(--bleu)}
   .cert-cadre{position:static;transform:none!important;margin:0 auto}
   .cert{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
+
+/* ----- leçons en français (LECON.langue = "fr") : contenu de gauche à droite ----- */
+.fr{direction:ltr;text-align:left}
+.fr .regle,.fr .exemple,.fr .astuce{border-right:0}
+.fr .regle{border-left:5px solid var(--bleu)}
+.fr .exemple{border-left:5px solid var(--or)}
+.fr .astuce{border-left:5px solid var(--vert)}
+.enonce[dir="ltr"],.opt[dir="ltr"]{text-align:left}
+.legende{color:#64748b;font-size:14px;margin:2px 0 8px}
+.fig{max-width:100%;height:auto}
