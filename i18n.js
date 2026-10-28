@@ -97,6 +97,7 @@
         "Je choisis mon niveau après l'inscription": "أختار مستواي بعد التسجيل",
         "Cours à distance avec le professeur ?": "دروس عن بُعد مع الأستاذ؟",
         "Faire une demande d'inscription": "قدّم طلب تسجيل",
+        "Faire une demande d'inscription →": "← قدّم طلب تسجيل",
         "Déjà inscrit ?": "مسجّل من قبل؟",
         "🎥 Cours à distance": "🎥 الدراسة عن بُعد",
         "ans d'enseignement": "سنوات في التدريس",
