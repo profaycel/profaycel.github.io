@@ -17,9 +17,9 @@
 <header class="top no-print"><div class="wrap"><div><h1>التحقّق من شهادة</h1><small>شهادات النجاح في الدروس التفاعليّة</small></div></div></header>
 <main class="wrap" id="app"><div class="carte chargement">⏳ نتحقّق من الشهادة…</div></main>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js" integrity="sha384-TcHRA3zBbn+Lexh5n+Oil4guNPOS3rjNDpGRAN46u/s/mB2IZ50ceC6TYDU2yvgK" crossorigin="anonymous"></script>
 <script src="../supabase.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha384-3zSEDfvllQohrq0PHL1fOXJuC/jSOO34H46t6UQfobFOmxE5BpjjaIJY5F2/bMnU" crossorigin="anonymous"></script>
 <script src="certificat.js?v=1"></script>
 <script>
 async function verifier() {
@@ -27,7 +27,7 @@ async function verifier() {
     const numero = (new URLSearchParams(location.search).get("n") || "").trim();
     const formulaire = `<div class="carte no-print"><h3>أدخل رقم الشهادة</h3>
         <form onsubmit="location.search='?n='+encodeURIComponent(this.n.value.trim());return false" style="display:flex;gap:8px">
-        <input class="rep" name="n" dir="ltr" placeholder="PF-2026-0001" style="flex:1"><button class="btn">تحقّق</button></form></div>`;
+        <input class="rep" name="n" dir="ltr" placeholder="PF-2026-0001-XXXXXX" style="flex:1"><button class="btn">تحقّق</button></form></div>`;
     if (!numero) { app.innerHTML = formulaire; return; }
     for (let i = 0; i < 100 && !window.supabaseClient; i++) await new Promise(r => setTimeout(r, 100));
     const { data, error } = await window.supabaseClient.rpc("verifier_certificat", { p_numero: numero });

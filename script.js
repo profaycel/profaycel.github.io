@@ -120,7 +120,9 @@ function showToast(message, type = "info") {
     }
 
     const script = document.createElement("script");
-    script.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
+    script.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js";
+    script.integrity = "sha384-TcHRA3zBbn+Lexh5n+Oil4guNPOS3rjNDpGRAN46u/s/mB2IZ50ceC6TYDU2yvgK";
+    script.crossOrigin = "anonymous";
     script.async = true;
 
     script.onload = function () {
@@ -1547,9 +1549,9 @@ console.log("Page actuelle:", currentPage);
                                         ? `<strong>Email :</strong> ${echapperHtml(eleve.email) || "—"}
                                     <br>
                                     <strong>Inscrit le :</strong> ${eleve.created_at ? eleve.created_at.slice(0, 10) : "—"}`
-                                        : `<strong>Parent :</strong> <span dir="auto">${parent ? parent.prenom + (parent.lien_parente ? " (" + parent.lien_parente + ")" : "") : "—"}</span>
+                                        : `<strong>Parent :</strong> <span dir="auto">${parent ? echapperHtml(parent.prenom + (parent.lien_parente ? " (" + parent.lien_parente + ")" : "")) : "—"}</span>
                                     <br>
-                                    <strong>Téléphone :</strong> ${parent && parent.telephone ? parent.telephone : (eleve.telephone || "—")}`}
+                                    <strong>Téléphone :</strong> ${echapperHtml(parent && parent.telephone ? parent.telephone : (eleve.telephone || "—"))}`}
                                     <br>
                                     <strong>Séances suivies :</strong> ${suivi.suivies} · <strong>payées :</strong> ${suivi.payees}
                                     <br>
@@ -2414,7 +2416,7 @@ console.log("Page actuelle:", currentPage);
                 <p class="fiche-infos">
                     <bdi>${eleve.classe || "—"}</bdi> · ${eleve.mode === "distance" ? "💻 À distance" : "🏫 Présentiel"}
                     ${eleve.date_debut ? ` · depuis le ${dateFr(eleve.date_debut)}` : ""}
-                    ${parent ? `<br>👪 <span dir="auto">${parent.prenom} ${parent.nom || ""}</span>${parent.telephone ? ` · ${parent.telephone}` : ""}` : ""}
+                    ${parent ? `<br>👪 <span dir="auto">${echapperHtml(parent.prenom)} ${echapperHtml(parent.nom || "")}</span>${parent.telephone ? ` · ${echapperHtml(parent.telephone)}` : ""}` : ""}
                     ${eleve.code_acces ? `<br>🔑 Code : <code>${eleve.code_acces}</code>` : ""}
                 </p>
 
@@ -2711,7 +2713,7 @@ console.log("Page actuelle:", currentPage);
         function carteParent(parent) {
 
             const enfants = (parent.eleves || []).map(function (e) {
-                return `<bdi>${e.prenom} ${e.nom}</bdi>${e.classe ? " (" + e.classe + ")" : ""}`;
+                return `<bdi>${echapperHtml(e.prenom)} ${echapperHtml(e.nom)}</bdi>${e.classe ? " (" + echapperHtml(e.classe) + ")" : ""}`;
             }).join(", ");
 
             return `
@@ -2720,14 +2722,14 @@ console.log("Page actuelle:", currentPage);
                         👪
                     </div>
                     <h3 dir="auto">
-                        ${parent.prenom} ${parent.nom}${parent.lien_parente ? " (" + parent.lien_parente + ")" : ""}
+                        ${echapperHtml(parent.prenom)} ${echapperHtml(parent.nom)}${parent.lien_parente ? " (" + echapperHtml(parent.lien_parente) + ")" : ""}
                     </h3>
                     <p>
                         <strong>Enfant(s) :</strong> ${enfants || "—"}
                         <br>
-                        <strong>Téléphone :</strong> ${parent.telephone || "—"}
+                        <strong>Téléphone :</strong> ${echapperHtml(parent.telephone) || "—"}
                         <br>
-                        <strong>Email :</strong> ${parent.email || "—"}
+                        <strong>Email :</strong> ${echapperHtml(parent.email) || "—"}
                         <br>
                         <strong>Compte sur le site :</strong> ${parent.user_id ? "✅ Inscrit" : "⏳ Pas encore inscrit"}
                     </p>
@@ -3899,7 +3901,7 @@ console.log("Page actuelle:", currentPage);
                 return `
                     <button type="button" class="appel-ligne ${present ? "est-present" : "est-absent"}" data-id="${e.id}">
                         <span class="appel-ic">${present ? "✅" : "❌"}</span>
-                        <span class="appel-nom" dir="auto">${e.prenom} ${e.nom}</span>
+                        <span class="appel-nom" dir="auto">${echapperHtml(e.prenom)} ${echapperHtml(e.nom)}</span>
                         <span class="appel-statut">${present ? "Présent" : "Absent"}</span>
                     </button>
                 `;
@@ -4049,7 +4051,7 @@ console.log("Page actuelle:", currentPage);
 
                 }).join("");
 
-                return `<tr><th dir="auto">${e.prenom} ${e.nom}</th>${cases}<td class="reg-total">${presents}/${comptees}</td></tr>`;
+                return `<tr><th dir="auto">${echapperHtml(e.prenom)} ${echapperHtml(e.nom)}</th>${cases}<td class="reg-total">${presents}/${comptees}</td></tr>`;
 
             }).join("");
 
@@ -4716,6 +4718,11 @@ console.log("Page actuelle:", currentPage);
                 return;
             }
 
+            if (data && data.erreur) {
+                showToast(data.erreur, "error");
+                return;
+            }
+
             showToast(`Compte lié à ${data.prenom} ✅`, "success");
 
             setTimeout(function () {
@@ -5162,7 +5169,7 @@ console.log("Page actuelle:", currentPage);
 
                         <span class="student-label">MON ENFANT</span>
 
-                        <h2 dir="auto">${enfant.prenom} ${enfant.nom}</h2>
+                        <h2 dir="auto">${echapperHtml(enfant.prenom)} ${echapperHtml(enfant.nom)}</h2>
 
                         <p>Classe : <bdi>${enfant.classe || "—"}</bdi></p>
 

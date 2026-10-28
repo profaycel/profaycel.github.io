@@ -422,6 +422,16 @@ async function demarrer(){
   // En aperçu « تلميذ تجريبي » (apercu.js), le professeur voit la leçon exactement comme un élève (sans « وضع الأستاذ »)
   window.PF_ADMIN = admin && !(window.pfApercu && window.pfApercu(UTIL));
   if (!admin && role !== "eleve"){ location.href = "../index.html"; return }
+  // Un élève ne peut ouvrir que les leçons de son niveau (l'administrateur peut tout voir)
+  if (!admin){
+    const f = await sb().from("eleves").select("classe").eq("user_id", UTIL.id);
+    const niveaux = (f.data || []).map(x => x.classe).filter(Boolean);
+    const cat = (window.CATALOGUE_PAR_ID || {})[LECON.id];
+    if (cat && !niveaux.includes(cat.niveau)){
+      app.innerHTML = `<div class="carte centre"><h2>هذا الدرس ليس من مستواك</h2><p>تجد دروس مستواك في صفحة «دروسي».</p><a class="btn" href="index.html" style="text-decoration:none">← دروسي</a></div>`;
+      return;
+    }
+  }
   const { data, error } = await sb().from("progression").select("*").eq("user_id", UTIL.id).eq("lecon", LECON.id).maybeSingle();
   if (error) console.error(error);
   etat = { etoiles:[], erreurs:{}, examen:null, essais:0 };
