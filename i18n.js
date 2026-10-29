@@ -275,6 +275,22 @@
         "Numéro WhatsApp invalide.": "رقم واتساب غير صالح.",
         "Impossible d'envoyer la demande. Réessayez dans un instant.": "تعذّر إرسال الطلب. أعد المحاولة بعد قليل.",
 
+        // Cours privés payants (formulaire + menu)
+        "💰 Cours payants": "💰 الدروس المدفوعة",
+        "Cours privés payants à distance | Profaycel": "دروس خصوصية مدفوعة عن بُعد | Profaycel",
+        "COURS PRIVÉS PAYANTS": "دروس خصوصية مدفوعة",
+        "aux cours privés payants.": "في الدروس الخصوصية المدفوعة.",
+        "Cours particuliers à distance avec le professeur, en direct par vidéo. Ce formulaire concerne uniquement ces cours payants : il n'est pas nécessaire pour utiliser le site.":
+            "دروس خصوصية عن بُعد مع الأستاذ، مباشرة بالفيديو. هذه الاستمارة خاصة بهذه الدروس المدفوعة فقط، ولا يلزم ملؤها لاستعمال الموقع.",
+        "60 DT par mois": "60 د في الشهر",
+        "Cours privés à distance (payants)": "دروس خصوصية عن بُعد (مدفوعة)",
+        "Email (celui de votre compte sur le site, si vous en avez un)": "الإيميل (إيميل حسابك في الموقع إن كان لديك حساب)",
+        "Écrivez votre email.": "اكتب الإيميل.",
+        "Gouvernorat": "الولاية",
+        "Ville (facultatif)": "المدينة (اختياري)",
+        "Votre ville ou village": "مدينتك أو قريتك",
+        "Choisissez le gouvernorat.": "اختر الولاية.",
+
         // Page introuvable
         "Oups, cette page": "عذرًا، هذه الصفحة",
         "n'existe pas.": "غير موجودة.",
