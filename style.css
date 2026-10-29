@@ -7856,3 +7856,35 @@ html[dir="rtl"] .auth-parent-arrow {
 .auth-parent-banner[hidden] {
     display: none;
 }
+
+/* Tarif des cours privés payants (inscription-enfant.html) */
+.demande-tarif {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    margin: 0 0 22px;
+    padding: 14px 18px;
+
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 14px;
+}
+
+.demande-tarif-ic {
+    font-size: 30px;
+    line-height: 1;
+}
+
+.demande-tarif strong {
+    display: block;
+    color: #166534;
+    font-size: 1.15rem;
+    font-weight: 800;
+}
+
+.demande-tarif span:not(.demande-tarif-ic) {
+    display: block;
+    color: var(--gray, #475569);
+    font-size: 0.88rem;
+}
