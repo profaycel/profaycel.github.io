@@ -489,7 +489,7 @@ function setupModeTabs(onChange) {
             tab.setAttribute("aria-selected", tab.dataset.mode === mode ? "true" : "false");
         });
 
-        if (mode !== "demandes") {
+        if (mode !== "demandes" && mode !== "payant") {
             try {
                 localStorage.setItem("profaycel_mode_admin", mode);
             } catch (e) {
@@ -1108,13 +1108,15 @@ document.addEventListener("DOMContentLoaded", function () {
             const nom = demandeForm.elements["nom"].value.trim();
             const niveau = demandeForm.elements["niveau"].value;
             const etablissement = demandeForm.elements["etablissement"].value.trim();
+            const gouvernorat = demandeForm.elements["gouvernorat"].value;
+            const ville = demandeForm.elements["ville"].value.trim();
             const mathsChoisi = demandeForm.querySelector('input[name="maths"]:checked');
             const email = demandeForm.elements["email"].value.trim().toLowerCase();
             const whatsapp = normaliserWhatsApp(demandeForm.elements["whatsapp"].value);
             const message = demandeForm.elements["message"].value.trim();
 
             if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                showToast("Écrivez l'email utilisé pour créer le compte.", "warning");
+                showToast("Écrivez votre email.", "warning");
                 return;
             }
 
@@ -1130,6 +1132,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (etablissement.length < 2) {
                 showToast("Écrivez l'établissement scolaire.", "warning");
+                return;
+            }
+
+            if (!gouvernorat) {
+                showToast("Choisissez le gouvernorat.", "warning");
                 return;
             }
 
@@ -1158,6 +1165,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     nom: nom,
                     niveau: niveau,
                     etablissement: etablissement,
+                    gouvernorat: gouvernorat,
+                    ville: ville || null,
                     niveau_maths: mathsChoisi.value,
                     whatsapp: whatsapp,
                     email: email,
@@ -1594,6 +1603,7 @@ console.log("Page actuelle:", currentPage);
                         <strong>Niveau :</strong> <bdi>${echapperHtml(d.niveau)}</bdi>
                         <br>
                         <strong>Établissement :</strong> <span dir="auto">${echapperHtml(d.etablissement)}</span>
+                        ${d.gouvernorat || d.ville ? `<br><strong>Lieu :</strong> <span dir="auto">${echapperHtml([d.gouvernorat, d.ville].filter(Boolean).join(" — "))}</span>` : ""}
                         <br>
                         <strong>Maths :</strong> ${LIBELLE_MATHS[d.niveau_maths] || "—"}
                         <br>
@@ -1710,7 +1720,7 @@ console.log("Page actuelle:", currentPage);
                         .update({ statut: "traitee" })
                         .eq("id", d.id);
 
-                    showToast("Élève accepté : il est dans la liste « À distance » !", "success");
+                    showToast("Élève accepté : il est dans la liste « 💰 Payants » !", "success");
                     loadDemandes();
 
                     if (typeof loadEleves === "function") {
@@ -1805,15 +1815,20 @@ console.log("Page actuelle:", currentPage);
             const mode = modeEleves ? modeEleves() : "presentiel";
 
             const presentiels = elevesCharges.filter(function (e) { return e.mode !== "distance"; });
-            // À distance : seulement les vrais inscrits (email confirmé) qui ont choisi leur niveau
+            // Payants : les élèves à distance dont la demande a été acceptée (date de début renseignée)
+            const payants = elevesCharges.filter(function (e) {
+                return e.mode === "distance" && e.classe && e.date_debut;
+            });
+            // À distance : seulement les vrais inscrits (email confirmé) qui ont choisi leur niveau, pas encore acceptés
             const distances = elevesCharges.filter(function (e) {
-                return e.mode === "distance" && e.classe && !nonConfirmes.has(e.id);
+                return e.mode === "distance" && e.classe && !e.date_debut && !nonConfirmes.has(e.id);
             });
 
             document.querySelector("#eleves-count-presentiel").textContent = `(${presentiels.length})`;
             document.querySelector("#eleves-count-distance").textContent = `(${distances.length})`;
+            document.querySelector("#eleves-count-payant").textContent = `(${payants.length})`;
 
-            const listeMode = mode === "distance" ? distances : presentiels;
+            const listeMode = mode === "payant" ? payants : (mode === "distance" ? distances : presentiels);
 
             // --- Choix de la classe (liste déroulante) ---
             // Les 3 classes du cours sont toujours proposées ; une autre classe
@@ -1850,7 +1865,7 @@ console.log("Page actuelle:", currentPage);
             });
 
             if (liste.length === 0) {
-                elevesGrid.innerHTML = `<p>Aucun élève ${mode === "distance" ? "à distance" : "en présentiel"} en <bdi>${classeEleves}</bdi>.</p>`;
+                elevesGrid.innerHTML = `<p>Aucun élève ${mode === "payant" ? "payant" : (mode === "distance" ? "à distance" : "en présentiel")} en <bdi>${classeEleves}</bdi>.</p>`;
                 return;
             }
 
@@ -2545,7 +2560,7 @@ console.log("Page actuelle:", currentPage);
 
                 eleveForm.reset();
                 document.querySelector("#eleve-id").value = "";
-                document.querySelector("#eleve-mode").value = modeEleves && modeEleves() === "distance" ? "distance" : "presentiel";
+                document.querySelector("#eleve-mode").value = modeEleves && (modeEleves() === "distance" || modeEleves() === "payant") ? "distance" : "presentiel";
 
                 modalTitle.textContent = "Ajouter un élève";
 
@@ -5358,13 +5373,6 @@ console.log("Page actuelle:", currentPage);
             const eleve = eleves[0];
 
             console.log("Élève:", eleve);
-
-            // La demande de cours à distance n'a de sens que pour un élève en ligne pas encore accepté
-            const banniereDemande = document.querySelector("#eleve-demande-banner");
-
-            if (banniereDemande && (eleve.mode !== "distance" || eleve.date_debut)) {
-                banniereDemande.hidden = true;
-            }
 
             eleveNameEl.textContent = `${eleve.prenom} ${eleve.nom}`.trim();
             eleveClasseEl.innerHTML = eleve.classe
