@@ -1636,7 +1636,7 @@ console.log("Page actuelle:", currentPage);
             }
 
             if (demandesChargees.length === 0) {
-                elevesGrid.innerHTML = "<p>Aucune demande d'inscription pour le moment.</p>";
+                elevesGrid.innerHTML = "<p>Aucune demande de cours payants pour le moment.</p>";
                 return;
             }
 
