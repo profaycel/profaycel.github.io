@@ -18,8 +18,12 @@
 ## Pages
 
 - Public : `index.html` (accueil), `register.html`, `login.html`, `confidentialite.html`,
-  `inscription-enfant.html` (demande d'inscription aux cours à distance avec le professeur, avec l'email du compte ; accessible depuis `eleve.html` (bannière en haut, masquée une fois l'élève accepté ou en salle) et la section « Mes cours » de l'accueil, PAS depuis le bloc « التسجيل » ; bouton « ✅ Accepter » dans « 📩 Demandes » qui complète la fiche élève trouvée par l'email → table
-  `demandes_inscription`, visible dans l'onglet « 📩 Demandes » de `eleves.html`)
+  `inscription-enfant.html` (demande d'inscription aux **cours privés payants à distance**, 60 DT par mois ; le formulaire
+  demande aussi le gouvernorat (obligatoire) et la ville ; il n'est plus proposé dans l'accueil ni dans `eleve.html` : seulement
+  par le lien discret « 💰 Cours payants » dans le menu du haut de chaque page publique ; bouton « ✅ Accepter » dans
+  « 📩 Demandes » qui complète la fiche élève trouvée par l'email (et met `date_debut`) → table `demandes_inscription`
+  (colonnes `gouvernorat`, `ville`), visible dans l'onglet « 📩 Demandes » de `eleves.html` ; un élève accepté passe dans l'onglet
+  « 💰 Payants » de `eleves.html` (= élèves à distance avec `date_debut`) et sort de « 💻 À distance », qui ne garde que les inscrits libres)
   - Téléphone : bouton rouge qui clignote « S'inscrire » dans la barre du haut (`.header-cta-inscription`,
     ajouté par `script.js` quand personne n'est connecté).
   - Inscription élève : `register.html` ne demande plus ni nom ni niveau (élève) ; au premier passage dans

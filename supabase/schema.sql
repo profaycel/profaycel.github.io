@@ -827,6 +827,8 @@ create table if not exists public.demandes_inscription (
 );
 
 alter table public.demandes_inscription add column if not exists email text check (email is null or char_length(email) <= 120);
+alter table public.demandes_inscription add column if not exists gouvernorat text check (gouvernorat is null or char_length(gouvernorat) <= 60);
+alter table public.demandes_inscription add column if not exists ville text check (ville is null or char_length(ville) <= 60);
 
 alter table public.demandes_inscription enable row level security;
 
@@ -1067,6 +1069,8 @@ begin
     new.etablissement := regexp_replace(new.etablissement, '[<>"`]', '', 'g');
     new.message       := regexp_replace(new.message,       '[<>"`]', '', 'g');
     new.email         := regexp_replace(new.email,         '[<>"`]', '', 'g');
+    new.gouvernorat   := regexp_replace(new.gouvernorat,   '[<>"`]', '', 'g');
+    new.ville         := regexp_replace(new.ville,         '[<>"`]', '', 'g');
     if tg_op = 'INSERT' then
         if (select count(*) from public.demandes_inscription
              where whatsapp = new.whatsapp and created_at > now() - interval '1 day') >= 3 then
