@@ -1190,3 +1190,295 @@ create index if not exists paiements_eleve_id_idx  on public.paiements (eleve_id
 create index if not exists parents_user_id_idx     on public.parents (user_id);
 create index if not exists presences_eleve_id_idx  on public.presences (eleve_id);
 create index if not exists resultats_eleve_id_idx  on public.resultats (eleve_id);
+
+
+-- ============================================================
+-- 12. TABLEAU D'HONNEUR HEBDOMADAIRE + « رسائلي » (31/10/2026)
+-- ============================================================
+-- Principe :
+--  * progression_journal : chaque progrès (étoiles gagnées, examen réussi) est noté avec sa date
+--    → on peut compter « les 7 derniers jours ». Personne n'y a accès par l'API sauf l'administrateur.
+--  * tableau_honneur() : les 3 premiers de chaque niveau (prénom + initiale du nom + chiffres), rien d'autre.
+--    Appelable sans connexion (page d'accueil) ; ne montre jamais email, téléphone, nom complet.
+--  * messages : messages personnels de l'élève (« رسائلي »), en lecture seule pour lui.
+--    Écriture uniquement par les fonctions ci-dessous (security definer).
+
+-- 12.1 Journal des progrès
+create table if not exists public.progression_journal (
+    id         bigint generated always as identity primary key,
+    user_id    uuid not null references auth.users (id) on delete cascade,
+    lecon      text not null,
+    d_etoiles  int  not null default 0,
+    d_lecons   int  not null default 0,
+    cree_le    timestamptz not null default now()
+);
+create index if not exists progression_journal_date_idx on public.progression_journal (cree_le desc);
+create index if not exists progression_journal_user_idx on public.progression_journal (user_id, cree_le desc);
+alter table public.progression_journal enable row level security;
+-- aucun accès par l'API (ni élèves, ni anonymes) : seules les fonctions security definer ci-dessous le lisent
+revoke all on public.progression_journal from anon, authenticated;
+
+create or replace function prive.noter_progres()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+    anc int := 0;
+    nou int := 0;
+    dl  int := 0;
+begin
+    select coalesce(sum(x), 0) into nou from unnest(new.etoiles) as x;
+    if tg_op = 'UPDATE' then
+        select coalesce(sum(x), 0) into anc from unnest(old.etoiles) as x;
+    end if;
+    if new.examen_score is not null and (tg_op = 'INSERT' or old.examen_score is null) then
+        dl := 1;
+    end if;
+    if nou > anc or dl > 0 then
+        insert into public.progression_journal (user_id, lecon, d_etoiles, d_lecons)
+        values (new.user_id, new.lecon, greatest(nou - anc, 0), dl);
+    end if;
+    return new;
+exception when others then
+    -- le journal ne doit JAMAIS empêcher un élève d'enregistrer sa progression
+    return new;
+end;
+$$;
+
+drop trigger if exists progression_noter on public.progression;
+create trigger progression_noter
+    after insert or update on public.progression
+    for each row execute function prive.noter_progres();
+
+-- 12.2 Classement des 7 derniers jours (interne : contient user_id)
+--      Tri : leçons réussies, puis étoiles, puis pourcentage d'avancement global du niveau.
+create or replace function prive.classement_semaine()
+returns table (user_id uuid, niveau text, rang int, prenom text, initiale text, lecons int, etoiles int, pct int)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+    with sem as (
+        select j.user_id, sum(j.d_lecons)::int as lecons, sum(j.d_etoiles)::int as etoiles
+          from public.progression_journal j
+         where j.cree_le >= now() - interval '7 days'
+         group by j.user_id
+        having sum(j.d_lecons) > 0 or sum(j.d_etoiles) > 0
+    ),
+    nb as (
+        select pa.niveau, sum(array_length(pa.lecons, 1))::int as total
+          from public.parties pa
+         group by pa.niveau
+    ),
+    av as (
+        select p.user_id,
+               sum(((cardinality(array_remove(p.etoiles, 0))
+                     + case when p.examen_score is not null then 1 else 0 end)::numeric)
+                   / (coalesce(array_length(p.etoiles, 1), 0) + 1)) as somme
+          from public.progression p
+         group by p.user_id
+    ),
+    fiche as (
+        select distinct on (e.user_id) e.user_id, e.prenom, e.nom, e.classe, e.statut
+          from public.eleves e
+         where e.user_id is not null
+         order by e.user_id, e.id
+    ),
+    base as (
+        select s.user_id, f.classe as niveau, f.prenom, left(btrim(f.nom), 1) as initiale,
+               s.lecons, s.etoiles,
+               coalesce(least(100, round(100 * a.somme / nullif(n.total, 0))), 0)::int as pct
+          from sem s
+          join fiche f on f.user_id = s.user_id
+          join auth.users u on u.id = s.user_id
+          left join av a on a.user_id = s.user_id
+          left join nb n on n.niveau = f.classe
+         where f.statut is distinct from 'archive'
+           and coalesce(btrim(f.prenom), '') <> ''
+           and coalesce(btrim(f.classe), '') <> ''
+           and lower(coalesce(u.email, '')) <> 'faycel.khlifiii@gmail.com'
+    ),
+    cl as (
+        select b.*,
+               row_number() over (partition by b.niveau
+                                  order by b.lecons desc, b.etoiles desc, b.pct desc, b.prenom) as rang
+          from base b
+    )
+    select c.user_id, c.niveau, c.rang::int, c.prenom, c.initiale, c.lecons, c.etoiles, c.pct
+      from cl c
+     where c.rang <= 3
+     order by c.niveau, c.rang;
+$$;
+revoke all on function prive.classement_semaine() from public, anon, authenticated;
+
+-- 12.3 Version publique : sans user_id, appelable par tout le monde
+create or replace function public.tableau_honneur()
+returns table (niveau text, rang int, prenom text, initiale text, lecons int, etoiles int, pct int)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+    select c.niveau, c.rang, c.prenom, c.initiale, c.lecons, c.etoiles, c.pct
+      from prive.classement_semaine() c
+     order by c.niveau, c.rang;
+$$;
+revoke all on function public.tableau_honneur() from public;
+grant execute on function public.tableau_honneur() to anon, authenticated;
+
+-- 12.4 « رسائلي » : messages personnels de l'élève
+create table if not exists public.messages (
+    id       bigint generated always as identity primary key,
+    user_id  uuid not null references auth.users (id) on delete cascade,
+    type     text not null default 'prof',      -- 'honneur' | 'certificat' | 'prof'
+    titre    text not null,
+    texte    text not null,
+    cle      text,                              -- évite les doublons (ex. 'honneur-2026-S44')
+    lu       boolean not null default false,
+    cree_le  timestamptz not null default now(),
+    unique (user_id, cle)
+);
+create index if not exists messages_user_idx on public.messages (user_id, cree_le desc);
+alter table public.messages enable row level security;
+drop policy if exists lecture_perso on public.messages;
+create policy lecture_perso on public.messages for select to authenticated
+    using (user_id = auth.uid() or public.is_admin());
+revoke all on public.messages from anon, authenticated;
+grant select on public.messages to authenticated;   -- lecture seule (policy lecture_perso)
+
+-- Marquer tous mes messages comme lus
+create or replace function public.marquer_messages_lus()
+returns void
+language sql
+security definer
+set search_path = ''
+as $$
+    update public.messages set lu = true where user_id = auth.uid() and not lu;
+$$;
+revoke all on function public.marquer_messages_lus() from public, anon;
+grant execute on function public.marquer_messages_lus() to authenticated;
+
+-- Message de félicitations hebdomadaire : créé quand l'élève ouvre son espace et se trouve dans le top 3
+-- (un seul message par semaine ISO). On garde seulement les 30 derniers messages de chaque élève.
+create or replace function public.generer_mes_messages()
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+    uid   uuid := auth.uid();
+    h     record;
+    cle_s text;
+    v     int;
+    ti    text;
+    tx    text;
+begin
+    if uid is null then
+        return;
+    end if;
+
+    cle_s := 'honneur-' || to_char(now() at time zone 'Africa/Tunis', 'IYYY"-S"IW');
+
+    select c.* into h from prive.classement_semaine() c where c.user_id = uid and c.rang <= 3;
+    if found then
+        v := abs(hashtext(uid::text || cle_s)) % 3;
+        if h.rang = 1 then
+            ti := '🥇 المرتبة الأولى هذا الأسبوع';
+            tx := (array[
+                'مبروك يا ' || h.prenom || '! حلّ اسمك في المرتبة الأولى بين تلاميذ ' || h.niveau || ' هذا الأسبوع، وهذه ثمرة جدّ واجتهاد. هذا الإيقاع الجميل يستحقّ أن يستمرّ. 🌟',
+                'ما شاء الله يا ' || h.prenom || '! تصدّر اسمك لوحة الشرف في ' || h.niveau || ' هذا الأسبوع. فخور بما تحقّق، وننتظر منك المزيد. 💪',
+                'تحيّة إكبار يا ' || h.prenom || '! المرتبة الأولى في ' || h.niveau || ' لم تأتِ صدفة، بل جاءت من تمارين كثيرة وصبر طويل. بالتوفيق دائمًا. 🏆'
+            ])[v + 1];
+        elsif h.rang = 2 then
+            ti := '🥈 المرتبة الثانية هذا الأسبوع';
+            tx := (array[
+                'مبروك يا ' || h.prenom || '! حلّ اسمك في المرتبة الثانية في ' || h.niveau || ' هذا الأسبوع، والقمّة قريبة منك. درس واحد إضافي قد يغيّر الترتيب. 🚀',
+                'عمل رائع يا ' || h.prenom || '! جاء اسمك ثانيًا في ' || h.niveau || ' هذا الأسبوع. الاستمرار هو سرّ التقدّم، والمرتبة الأولى في المتناول. ✨',
+                'تهانينا يا ' || h.prenom || '! المرتبة الثانية في ' || h.niveau || ' إنجاز يستحقّ الاحتفاء، والمجال مفتوح للتقدّم أكثر. 💪'
+            ])[v + 1];
+        else
+            ti := '🥉 المرتبة الثالثة هذا الأسبوع';
+            tx := (array[
+                'مبروك يا ' || h.prenom || '! دخل اسمك المراتب الثلاث الأولى في ' || h.niveau || ' هذا الأسبوع. بداية قويّة، والأسبوع القادم فرصة جديدة للصعود. 🌟',
+                'عمل جميل يا ' || h.prenom || '! المرتبة الثالثة في ' || h.niveau || ' هذا الأسبوع ثمرة مثابرة تستحقّ التقدير، وكل درس جديد يقرّبك من الصدارة. 🚀',
+                'تهانينا يا ' || h.prenom || '! أنت ضمن أفضل ثلاثة تلاميذ في ' || h.niveau || ' هذا الأسبوع. الاستمرار على هذا النهج سيصنع الفرق. 👏'
+            ])[v + 1];
+        end if;
+
+        insert into public.messages (user_id, type, titre, texte, cle)
+        values (uid, 'honneur', ti, tx || E'\n— الأستاذ فيصل', cle_s)
+        on conflict (user_id, cle) do nothing;
+    end if;
+
+    delete from public.messages m
+     where m.user_id = uid
+       and m.id not in (select m2.id from public.messages m2
+                         where m2.user_id = uid
+                         order by m2.cree_le desc, m2.id desc
+                         limit 30);
+end;
+$$;
+revoke all on function public.generer_mes_messages() from public, anon;
+grant execute on function public.generer_mes_messages() to authenticated;
+
+-- Message automatique quand un certificat est délivré
+create or replace function prive.message_certificat()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+    insert into public.messages (user_id, type, titre, texte, cle)
+    values (new.user_id, 'certificat', '🎓 شهادة جديدة في رصيدك',
+            'مبروك! اكتملت دروس « ' || new.titre || ' » وصدرت شهادتك باسمك. يمكنك عرضها وتحميلها من « دروسي التفاعلية ». 🎉' || E'\n— الأستاذ فيصل',
+            'certificat-' || new.numero)
+    on conflict (user_id, cle) do nothing;
+    return new;
+exception when others then
+    -- le message ne doit JAMAIS empêcher la délivrance d'un certificat
+    return new;
+end;
+$$;
+drop trigger if exists certificats_message on public.certificats;
+create trigger certificats_message
+    after insert on public.certificats
+    for each row execute function prive.message_certificat();
+
+-- Message personnel de l'administrateur à un élève
+create or replace function public.envoyer_message(p_user uuid, p_titre text, p_texte text)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+    if not public.is_admin() then
+        raise exception 'Réservé à l''administrateur';
+    end if;
+    if coalesce(btrim(p_texte), '') = '' then
+        raise exception 'Message vide';
+    end if;
+    insert into public.messages (user_id, type, titre, texte)
+    values (p_user, 'prof', left(coalesce(nullif(btrim(p_titre), ''), '💌 رسالة من الأستاذ فيصل'), 120), left(btrim(p_texte), 1000));
+end;
+$$;
+revoke all on function public.envoyer_message(uuid, text, text) from public, anon;
+grant execute on function public.envoyer_message(uuid, text, text) to authenticated;
+
+-- 12.5 Amorçage unique (31/10/2026) : reprend l'activité des 7 derniers jours depuis la table progression,
+--      pour que le tableau d'honneur ne démarre pas vide. Les leçons réussies sont exactes (examen_le) ;
+--      les étoiles sont approximatives (toutes les étoiles des leçons touchées pendant la semaine).
+--      Ne fait rien si le journal contient déjà des lignes.
+insert into public.progression_journal (user_id, lecon, d_etoiles, d_lecons, cree_le)
+select p.user_id, p.lecon,
+       coalesce((select sum(x) from unnest(p.etoiles) as x), 0)::int,
+       case when p.examen_score is not null and coalesce(p.examen_le, p.updated_at) >= now() - interval '7 days' then 1 else 0 end,
+       p.updated_at
+  from public.progression p
+ where p.updated_at >= now() - interval '7 days'
+   and not exists (select 1 from public.progression_journal);
