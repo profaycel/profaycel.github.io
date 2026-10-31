@@ -160,7 +160,7 @@ function question(){
   } else {
     const num = ["nombre","ensemble","expr","facteur","coord"].includes(q.type);
     const clavier = q.type === "nombre" && q.rep.every(r=>r>=0) ? 'inputmode="numeric"' : "";
-    const ph = q.ph || { nombre:"اكتب العدد", ensemble:"2 , -6", expr:"a - 3", facteur:"2(a + 3)", coord:"(-3 , 2)", mot:"اكتب الكلمة" }[q.type];
+    const ph = q.ph || (FR() ? { nombre:"Écris le nombre", ensemble:"2 , -6", expr:"2x + 5", facteur:"3(x + 2)", coord:"(-3 , 2)", mot:"Écris la réponse" } : { nombre:"اكتب العدد", ensemble:"2 , -6", expr:"a - 3", facteur:"2(a + 3)", coord:"(-3 , 2)", mot:"اكتب الكلمة" })[q.type];
     zone = `<input class="rep" id="rep" ${num?'dir="ltr"':''} ${clavier} placeholder="${ph}" autocomplete="off" onkeydown="if(event.key==='Enter')verifier()">`
       + (q.type==="expr" && q.aide ? `<small style="color:var(--gris)">${q.aide}</small>` : "")
       + (q.type==="expr" && !q.aide ? '<small style="color:var(--gris)">اكتب العبارة مختصرة، بدون أقواس (مثال: <span class="ltr">a - 3</span> أو <span class="ltr">7 - a</span>).</small>' : "")
