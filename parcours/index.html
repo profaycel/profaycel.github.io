@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="moteur.css?v=3">
+<link rel="stylesheet" href="../honneur.css?v=1">
 <style>
   .lecon{text-decoration:none}
   .lecon .prog{margin:8px 0 0;height:8px}
@@ -22,6 +23,7 @@
 </style>
 </head>
 <body>
+<script src="../honneur.js?v=1"></script>
 <nav class="pf-nav"><div class="wrap"><a class="pf-logo" href="../index.html">Profaycel</a><a href="../eleve.html">🏠 فضائي</a></div></nav>
 <div class="prof-bande">الأستاذ فيصل خليفي</div>
 <header class="top"><div class="wrap"><div><h1>دروسي التفاعليّة</h1><small id="sousTitre">رياضيات · الثلاثي الأوّل</small></div></div></header>
@@ -98,6 +100,12 @@ async function lancer() {
         <div class="prog"><div style="width:${pt}%"></div></div>
         <small style="color:var(--gris)">تقدّمك: ${N(pt + "%")} · الشهادات: ${N((certs.data || []).length + " / " + parties.length)} 🎓</small>
       </div>`;
+    // لوحة الشرف الأسبوعيّة (honneur.js) : تظهر في أعلى الصفحة
+    h += `<div class="carte" id="honneur-carte" data-honneur-section>
+        <h2>🏆 لوحة الشرف</h2>
+        <div style="color:var(--gris);margin-bottom:12px">أفضل تلاميذ هذا الأسبوع. اجتهد في دروسك لتصل إلى المراتب الثلاث الأولى!</div>
+        <div id="honneur-zone" data-auto="non"></div>
+      </div>`;
     if (!eleve.classe && !voirTout) {
         h += `<div class="carte centre"><h3>اختر مستواك أوّلا 📚</h3><p>لا تظهر الدروس إلا بعد اختيار المستوى الدراسي في فضائك.</p><a class="btn" href="../eleve.html" style="text-decoration:none">← فضائي</a></div>`;
     } else if (!lecons.length) {
@@ -115,6 +123,7 @@ async function lancer() {
             `<a href="certificat.html?n=${encodeURIComponent(c.numero)}"><span><b>${c.titre}</b><br><small class="ltr" style="color:var(--gris)">${c.numero}</small></span><span class="badge or">عرض ←</span></a>`).join("") + `</div>`;
     }
     app.innerHTML = h;
+    if (window.Honneur) Honneur.monter(document.getElementById("honneur-zone"), { langue: "ar", niveau: eleve.classe });
 }
 async function obtenir(partie, bouton) {
     bouton.disabled = true; bouton.textContent = "⏳ …";
