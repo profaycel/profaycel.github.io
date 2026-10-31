@@ -734,7 +734,11 @@ insert into public.parties (id, titre, niveau, detail, lecons) values
  ('9-algebre-t1', 'الجبر والحساب', '9 أساسي', '6 دروس · الثلاثي الأوّل',
   array['9-maths-divisibilite','9-maths-denombrement','9-maths-reels','9-maths-operations-r','9-maths-inverse-valeur-absolue','9-maths-produits-remarquables']),
  ('9-geometrie-t1', 'الهندسة', '9 أساسي', '3 دروس · الثلاثي الأوّل',
-  array['9-geo-reperage','9-geo-milieux','9-geo-thales'])
+  array['9-geo-reperage','9-geo-milieux','9-geo-thales']),
+ ('1-algebre-t1', 'الجبر والحساب', '1 ثانوي', '8 دروس (بالفرنسية) · الثلاثي الأوّل',
+  array['1-maths-division-divisibilite','1-maths-premiers-pgcd','1-maths-ppcm-fractions','1-maths-puissances-sci','1-maths-racines-carrees','1-maths-identites-remarquables','1-maths-ordre-valeur-absolue','1-maths-intervalles-encadrement']),
+ ('1-geometrie-t1', 'الهندسة', '1 ثانوي', '5 دروس (بالفرنسية) · الثلاثي الأوّل',
+  array['1-maths-angles','1-maths-milieux','1-maths-thales','1-maths-trigonometrie','1-maths-relations-metriques'])
 on conflict (id) do update set titre = excluded.titre, niveau = excluded.niveau, detail = excluded.detail, lecons = excluded.lecons;
 
 alter table public.certificats add column if not exists detail text;
