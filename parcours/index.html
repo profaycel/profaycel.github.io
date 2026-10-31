@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../icons/icon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="moteur.css?v=1">
+<link rel="stylesheet" href="moteur.css?v=3">
 <style>
   .lecon{text-decoration:none}
   .lecon .prog{margin:8px 0 0;height:8px}
@@ -29,7 +29,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js" integrity="sha384-TcHRA3zBbn+Lexh5n+Oil4guNPOS3rjNDpGRAN46u/s/mB2IZ50ceC6TYDU2yvgK" crossorigin="anonymous"></script>
 <script src="../supabase.js"></script>
-<script src="catalogue.js?v=15"></script>
+<script src="catalogue.js?v=17"></script>
 <script src="../apercu.js?v=1"></script>
 <script>
 const sb = () => window.supabaseClient;
@@ -70,7 +70,7 @@ async function lancer() {
         const badge = ok ? '<span class="badge or">✅ نجح</span>' : pc > 0 ? `<span class="badge vert ltr">${pc}%</span>` : "";
         return `<a class="niveau lecon" href="lecon.html?l=${l.id}">
           <span class="num">${ok ? "✓" : l.partie === "geometrie" ? "📐" : "🔢"}</span>
-          <span class="info"><span class="titre">${l.titre}</span><br><span class="sous">${l.sous}</span>
+          <span class="info"><span class="titre"><bdi dir="auto">${l.titre}</bdi></span><br><span class="sous"><bdi dir="auto">${l.sous}</bdi></span>
             <div class="prog"><div style="width:${pc}%"></div></div></span>${badge}</a>`;
     };
     // Carte du certificat d'une partie (algèbre, géométrie)
