@@ -29,6 +29,17 @@
   - Inscription élève : `register.html` ne demande plus ni nom ni niveau (élève) ; au premier passage dans
     `eleve.html`, l'écran « Complète ton profil » (nom + niveau, fonction `completer_profil`) s'affiche une seule fois.
 - Élève : `eleve.html` (séances, documents par matière → trimestre, série + correction)
+- Tableau d'honneur hebdomadaire (31/10/2026) : `honneur.js` + `honneur.css`, affiché dans la section `#honneur` de `index.html`
+  (public, sans connexion) et en haut de `parcours/index.html` (« لوحة الشرف », onglet du niveau de l'élève). Il montre les 3 premiers
+  de chaque niveau sur les 7 derniers jours : prénom + initiale du nom, leçons réussies, étoiles, pourcentage (tri dans cet ordre).
+  Données : fonction Supabase `tableau_honneur()` (n'expose jamais email, téléphone ni nom complet) qui lit `progression_journal`
+  (rempli automatiquement par le trigger `prive.noter_progres()` à chaque progrès ; aucun accès API direct). Si la fonction est
+  absente, la section se cache toute seule. Le compte administrateur et les fiches « archive » sont exclus.
+- « رسائلي » (31/10/2026) : `messages.js` (+ `honneur.css`), carte en haut de `eleve.html` (`#messages-zone`). Table `messages`
+  (lecture seule pour l'élève ; écriture uniquement par fonctions) : message de félicitations hebdomadaire créé par
+  `generer_mes_messages()` quand l'élève ouvre son espace et se trouve dans le top 3 (un par semaine ISO), message automatique à la
+  délivrance d'un certificat (trigger `prive.message_certificat()`), message personnel du professeur via `envoyer_message(uuid, titre,
+  texte)` (administrateur seulement, pas encore de bouton dans les pages d'administration). Les 30 derniers messages sont gardés.
 - Parent : `parent.html` (code de l'enfant, présences, paiements)
 - Administration (en français) : `admin.html`, `eleves.html` (fiche élève + paiements),
   `parents.html`, `classes.html`, `seances-admin.html`, `presence-admin.html`
