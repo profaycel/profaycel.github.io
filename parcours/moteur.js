@@ -4,7 +4,7 @@
 //         vf (vrai/faux), nombre, mot, chiffres (choisir tous les chiffres possibles)
 // ============================================================
 const C = '<span class="case"></span>';          // خانة الرقم الناقص
-const N = s => `<span class="ltr">${s}</span>`;  // عدد أو عملية (من اليسار لليمين)
+const N = s => `<span class="ltr">${String(s).replace(/؟/g, "?")}</span>`;  // عدد أو عملية (من اليسار لليمين)
 const P = s => N(s.replace("☐", C));              // عدد فيه خانة ناقصة
 const F = (a,b) => `<span class="frac"><span>${a}</span><span>${b}</span></span>`; // كسر
 const estNum = o => /^[\d\s−\-{},.\/]+$/.test(o);       // اختيار رقمي ← من اليسار لليمين
