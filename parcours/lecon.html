@@ -28,7 +28,7 @@
 <script src="../supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha384-3zSEDfvllQohrq0PHL1fOXJuC/jSOO34H46t6UQfobFOmxE5BpjjaIJY5F2/bMnU" crossorigin="anonymous"></script>
 <script src="../apercu.js?v=1"></script>
-<script src="moteur.js?v=6"></script>
+<script src="moteur.js?v=7"></script>
 <script src="geo.js?v=2"></script>
 <script src="certificat.js?v=1"></script>
 <script src="catalogue.js?v=17"></script>
@@ -43,7 +43,7 @@
     document.getElementById("titre").textContent = l.titre;
     document.getElementById("sous").textContent = "رياضيات · " + l.niveau + (l.partie === "geometrie" ? " · هندسة" : "");
     const sc = document.createElement("script");
-    sc.src = "lecons/" + l.f + ".js?v=1";
+    sc.src = "lecons/" + l.f + ".js?v=2";
     sc.onload = function () { window.LECON = window.LECONS[id]; demarrer(); };
     sc.onerror = function () { document.getElementById("app").innerHTML = `<div class="carte centre">تعذّر تحميل الدرس. تحقّق من الأنترنت.</div>`; };
     document.body.appendChild(sc);
