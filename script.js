@@ -1906,6 +1906,33 @@ console.log("Page actuelle:", currentPage);
         // Élèves dont l'email n'est pas encore confirmé : pas de vraie inscription, on ne les montre pas
         let nonConfirmes = new Set();
 
+        // Supabase renvoie au plus 1000 lignes par requête : on lit par pages de 1000 jusqu'à la fin
+        // (sinon les élèves au-delà des 1000 premiers disparaissent de la liste).
+        async function chargerTout(construire) {
+
+            const taille = 1000;
+            let tout = [];
+
+            for (let debut = 0; ; debut += taille) {
+
+                const r = await construire().range(debut, debut + taille - 1);
+
+                if (r.error) {
+                    return { data: null, error: r.error };
+                }
+
+                const page = r.data || [];
+                tout = tout.concat(page);
+
+                if (page.length < taille) {
+                    break;
+                }
+            }
+
+            return { data: tout, error: null };
+        }
+        window.chargerTout = chargerTout;
+
         function loadEleves() {
 
             if (!window.supabaseClient) {
@@ -1913,11 +1940,14 @@ console.log("Page actuelle:", currentPage);
                 return;
             }
 
-            window.supabaseClient
-                .from("eleves")
-                .select("*, parents(prenom, nom, telephone, lien_parente), presences(present, seances(date_seance)), paiements(seances)")
-                .neq("statut", "archive")
-                .order("prenom", { ascending: true })
+            chargerTout(function () {
+                return window.supabaseClient
+                    .from("eleves")
+                    .select("*, parents(prenom, nom, telephone, lien_parente), presences(present, seances(date_seance)), paiements(seances)")
+                    .neq("statut", "archive")
+                    .order("prenom", { ascending: true })
+                    .order("id", { ascending: true });
+            })
                 .then(function (result) {
 
                     if (result.error) {
@@ -2851,10 +2881,13 @@ console.log("Page actuelle:", currentPage);
                 return;
             }
 
-            window.supabaseClient
-                .from("eleves")
-                .select("id, nom, prenom")
-                .order("prenom", { ascending: true })
+            chargerTout(function () {
+                return window.supabaseClient
+                    .from("eleves")
+                    .select("id, nom, prenom")
+                    .order("prenom", { ascending: true })
+                    .order("id", { ascending: true });
+            })
                 .then(function (result) {
 
                     if (result.error) {
