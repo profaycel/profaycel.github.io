@@ -116,6 +116,12 @@
   certificats de son niveau.
 - `supabase-js` est épinglé (version 2.118.0) avec une empreinte SRI dans `script.js` et les pages `parcours/`.
   Pour changer de version, recalculer l'empreinte (sha384) du fichier `dist/umd/supabase.js` correspondant.
-- Limite connue : `series/*.pdf` et `parcours/lecons/*.js` sont des fichiers publics de GitHub Pages (accessibles par
-  leur adresse exacte, même sans compte). Les cacher vraiment demande un stockage privé (Supabase Storage + liens signés).
+- **PDF des séries privés (02/11/2026)** : les PDF sont dans le stockage Supabase **privé** `documents` (chemin `series/<nom>.pdf`
+  = colonne `documents.lien`), jamais dans le dépôt GitHub. Le site crée un lien temporaire de 10 minutes au clic
+  (`urlSignee()` dans `script.js`, boutons `.doc-pdf`) ; sans compte connecté, ou hors du niveau de l'élève, le lien est refusé
+  (policy `documents_lecture_fichiers`, section 13 de `supabase/schema.sql`). Pour ajouter un PDF : l'envoyer par
+  « documents-admin.html » (jamais dans le dossier `series/` du dépôt, supprimé).
+- Limite connue : `parcours/lecons/*.js` (contenu des leçons, réponses comprises) reste un fichier public de GitHub Pages
+  (accessible par son adresse exacte, même sans compte). Même solution possible : stockage privé + liens signés.
+  Un élève connecté peut toujours enregistrer et partager un PDF qu'il a le droit de voir.
 - À activer dans Supabase (Authentication → Policies/Passwords) : « Leaked password protection ».
