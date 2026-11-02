@@ -4628,13 +4628,15 @@ console.log("Page actuelle:", currentPage);
             const image = fichiers.find(function (f) { return (f.type || "").startsWith("image/"); });
             const visible = d.statut === "publie";
 
-            const vignette = image
-                ? `<img src="${image.url}" alt="" loading="lazy">`
-                : `<span>${fichiers.length > 0 ? "PDF" : "🔗"}</span>`;
+            // Le stockage est privé : pas de miniature par adresse publique
+            const vignette = `<span>${image ? "🖼️" : (fichiers.length > 0 || (d.lien && !/^https?:/i.test(d.lien)) ? "PDF" : "🔗")}</span>`;
+            const cheminPrive = (fichiers[0] && fichiers[0].chemin) || (d.lien && !/^https?:/i.test(d.lien) ? d.lien : "");
 
             return `
                 <div class="doc-ligne${visible ? "" : " doc-masque"}" data-id="${d.id}">
-                    <a class="doc-vignette" href="${(fichiers[0] && fichiers[0].url) || d.lien || "#"}" target="_blank" rel="noopener">${vignette}</a>
+                    ${cheminPrive
+                        ? `<a class="doc-vignette doc-pdf" href="#" data-chemin="${encodeURIComponent(cheminPrive)}">${vignette}</a>`
+                        : `<a class="doc-vignette" href="${(fichiers[0] && fichiers[0].url) || d.lien || "#"}" target="_blank" rel="noopener">${vignette}</a>`}
                     <div class="doc-infos">
                         <strong dir="auto">${d.nom}</strong>
                         <small>${d.type_fichier || "Document"}${d.numero ? ` n°${d.numero}` : ""} · ${d.matiere || "—"}${fichiers.length > 1 ? ` · ${fichiers.length} pages` : ""}</small>
@@ -4818,18 +4820,26 @@ console.log("Page actuelle:", currentPage);
         let boutons = "";
 
         if (images.length > 0) {
-            boutons += `<button type="button" class="button button-primary seance-join doc-voir" data-images="${encodeURIComponent(JSON.stringify(images.map(function (f) { return f.url; })))}">👁️ Voir${images.length > 1 ? ` (${images.length} pages)` : ""}</button>`;
+            boutons += `<button type="button" class="button button-primary seance-join doc-voir" data-images="${encodeURIComponent(JSON.stringify(images.map(function (f) { return f.chemin || f.url; })))}">👁️ Voir${images.length > 1 ? ` (${images.length} pages)` : ""}</button>`;
         }
 
         autres.forEach(function (f) {
-            boutons += `<a href="${f.url}" target="_blank" rel="noopener" class="button button-primary seance-join">📄 Ouvrir</a>`;
+            if (f.chemin) {
+                boutons += `<button type="button" class="button button-primary seance-join doc-pdf" data-chemin="${encodeURIComponent(f.chemin)}">📄 Ouvrir</button>`;
+            } else {
+                boutons += `<a href="${f.url}" target="_blank" rel="noopener" class="button button-primary seance-join">📄 Ouvrir</a>`;
+            }
         });
 
         if (doc.lien) {
-            boutons += `<a href="${doc.lien}" target="_blank" rel="noopener" class="button button-primary seance-join">📄 Ouvrir</a>`;
-            // PDF hébergé sur le site : bouton de téléchargement (pour imprimer)
-            if (/\.pdf$/i.test(doc.lien) && !/^https?:/i.test(doc.lien)) {
-                boutons += `<a href="${doc.lien}" download class="button seance-join doc-telecharger">⬇️ تحميل</a>`;
+            if (/^https?:/i.test(doc.lien)) {
+                boutons += `<a href="${doc.lien}" target="_blank" rel="noopener" class="button button-primary seance-join">📄 Ouvrir</a>`;
+            } else {
+                // Fichier du stockage privé : lien temporaire créé au clic, seulement pour un compte connecté qui a le droit de le voir
+                boutons += `<button type="button" class="button button-primary seance-join doc-pdf" data-chemin="${encodeURIComponent(doc.lien)}">📄 Ouvrir</button>`;
+                if (/\.pdf$/i.test(doc.lien)) {
+                    boutons += `<button type="button" class="button seance-join doc-telecharger doc-pdf" data-dl="1" data-chemin="${encodeURIComponent(doc.lien)}">⬇️ تحميل</button>`;
+                }
             }
         }
 
@@ -5046,8 +5056,55 @@ console.log("Page actuelle:", currentPage);
     });
 
 
+    // Lien temporaire (10 minutes) vers un fichier du stockage privé : refusé si l'utilisateur n'est pas connecté
+    // ou si le document n'est pas visible pour lui (règles de la base)
+    async function urlSignee(chemin, telecharger) {
+        if (/^https?:/i.test(chemin)) {
+            return chemin;
+        }
+        const options = telecharger ? { download: chemin.split("/").pop() } : undefined;
+        const { data, error } = await window.supabaseClient.storage.from("documents").createSignedUrl(chemin, 600, options);
+        if (error || !data) {
+            throw error || new Error("lien");
+        }
+        return data.signedUrl;
+    }
+
+    document.addEventListener("click", async function (event) {
+
+        const bouton = event.target.closest(".doc-pdf");
+
+        if (!bouton) {
+            return;
+        }
+
+        event.preventDefault();
+
+        const chemin = decodeURIComponent(bouton.dataset.chemin || "");
+        const telecharger = bouton.dataset.dl === "1";
+        // On ouvre l'onglet tout de suite (sinon le téléphone bloque la fenêtre), puis on y met le lien
+        const fenetre = telecharger ? null : window.open("", "_blank");
+
+        try {
+            const url = await urlSignee(chemin, telecharger);
+            if (fenetre) {
+                fenetre.location.href = url;
+            } else {
+                window.location.href = url;
+            }
+        } catch (e) {
+            if (fenetre) {
+                fenetre.close();
+            }
+            console.error("Erreur lien fichier:", e);
+            showToast("Connecte-toi pour ouvrir ce document.", "error");
+        }
+
+    });
+
+
     // Visionneuse : photos des séries en plein écran (glisser ou flèches)
-    document.addEventListener("click", function (event) {
+    document.addEventListener("click", async function (event) {
 
         const bouton = event.target.closest(".doc-voir");
 
@@ -5055,7 +5112,16 @@ console.log("Page actuelle:", currentPage);
             return;
         }
 
-        const images = JSON.parse(decodeURIComponent(bouton.dataset.images));
+        let images;
+
+        try {
+            images = await Promise.all(JSON.parse(decodeURIComponent(bouton.dataset.images)).map(function (c) { return urlSignee(c, false); }));
+        } catch (e) {
+            console.error("Erreur lien photos:", e);
+            showToast("Connecte-toi pour voir ce document.", "error");
+            return;
+        }
+
         let index = 0;
 
         const fond = document.createElement("div");
