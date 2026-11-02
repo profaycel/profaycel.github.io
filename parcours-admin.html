@@ -265,48 +265,6 @@
 <script src="parcours/moteur.js?v=7"></script>
 <script src="parcours/geo.js?v=2"></script>
 <script src="parcours/catalogue.js?v=17"></script>
-<script src="parcours/lecons/lecon1-divisibilite.js?v=1"></script>
-<script src="parcours/lecons/lecon2-entiers-relatifs.js?v=1"></script>
-<script src="parcours/lecons/lecon3-addition-soustraction.js?v=1"></script>
-<script src="parcours/lecons/lecon4-multiplication.js?v=1"></script>
-<script src="parcours/lecons/lecon5-rationnels.js?v=1"></script>
-<script src="parcours/lecons/lecon6-addition-q.js?v=1"></script>
-<script src="parcours/lecons/geo1-symetrie-centrale.js?v=1"></script>
-<script src="parcours/lecons/geo2-angles.js?v=1"></script>
-<script src="parcours/lecons/7-lecon1-ensembles.js?v=1"></script>
-<script src="parcours/lecons/7-lecon2-addition-soustraction.js?v=1"></script>
-<script src="parcours/lecons/7-lecon3-multiplication-priorites.js?v=1"></script>
-<script src="parcours/lecons/7-lecon4-puissances.js?v=2"></script>
-<script src="parcours/lecons/7-lecon5-division-diviseurs.js?v=1"></script>
-<script src="parcours/lecons/7-lecon6-premiers.js?v=1"></script>
-<script src="parcours/lecons/7-lecon7-multiples.js?v=1"></script>
-<script src="parcours/lecons/7-lecon8-fractions.js?v=1"></script>
-<script src="parcours/lecons/7-geo1-droites.js?v=1"></script>
-<script src="parcours/lecons/7-geo2-mediatrice.js?v=1"></script>
-<script src="parcours/lecons/7-geo3-cercle-droite.js?v=1"></script>
-<script src="parcours/lecons/7-geo4-angles.js?v=1"></script>
-<script src="parcours/lecons/9-lecon1-divisibilite.js?v=1"></script>
-<script src="parcours/lecons/9-lecon2-denombrement.js?v=2"></script>
-<script src="parcours/lecons/9-lecon3-reels.js?v=2"></script>
-<script src="parcours/lecons/9-lecon4-operations-r.js?v=2"></script>
-<script src="parcours/lecons/9-lecon5-inverse-valeur-absolue.js?v=1"></script>
-<script src="parcours/lecons/9-lecon6-produits-remarquables.js?v=1"></script>
-<script src="parcours/lecons/9-geo1-reperage.js?v=1"></script>
-<script src="parcours/lecons/9-geo2-milieux.js?v=1"></script>
-<script src="parcours/lecons/9-geo3-thales.js?v=1"></script>
-<script src="parcours/lecons/1-lecon1-division-divisibilite.js?v=1"></script>
-<script src="parcours/lecons/1-lecon2-premiers-pgcd.js?v=1"></script>
-<script src="parcours/lecons/1-lecon3-ppcm-fractions.js?v=1"></script>
-<script src="parcours/lecons/1-lecon4-puissances-scientifique.js?v=1"></script>
-<script src="parcours/lecons/1-lecon5-racines-carrees.js?v=1"></script>
-<script src="parcours/lecons/1-lecon6-identites-remarquables.js?v=1"></script>
-<script src="parcours/lecons/1-lecon7-ordre-valeur-absolue.js?v=1"></script>
-<script src="parcours/lecons/1-lecon8-intervalles-encadrement.js?v=1"></script>
-<script src="parcours/lecons/1-geo1-angles.js?v=1"></script>
-<script src="parcours/lecons/1-geo2-milieux.js?v=1"></script>
-<script src="parcours/lecons/1-geo3-thales.js?v=1"></script>
-<script src="parcours/lecons/1-geo4-trigonometrie.js?v=1"></script>
-<script src="parcours/lecons/1-geo5-relations-metriques.js?v=1"></script>
 <script>
 (function () {
 
@@ -326,6 +284,15 @@
     async function charger() {
         for (let i = 0; i < 100 && !window.supabaseClient; i++) await new Promise(r => setTimeout(r, 100));
         const sb = window.supabaseClient;
+        // Contenu des leçons : stockage privé, lu par le compte administrateur
+        window.LECONS = window.LECONS || {};
+        await Promise.all(window.CATALOGUE.map(async l => {
+            const r = await sb.storage.from("lecons").download("lecons/" + l.f + ".js");
+            if (r.error || !r.data) { console.error("Leçon non chargée:", l.f, r.error); return; }
+            const sc = document.createElement("script");
+            sc.textContent = await r.data.text();
+            document.head.appendChild(sc);
+        }));
         // Lecture par pages de 1000 (limite de Supabase par requête)
         const toutLire = async (construire) => {
             let tout = [];
