@@ -50,9 +50,7 @@
   - `index.html` (« دروسي », leçons du niveau de l'élève), `lecon.html?l=<id>` (une leçon),
     `certificat.html?n=PF-AAAA-NNNN` (vérification publique d'un certificat, QR code).
   - `moteur.js` (moteur des leçons), `geo.js` (figures SVG), `certificat.js` (certificat),
-    `catalogue.js` (liste des leçons), `lecons/*.js` (contenu de chaque leçon).
-  - Ajouter une leçon : créer `parcours/lecons/<f>.js` puis l'ajouter dans `catalogue.js`
-    (et dans la liste des scripts de `parcours-admin.html`).
+    `catalogue.js` (liste des leçons), contenu de chaque leçon : stockage privé `lecons` (voir « Sécurité »).
   - Tables Supabase `progression` (une ligne par élève et par leçon), `parties` et `certificats`
     (UN certificat par partie : algèbre, géométrie ; numéro unique, nom pris dans la fiche élève) ;
     fonctions `delivrer_certificat_partie`,
@@ -121,7 +119,10 @@
   (`urlSignee()` dans `script.js`, boutons `.doc-pdf`) ; sans compte connecté, ou hors du niveau de l'élève, le lien est refusé
   (policy `documents_lecture_fichiers`, section 13 de `supabase/schema.sql`). Pour ajouter un PDF : l'envoyer par
   « documents-admin.html » (jamais dans le dossier `series/` du dépôt, supprimé).
-- Limite connue : `parcours/lecons/*.js` (contenu des leçons, réponses comprises) reste un fichier public de GitHub Pages
-  (accessible par son adresse exacte, même sans compte). Même solution possible : stockage privé + liens signés.
-  Un élève connecté peut toujours enregistrer et partager un PDF qu'il a le droit de voir.
+- **Leçons interactives privées (02/11/2026)** : le contenu des leçons (réponses comprises) n'est plus dans le dépôt : il est dans le
+  stockage Supabase privé `lecons` (objets `lecons/<f>.js`). `parcours/lecon.html` et `parcours-admin.html` le lisent avec
+  `storage.download()` puis l'exécutent ; refusé sans compte connecté ou hors du niveau de l'élève (section 14 de `supabase/schema.sql`,
+  niveau déduit du préfixe du fichier). Pour ajouter une leçon : envoyer `lecons/<f>.js` dans le bucket `lecons` (tableau de bord
+  Supabase → Storage) puis l'ajouter dans `catalogue.js` (titre et sous-titre restent publics) ; ne plus créer de `parcours/lecons/`.
+- Limite connue : un élève connecté peut toujours enregistrer ou partager ce qu'il a le droit de voir (PDF, leçon).
 - À activer dans Supabase (Authentication → Policies/Passwords) : « Leaked password protection ».
