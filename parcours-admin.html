@@ -260,7 +260,7 @@
     </footer>
 
 
-<script src="script.js?v=27"></script>
+<script src="script.js?v=28"></script>
 <script src="apercu.js?v=1"></script>
 <script src="parcours/moteur.js?v=7"></script>
 <script src="parcours/geo.js?v=2"></script>
@@ -326,9 +326,20 @@
     async function charger() {
         for (let i = 0; i < 100 && !window.supabaseClient; i++) await new Promise(r => setTimeout(r, 100));
         const sb = window.supabaseClient;
+        // Lecture par pages de 1000 (limite de Supabase par requête)
+        const toutLire = async (construire) => {
+            let tout = [];
+            for (let debut = 0; ; debut += 1000) {
+                const r = await construire().range(debut, debut + 999);
+                if (r.error) return { data: null, error: r.error };
+                tout = tout.concat(r.data || []);
+                if ((r.data || []).length < 1000) break;
+            }
+            return { data: tout, error: null };
+        };
         const [e, p, c] = await Promise.all([
-            sb.from("eleves").select("id,prenom,nom,classe,mode,statut,user_id"),
-            sb.from("progression").select("*"),
+            toutLire(() => sb.from("eleves").select("id,prenom,nom,classe,mode,statut,user_id").order("id", { ascending: true })),
+            toutLire(() => sb.from("progression").select("*").order("id", { ascending: true })),
             sb.from("certificats").select("*").order("delivre_le", { ascending: false })
         ]);
         if (e.error || p.error || c.error) { showToast("Erreur de chargement des données", "error"); console.error(e.error, p.error, c.error); return; }
