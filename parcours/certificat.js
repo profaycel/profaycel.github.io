@@ -44,9 +44,10 @@ function signatureHTML() {
 
 function renderCertificat(c) {
     const nom = echapper(c.nom_complet || c.nom);
+    const qcm = /QCM/.test(c.titre || "");   // certificat des tests QCM (100 questions)
     const annee = new Date(c.delivre_le).getFullYear();
     const stats = (c.score != null && c.total)
-        ? `<div class="cert-stats"><span>نتائج الامتحانات: <b class="ltr">${c.score} / ${c.total}</b></span>${c.etoiles != null ? `<span>النجوم: <b class="ltr">${c.etoiles}${c.etoiles_max ? " / " + c.etoiles_max : ""}</b> ⭐</span>` : ""}</div>`
+        ? `<div class="cert-stats"><span>${qcm ? "نتيجة QCM" : "نتائج الامتحانات"}: <b class="ltr">${c.score} / ${c.total}</b></span>${c.etoiles != null ? `<span>النجوم: <b class="ltr">${c.etoiles}${c.etoiles_max ? " / " + c.etoiles_max : ""}</b> ⭐</span>` : ""}</div>`
         : "";
     return `<div class="cert-cadre"><div class="cert" dir="rtl">
       <div class="cert-coin tl"></div><div class="cert-coin tr"></div><div class="cert-coin bl"></div><div class="cert-coin br"></div>
@@ -59,7 +60,7 @@ function renderCertificat(c) {
       <div class="cert-sous">Certificat de réussite</div>
       <p class="cert-texte">تشهد منصّة <b>Profaycel</b> أنّ التلميذ(ة)</p>
       <div class="cert-nom">${nom}</div>
-      <p class="cert-texte">قد أتمّ(ت) بنجاح جميع دروس</p>
+      <p class="cert-texte">${qcm ? "قد أتمّ(ت) بنجاح تدريبات" : "قد أتمّ(ت) بنجاح جميع دروس"}</p>
       <div class="cert-lecon">« ${echapper(c.titre)} »</div>
       <p class="cert-texte petit">رياضيات${c.niveau ? " · <bdi>" + echapper(c.niveau) + "</bdi>" : ""}${c.detail ? " · " + echapper(c.detail) : ""}</p>
       ${stats}

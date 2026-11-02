@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QCM | Profaycel</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#2563eb">
+<link rel="icon" type="image/svg+xml" href="../icons/icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="moteur.css?v=3">
+<style>
+  .serie-badge{display:inline-block;font-size:15px;font-weight:700;padding:2px 12px;border-radius:99px;background:var(--bleu-clair);color:var(--bleu)}
+  .opt{display:block;width:100%}
+  .opt .lettre{display:inline-block;min-width:1.6em;font-weight:800;color:var(--gris)}
+  .opt:disabled{cursor:default}
+  .explic{margin:14px 0 0;padding:12px 14px;border-radius:12px;background:#fffbeb;border-right:5px solid var(--or);font-size:18px}
+  .fr .explic{border-right:0;border-left:5px solid var(--or)}
+  .verdict{font-weight:800;font-size:20px;margin:12px 0 4px}
+  .verdict.ok{color:#15803d}.verdict.ko{color:#b91c1c}
+  .points{display:grid;grid-template-columns:repeat(10,1fr);gap:5px;margin-top:10px;direction:ltr}
+  .points button{border:0;border-radius:6px;height:26px;font:inherit;font-size:12px;font-weight:700;background:#e2e8f0;color:#64748b;cursor:pointer;padding:0}
+  .points button.ok{background:var(--vert);color:#fff}.points button.ko{background:var(--rouge);color:#fff}
+  .points button.cur{outline:3px solid var(--bleu);outline-offset:1px}
+  .points button:disabled{cursor:not-allowed;opacity:.6}
+  .resume .grand{font-size:64px}
+</style>
+</head>
+<body>
+<nav class="pf-nav no-print"><div class="wrap"><a class="pf-logo" href="../index.html">Profaycel</a><a href="index.html">📚 دروسي</a><a href="../eleve.html">🏠 فضائي</a></div></nav>
+<div class="prof-bande">الأستاذ فيصل خليفي</div>
+<header class="top"><div class="wrap"><div><h1>تدريبات QCM</h1><small id="sousTitre">أسئلة اختيار من متعدّد · رياضيات</small></div></div></header>
+<main class="wrap" id="app"><div class="carte chargement">⏳ تحميل…</div></main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js" integrity="sha384-TcHRA3zBbn+Lexh5n+Oil4guNPOS3rjNDpGRAN46u/s/mB2IZ50ceC6TYDU2yvgK" crossorigin="anonymous"></script>
+<script src="../supabase.js"></script>
+<script src="../apercu.js?v=1"></script>
+<script>
+const sb = () => window.supabaseClient;
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const SERIES = { dc2: "قبل فرض المراقبة عدد 2", ds1: "قبل الفرض التأليفي عدد 1" };
+const LETTRES_AR = ["أ", "ب", "ج", "د"], LETTRES_FR = ["A", "B", "C", "D"];
+let QS = [], NIVEAU = null, PARAM = null, VUE = 0, FR = false, OCCUPE = false;
+
+async function lancer() {
+    for (let i = 0; i < 100 && !sb(); i++) await new Promise(r => setTimeout(r, 100));
+    const app = document.getElementById("app");
+    if (!sb()) { app.innerHTML = `<div class="carte centre">تعذّر الاتّصال. أعد تحميل الصفحة.</div>`; return; }
+    const { data: { session } } = await sb().auth.getSession();
+    if (!session) { location.href = "../login.html"; return; }
+    const user = session.user, role = (user.user_metadata || {}).role;
+    const admin = role === "admin" || (user.email || "").toLowerCase() === "faycel.khlifiii@gmail.com";
+    if (!admin && role !== "eleve") { location.href = "../index.html"; return; }
+    // L'administrateur teste avec le niveau de l'aperçu (apercu.js) ou ?niv=
+    if (admin) PARAM = (window.pfApercu && window.pfApercu(user)) || new URLSearchParams(location.search).get("niv") || "7 أساسي";
+    const { data, error } = await sb().rpc("qcm_charger", { p_niveau: PARAM });
+    if (error) {
+        console.error(error);
+        app.innerHTML = `<div class="carte centre"><h3>اختر مستواك أوّلا 📚</h3><p>لا تظهر الأسئلة إلا بعد اختيار المستوى الدراسي في فضائك.</p><a class="btn" href="../eleve.html" style="text-decoration:none">← فضائي</a></div>`;
+        return;
+    }
+    NIVEAU = data.niveau; QS = data.questions || [];
+    FR = NIVEAU === "1 ثانوي";
+    document.getElementById("sousTitre").innerHTML = "أسئلة اختيار من متعدّد · <bdi>" + esc(NIVEAU) + "</bdi>";
+    if (!QS.length) {
+        app.innerHTML = `<div class="carte centre"><h3>الأسئلة في الطريق ✍️</h3><p>أسئلة مستواك ستُضاف قريبا.</p><a class="btn" href="index.html" style="text-decoration:none">← دروسي</a></div>`;
+        return;
+    }
+    VUE = premiereNonRepondue();
+    dessiner();
+}
+const premiereNonRepondue = () => { const i = QS.findIndex(q => q.choix == null); return i < 0 ? QS.length : i; };
+
+function dessiner() {
+    const app = document.getElementById("app");
+    const faites = QS.filter(q => q.choix != null).length, justes = QS.filter(q => q.juste).length, total = QS.length;
+    const cur = premiereNonRepondue();
+    let h = `<div class="carte"><div class="qhead"><span>تقدّمك: <b class="ltr">${faites} / ${total}</b></span><span>✔️ <b class="ltr">${justes}</b></span></div>
+        <div class="prog"><div style="width:${Math.round(100 * faites / total)}%"></div></div></div>`;
+    if (VUE >= total) { app.innerHTML = h + fin(faites, justes, total) + grille(cur); return; }
+    const q = QS[VUE], rep = q.choix != null, L = FR ? LETTRES_FR : LETTRES_AR;
+    const dir = FR ? "ltr" : "rtl";
+    h += `<div class="carte ${FR ? "fr" : ""}">
+        <div class="qhead" style="direction:rtl"><span class="serie-badge">${SERIES[q.serie] || ""}</span><span>السؤال <b class="ltr">${q.ordre} / ${total}</b></span></div>
+        <div class="enonce" dir="${dir}">${esc(q.enonce)}</div>
+        <div class="opts">` + q.options.map((o, i) => {
+            let cl = "opt";
+            if (rep) { if (i === q.bonne) cl += " ok"; else if (i === q.choix) cl += " ko"; }
+            return `<button type="button" class="${cl}" dir="auto" data-i="${i}" ${rep ? "disabled" : ""}><span class="lettre">${L[i]})</span> ${esc(o)}</button>`;
+        }).join("") + `</div>`;
+    if (rep) {
+        h += `<div class="verdict ${q.juste ? "ok" : "ko"}" style="direction:rtl">${q.juste ? "✅ أحسنت، جوابك صحيح!" : "❌ جوابك غير صحيح — الجواب الصحيح مُلوَّن بالأخضر"}</div>
+              <div class="explic" dir="${dir}"><b>${FR ? "Explication" : "التفسير"} :</b> ${esc(q.explication)}</div>
+              <div class="actions" style="direction:rtl">`
+            + (VUE > 0 ? `<button class="btn sec" id="prec">→ السابق</button>` : "")
+            + `<button class="btn" id="suiv">${VUE + 1 >= total ? "🏁 النتيجة" : "السؤال التالي ←"}</button></div>`;
+    } else {
+        h += `<div class="retour indice" style="display:block;direction:rtl;margin-top:14px">اختر جوابا لتنتقل إلى السؤال الموالي.</div>`;
+    }
+    h += `</div>` + grille(cur);
+    app.innerHTML = h;
+    app.querySelectorAll(".opt:not([disabled])").forEach(b => b.onclick = () => repondre(+b.dataset.i));
+    const s = document.getElementById("suiv"); if (s) s.onclick = () => { VUE++; dessiner(); window.scrollTo(0, 0); };
+    const p = document.getElementById("prec"); if (p) p.onclick = () => { VUE--; dessiner(); window.scrollTo(0, 0); };
+    app.querySelectorAll(".points button:not([disabled])").forEach(b => b.onclick = () => { VUE = +b.dataset.v; dessiner(); window.scrollTo(0, 0); });
+}
+function grille(cur) {
+    return `<div class="carte"><b>🗂️ خريطة الأسئلة</b><div class="points">` + QS.map((q, i) => {
+        const etat = q.choix == null ? "" : q.juste ? "ok" : "ko";
+        return `<button type="button" class="${etat} ${i === VUE ? "cur" : ""}" data-v="${i}" ${i > cur ? "disabled" : ""}>${i + 1}</button>`;
+    }).join("") + `</div></div>`;
+}
+async function repondre(i) {
+    if (OCCUPE) return; OCCUPE = true;
+    const q = QS[VUE];
+    document.querySelectorAll(".opt").forEach(b => b.disabled = true);
+    const { data, error } = await sb().rpc("qcm_repondre", { p_qid: q.id, p_choix: i, p_niveau: PARAM });
+    OCCUPE = false;
+    if (error) {
+        console.error(error);
+        alert("تعذّر تسجيل الجواب. أعد المحاولة.");
+        dessiner(); return;
+    }
+    q.choix = data.choix; q.juste = data.juste; q.bonne = data.bonne; q.explication = data.explication;
+    dessiner();
+}
+function fin(faites, justes, total) {
+    const pc = Math.round(100 * justes / total);
+    const complet = faites === total;
+    return `<div class="carte centre resume">
+        <div class="grand">${pc >= 80 ? "🏆" : pc >= 50 ? "👏" : "💪"}</div>
+        <h2>${complet ? "أتممت كلّ الأسئلة!" : "لم تُتمّ كلّ الأسئلة بعد"}</h2>
+        <p>نتيجتك: <b class="ltr">${justes} / ${total}</b> (${pc}%)</p>
+        ${complet ? `<button class="btn vert" id="cert">🎓 احصل على شهادتي</button>` : `<button class="btn" onclick="VUE=premiereNonRepondue();dessiner()">متابعة الأسئلة ←</button>`}
+        <p style="margin-top:14px"><a href="index.html">← دروسي</a></p></div>`;
+}
+document.addEventListener("click", async e => {
+    if (e.target && e.target.id === "cert") {
+        e.target.disabled = true; e.target.textContent = "⏳ …";
+        const { data, error } = await sb().rpc("qcm_certificat", { p_niveau: PARAM });
+        if (error) { console.error(error); e.target.disabled = false; e.target.textContent = "😕 أعد المحاولة"; return; }
+        location.href = "certificat.html?n=" + encodeURIComponent(data.numero);
+    }
+});
+lancer();
+</script>
+</body>
+</html>

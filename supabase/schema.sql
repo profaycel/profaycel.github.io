@@ -1543,3 +1543,167 @@ create policy lecons_admin_modif on storage.objects for update to authenticated
     using (bucket_id = 'lecons' and (select public.is_admin()));
 create policy lecons_admin_retrait on storage.objects for delete to authenticated
     using (bucket_id = 'lecons' and (select public.is_admin()));
+
+-- =================================================
+-- 15. QCM PAR NIVEAU (02/11/2026) : 2 séries de 50 questions par niveau
+--     (avant le devoir de contrôle n°2 / avant le devoir de synthèse n°1), corrigées côté base.
+--     Les questions (avec la bonne réponse) ne sont JAMAIS lisibles directement : seulement par les fonctions ci-dessous.
+-- =================================================
+create table if not exists public.qcm_questions (
+    id          text primary key,                      -- ex. 'q7dc2-01'
+    niveau      text not null,                         -- '7 أساسي', '8 أساسي', '9 أساسي', '1 ثانوي'
+    serie       text not null check (serie in ('dc2', 'ds1')),
+    ordre       int  not null,                         -- 1..100 dans le niveau (dc2 puis ds1)
+    partie      text,                                  -- 'algebre' | 'geometrie'
+    lecon       text,
+    enonce      text not null,
+    options     jsonb not null,                        -- 4 propositions
+    bonne       int  not null check (bonne between 0 and 3),
+    explication text not null,
+    unique (niveau, ordre)
+);
+create table if not exists public.qcm_reponses (
+    user_id    uuid not null default auth.uid() references auth.users (id) on delete cascade,
+    qid        text not null references public.qcm_questions (id) on delete cascade,
+    choix      int  not null check (choix between 0 and 3),
+    juste      boolean not null,
+    repondu_le timestamptz not null default now(),
+    primary key (user_id, qid)
+);
+alter table public.qcm_questions enable row level security;
+alter table public.qcm_reponses  enable row level security;
+
+-- questions : lecture/écriture directe réservée à l'administrateur
+create policy qcm_questions_admin_select on public.qcm_questions for select to authenticated using ((select public.is_admin()));
+create policy qcm_questions_admin_insert on public.qcm_questions for insert to authenticated with check ((select public.is_admin()));
+create policy qcm_questions_admin_update on public.qcm_questions for update to authenticated using ((select public.is_admin())) with check ((select public.is_admin()));
+create policy qcm_questions_admin_delete on public.qcm_questions for delete to authenticated using ((select public.is_admin()));
+-- réponses : l'élève lit les siennes (l'écriture passe seulement par qcm_repondre), le parent lit celles de ses enfants
+create policy qcm_reponses_lecture on public.qcm_reponses for select to authenticated using (
+    user_id = (select auth.uid()) or (select public.is_admin())
+    or user_id in (select e.user_id from public.eleves e join public.parents p on p.id = e.parent_id where p.user_id = (select auth.uid())));
+revoke insert, update, delete on public.qcm_reponses from anon, authenticated;
+revoke all on public.qcm_questions, public.qcm_reponses from anon;
+create index if not exists qcm_reponses_qid_idx on public.qcm_reponses (qid);
+
+-- niveau de l'utilisateur connecté (l'administrateur peut forcer un niveau pour tester)
+create or replace function prive.qcm_niveau(p_niveau text)
+returns text language plpgsql stable security definer set search_path = '' as $$
+declare uid uuid := auth.uid(); n text;
+begin
+    if uid is null then raise exception 'Non connecté'; end if;
+    if public.is_admin() and coalesce(p_niveau, '') <> '' then return p_niveau; end if;
+    select e.classe into n from public.eleves e
+     where e.user_id = uid and e.statut is distinct from 'archive' and coalesce(e.classe, '') <> '' order by e.id limit 1;
+    if n is null then raise exception 'Niveau inconnu'; end if;
+    return n;
+end $$;
+revoke all on function prive.qcm_niveau(text) from public, anon;
+grant execute on function prive.qcm_niveau(text) to authenticated;
+
+-- Liste des questions du niveau, SANS la bonne réponse (sauf pour celles déjà répondues)
+create or replace function public.qcm_charger(p_niveau text default null)
+returns json language plpgsql security definer set search_path = '' as $$
+declare uid uuid := auth.uid(); niv text := prive.qcm_niveau(p_niveau);
+begin
+    return json_build_object('niveau', niv, 'questions', coalesce((
+        select json_agg(
+            jsonb_build_object('id', q.id, 'ordre', q.ordre, 'serie', q.serie, 'partie', q.partie, 'lecon', q.lecon,
+                               'enonce', q.enonce, 'options', q.options)
+            || case when r.qid is not null
+                    then jsonb_build_object('choix', r.choix, 'juste', r.juste, 'bonne', q.bonne, 'explication', q.explication)
+                    else '{}'::jsonb end
+            order by q.ordre)
+        from public.qcm_questions q
+        left join public.qcm_reponses r on r.qid = q.id and r.user_id = uid
+        where q.niveau = niv), '[]'::json));
+end $$;
+revoke all on function public.qcm_charger(text) from public, anon;
+grant execute on function public.qcm_charger(text) to authenticated;
+
+-- Répondre : une seule réponse par question, et seulement après avoir répondu à la précédente
+create or replace function public.qcm_repondre(p_qid text, p_choix int, p_niveau text default null)
+returns json language plpgsql security definer set search_path = '' as $$
+declare uid uuid := auth.uid(); niv text := prive.qcm_niveau(p_niveau); q public.qcm_questions; r public.qcm_reponses; ok boolean;
+begin
+    if p_choix is null or p_choix < 0 or p_choix > 3 then raise exception 'Choix invalide'; end if;
+    select * into q from public.qcm_questions where id = p_qid and niveau = niv;
+    if not found then raise exception 'Question inconnue'; end if;
+    select * into r from public.qcm_reponses where user_id = uid and qid = q.id;
+    if found then
+        return json_build_object('juste', r.juste, 'choix', r.choix, 'bonne', q.bonne, 'explication', q.explication);
+    end if;
+    if q.ordre > 1 and not exists (
+        select 1 from public.qcm_questions p join public.qcm_reponses x on x.qid = p.id and x.user_id = uid
+         where p.niveau = niv and p.ordre = q.ordre - 1) then
+        raise exception 'Réponds d''abord à la question précédente';
+    end if;
+    ok := (p_choix = q.bonne);
+    insert into public.qcm_reponses (user_id, qid, choix, juste) values (uid, q.id, p_choix, ok);
+    return json_build_object('juste', ok, 'choix', p_choix, 'bonne', q.bonne, 'explication', q.explication);
+end $$;
+revoke all on function public.qcm_repondre(text, int, text) from public, anon;
+grant execute on function public.qcm_repondre(text, int, text) to authenticated;
+
+-- Certificat : après avoir répondu aux 100 questions du niveau (le score est la note)
+create or replace function public.qcm_certificat(p_niveau text default null)
+returns json language plpgsql security definer set search_path = '' as $$
+declare uid uuid := auth.uid(); niv text := prive.qcm_niveau(p_niveau); code text := 'qcm-' || split_part(niv, ' ', 1);
+        c public.certificats; e public.eleves; nom text; total int; faites int; bonnes int;
+begin
+    select * into c from public.certificats where user_id = uid and lecon = code;
+    if found then return row_to_json(c); end if;
+    select count(*) into total from public.qcm_questions where niveau = niv;
+    select count(*), count(*) filter (where r.juste) into faites, bonnes
+      from public.qcm_questions q join public.qcm_reponses r on r.qid = q.id and r.user_id = uid where q.niveau = niv;
+    if total = 0 or faites < total then raise exception 'Toutes les questions ne sont pas encore traitées'; end if;
+    select * into e from public.eleves where user_id = uid and statut is distinct from 'archive' order by id limit 1;
+    nom := trim(coalesce(e.prenom, '') || ' ' || coalesce(e.nom, ''));
+    if nom = '' then
+        select trim(coalesce(raw_user_meta_data ->> 'full_name', raw_user_meta_data ->> 'nom', '')) into nom from auth.users where id = uid;
+        nom := regexp_replace(coalesce(nom, ''), '[<>"`]', '', 'g');
+    end if;
+    if coalesce(nom, '') = '' then nom := 'تلميذ(ة) Profaycel'; end if;
+    insert into public.certificats (numero, user_id, lecon, titre, detail, nom_complet, niveau, score, total)
+    values ('PF-' || to_char(now(), 'YYYY') || '-' || lpad(nextval('public.certificat_seq')::text, 4, '0')
+                || '-' || upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 6)),
+            uid, code, 'تدريبات QCM', total || ' سؤالا في الجبر والهندسة', nom, niv, bonnes, total)
+    returning * into c;
+    return row_to_json(c);
+end $$;
+revoke all on function public.qcm_certificat(text) from public, anon;
+grant execute on function public.qcm_certificat(text) to authenticated;
+
+-- Administrateur : importer / mettre à jour les questions (page qcm-admin.html)
+create or replace function public.qcm_importer(p_data jsonb)
+returns int language plpgsql security definer set search_path = '' as $$
+declare n int;
+begin
+    if not public.is_admin() then raise exception 'Réservé à l''administrateur'; end if;
+    insert into public.qcm_questions (id, niveau, serie, ordre, partie, lecon, enonce, options, bonne, explication)
+    select x.id, x.niveau, x.serie, x.ordre, x.partie, x.lecon, x.enonce, x.options, x.bonne, x.explication
+      from jsonb_to_recordset(p_data) as x(id text, niveau text, serie text, ordre int, partie text, lecon text,
+                                           enonce text, options jsonb, bonne int, explication text)
+    on conflict (id) do update set niveau = excluded.niveau, serie = excluded.serie, ordre = excluded.ordre,
+        partie = excluded.partie, lecon = excluded.lecon, enonce = excluded.enonce, options = excluded.options,
+        bonne = excluded.bonne, explication = excluded.explication;
+    get diagnostics n = row_count;
+    return n;
+end $$;
+revoke all on function public.qcm_importer(jsonb) from public, anon;
+grant execute on function public.qcm_importer(jsonb) to authenticated;
+
+-- Administrateur : suivi des élèves (réponses données / justes)
+create or replace function public.qcm_suivi()
+returns table (user_id uuid, prenom text, nom text, niveau text, repondues int, justes int, derniere timestamptz)
+language plpgsql security definer set search_path = '' as $$
+begin
+    if not public.is_admin() then raise exception 'Réservé à l''administrateur'; end if;
+    return query
+    select e.user_id, e.prenom, e.nom, e.classe, count(r.qid)::int, (count(r.qid) filter (where r.juste))::int, max(r.repondu_le)
+      from public.eleves e join public.qcm_reponses r on r.user_id = e.user_id
+     where e.statut is distinct from 'archive'
+     group by e.user_id, e.prenom, e.nom, e.classe order by max(r.repondu_le) desc;
+end $$;
+revoke all on function public.qcm_suivi() from public, anon;
+grant execute on function public.qcm_suivi() to authenticated;

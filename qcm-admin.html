@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>QCM | Profaycel</title>
+
+    <link rel="stylesheet" href="style.css?v=17">
+    <meta name="robots" content="noindex">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+    <style>
+        .q-tab { width: 100%; border-collapse: collapse; background: #fff; }
+        .q-tab th, .q-tab td { border: 1px solid #e2e8f0; padding: 8px 10px; text-align: left; }
+        .q-tab th { background: #f1f5f9; }
+        .q-res { white-space: pre-line; margin-top: 10px; padding: 10px 12px; border-radius: 10px; background: #f1f5f9; }
+    </style>
+</head>
+
+<body>
+
+<header class="header">
+
+    <div class="container header-container">
+
+        <a href="index.html" class="logo">
+            Profaycel
+        </a>
+
+        <button
+            class="mobile-menu-button"
+            type="button"
+            aria-label="Ouvrir le menu"
+            aria-expanded="false">
+
+            <span></span>
+            <span></span>
+            <span></span>
+
+        </button>
+
+        <nav class="navigation">
+
+                <ul>
+                    <li><a href="admin.html">Tableau de bord</a></li>
+                    <li><a href="eleves.html">Élèves</a></li>
+                    <li><a href="parents.html">Parents</a></li>
+                    <li><a href="classes.html">Classes</a></li>
+                    <li><a href="seances-admin.html">Séances</a></li>
+                    <li><a href="presence-admin.html">Présence</a></li>
+                    <li><a href="documents-admin.html">Documents</a></li>
+                    <li><a href="parcours-admin.html">Parcours</a></li>
+                </ul>
+
+            </nav>
+
+        <div class="header-actions">
+
+            <a href="eleve.html" class="header-button">
+                Espace Élève
+            </a>
+
+            <a href="parent.html" class="header-button">
+                Espace Parent
+            </a>
+
+            <a href="admin.html" class="header-button">
+                Administration
+            </a>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<main>
+
+        <section class="student-dashboard-hero">
+            <div class="container">
+                <span class="section-label">ADMINISTRATION</span>
+                <h1>QCM</h1>
+                <p>Importer les questions (fichier JSON) et suivre les réponses des élèves. Les questions et les bonnes réponses ne sont lisibles que par les fonctions de la base : les élèves ne les voient jamais avant d'avoir répondu.</p>
+            </div>
+        </section>
+
+        <section class="student-dashboard">
+            <div class="container">
+
+                <section class="student-welcome-card is-stacked">
+                    <span class="student-label">IMPORT</span>
+                    <h2>📥 Importer les questions</h2>
+                    <p>Choisissez le fichier <b>qcm-tout.json</b> (400 questions : 100 par niveau). Un nouvel import met à jour les questions existantes (mêmes identifiants), sans effacer les réponses des élèves.</p>
+                    <p><input type="file" id="q-fichier" accept=".json,application/json"></p>
+                    <p><button class="button button-primary" id="q-import" type="button">Importer</button></p>
+                    <div class="q-res" id="q-res" hidden></div>
+                </section>
+
+                <section class="student-welcome-card is-stacked">
+                    <span class="student-label">SUIVI</span>
+                    <h2>📊 Réponses des élèves</h2>
+                    <div id="q-suivi"><p>Chargement…</p></div>
+                </section>
+
+            </div>
+        </section>
+
+    </main>
+
+<script src="script.js?v=30"></script>
+<script>
+(function () {
+    const esc = t => String(t == null ? "" : t).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    async function client() {
+        for (let i = 0; i < 100 && !window.supabaseClient; i++) await new Promise(r => setTimeout(r, 100));
+        return window.supabaseClient;
+    }
+    async function suivi() {
+        const sb = await client(), zone = document.getElementById("q-suivi");
+        const { data, error } = await sb.rpc("qcm_suivi");
+        if (error) { console.error(error); zone.innerHTML = "<p>Erreur de chargement.</p>"; return; }
+        if (!data.length) { zone.innerHTML = "<p>Aucun élève n'a encore répondu.</p>"; return; }
+        zone.innerHTML = '<div style="overflow-x:auto"><table class="q-tab"><tr><th>Élève</th><th>Niveau</th><th>Répondues</th><th>Justes</th><th>Dernière réponse</th></tr>' +
+            data.map(r => `<tr><td>${esc(r.prenom)} ${esc(r.nom)}</td><td><bdi>${esc(r.niveau)}</bdi></td><td>${r.repondues} / 100</td><td>${r.justes}</td><td>${new Date(r.derniere).toLocaleString("fr-FR")}</td></tr>`).join("") + "</table></div>";
+    }
+    document.getElementById("q-import").addEventListener("click", async () => {
+        const res = document.getElementById("q-res"), f = document.getElementById("q-fichier").files[0];
+        res.hidden = false;
+        if (!f) { res.textContent = "Choisissez d'abord le fichier qcm-tout.json."; return; }
+        let liste;
+        try { liste = JSON.parse(await f.text()); } catch (e) { res.textContent = "Fichier illisible (JSON invalide)."; return; }
+        if (!Array.isArray(liste) || !liste.length) { res.textContent = "Le fichier ne contient pas de questions."; return; }
+        const sb = await client(); let total = 0, msg = "";
+        for (let i = 0; i < liste.length; i += 50) {
+            const { data, error } = await sb.rpc("qcm_importer", { p_data: liste.slice(i, i + 50) });
+            if (error) { console.error(error); res.textContent = msg + "Erreur : " + error.message; return; }
+            total += data; msg = "Importées : " + total + " / " + liste.length + "\n"; res.textContent = msg;
+        }
+        res.textContent = "✅ Terminé : " + total + " questions importées.";
+    });
+    suivi();
+})();
+</script>
+
+</body>
+</html>

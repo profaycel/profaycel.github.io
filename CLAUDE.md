@@ -124,5 +124,13 @@
   `storage.download()` puis l'exécutent ; refusé sans compte connecté ou hors du niveau de l'élève (section 14 de `supabase/schema.sql`,
   niveau déduit du préfixe du fichier). Pour ajouter une leçon : envoyer `lecons/<f>.js` dans le bucket `lecons` (tableau de bord
   Supabase → Storage) puis l'ajouter dans `catalogue.js` (titre et sous-titre restent publics) ; ne plus créer de `parcours/lecons/`.
+- **QCM par niveau (02/11/2026)** : `parcours/qcm.html` (élève) + `qcm-admin.html` (administrateur : import du fichier `qcm-tout.json` et suivi).
+  400 questions : 100 par niveau (7, 8, 9 أساسي ; 1 ثانوي en français) = série « قبل فرض المراقبة عدد 2 » (`dc2`, 50) puis « قبل الفرض
+  التأليفي عدد 1 » (`ds1`, 50), numérotées `ordre` 1..100. Tables `qcm_questions` (lisible par l'administrateur seulement : la bonne réponse
+  et l'explication ne sortent que par les fonctions) et `qcm_reponses` ; fonctions `qcm_charger` (liste sans bonne réponse), `qcm_repondre`
+  (une seule réponse par question, il faut avoir répondu à la précédente), `qcm_certificat` (après les 100 questions ; certificat `lecon = 'qcm-<niveau>'`,
+  titre « تدريبات QCM », note = nombre de bonnes réponses), `qcm_importer`, `qcm_suivi` (section 15 de `supabase/schema.sql`). Le niveau vient de la fiche
+  élève ; l'administrateur teste avec l'aperçu (`apercu.js`) ou `?niv=`. Cartes d'accès dans `parcours/index.html` et `eleve.html`.
+  Pour ajouter ou corriger des questions : modifier le JSON et le réimporter (mêmes `id` = mise à jour).
 - Limite connue : un élève connecté peut toujours enregistrer ou partager ce qu'il a le droit de voir (PDF, leçon).
 - À activer dans Supabase (Authentication → Policies/Passwords) : « Leaked password protection ».

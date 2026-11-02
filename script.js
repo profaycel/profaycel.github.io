@@ -1389,7 +1389,8 @@ document.addEventListener("DOMContentLoaded", function () {
         "presence-admin.html": ["admin"],
         "documents-admin.html": ["admin"],
         "parcours-admin.html": ["admin"],
-        "annonces-admin.html": ["admin"]
+        "annonces-admin.html": ["admin"],
+        "qcm-admin.html": ["admin"]
 
     };
 
