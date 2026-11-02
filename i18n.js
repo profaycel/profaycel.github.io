@@ -13,7 +13,7 @@
     const PAGES_ADMIN = [
         "admin.html", "eleves.html", "parents.html", "classes.html",
         "seances-admin.html", "presence-admin.html", "documents-admin.html",
-        "parcours-admin.html", "annonces-admin.html"
+        "parcours-admin.html", "annonces-admin.html", "qcm-admin.html"
     ];
 
     let page = window.location.pathname.split("/").pop() || "index.html";

@@ -100,6 +100,19 @@ async function lancer() {
         <div class="prog"><div style="width:${pt}%"></div></div>
         <small style="color:var(--gris)">تقدّمك: ${N(pt + "%")} · الشهادات: ${N((certs.data || []).length + " / " + parties.length)} 🎓</small>
       </div>`;
+    // تدريبات QCM : 100 سؤال لكلّ مستوى (الأسئلة والأجوبة في قاعدة البيانات، لا تُقرأ إلا عبر دوالّ محميّة)
+    let qcmFaites = 0, qcmJustes = 0;
+    if (eleve.classe || voirTout) {
+        const rq = await sb().from("qcm_reponses").select("juste").eq("user_id", user.id);
+        (rq.data || []).forEach(r => { qcmFaites++; if (r.juste) qcmJustes++; });
+    }
+    if (eleve.classe) {
+        h += `<a class="carte" href="qcm.html" style="display:block;text-decoration:none;color:inherit;background:#eff4ff;border-color:#bfdbfe">
+            <b>🧠 تدريبات QCM · 100 سؤال</b> <span class="badge vert ltr" style="float:left">${qcmFaites} / 100</span>
+            <div style="color:var(--gris);font-size:16px">50 سؤالا قبل فرض المراقبة عدد 2 و50 قبل الفرض التأليفي عدد 1. جاوب لتنتقل للسؤال الموالي، ويظهر لك التفسير دائما. 🎓 شهادة عند إتمام الأسئلة.</div>
+            <div class="prog"><div style="width:${qcmFaites}%"></div></div>
+            <small style="color:var(--gris)">${qcmFaites ? "✔️ الأجوبة الصحيحة: " + N(qcmJustes + " / " + qcmFaites) + " · " : ""}${qcmFaites >= 100 ? "احصل على شهادتك" : qcmFaites ? "تابع من حيث توقّفت ←" : "ابدأ الآن ←"}</small></a>`;
+    }
     // لوحة الشرف الأسبوعيّة (honneur.js) : تظهر في أعلى الصفحة
     h += `<div class="carte" id="honneur-carte" data-honneur-section>
         <h2>🏆 لوحة الشرف</h2>
