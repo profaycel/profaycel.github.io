@@ -1505,3 +1505,41 @@ create policy documents_lecture_fichiers on storage.objects
             )
         )
     );
+
+-- 14. Leçons interactives privées (02/11/2026) : le contenu des leçons (réponses comprises) est dans le stockage privé
+--     « lecons » (objets lecons/<f>.js). Lu par `storage.download()` : compte connecté seulement, et seulement le niveau
+--     de l'élève (préfixe du fichier : 7- = 7 أساسي, 9- = 9 أساسي, 1- = 1 ثانوي, sans préfixe = 8 أساسي) ; administrateur : tout.
+create or replace function prive.niveau_de_lecon(nom text)
+returns text
+language sql
+immutable
+set search_path = ''
+as $$
+    select case
+        when nom like 'lecons/7-%' then '7 أساسي'
+        when nom like 'lecons/9-%' then '9 أساسي'
+        when nom like 'lecons/1-%' then '1 ثانوي'
+        else '8 أساسي'
+    end;
+$$;
+grant execute on function prive.niveau_de_lecon(text) to authenticated;
+
+insert into storage.buckets (id, name, public) values ('lecons', 'lecons', false)
+on conflict (id) do update set public = false;
+
+drop policy if exists lecons_lecture on storage.objects;
+create policy lecons_lecture on storage.objects
+    for select to authenticated
+    using (
+        bucket_id = 'lecons'
+        and (
+            (select public.is_admin())
+            or prive.niveau_de_lecon(name) = any (((select prive.niveaux_autorises()))::text[])
+        )
+    );
+create policy lecons_admin_envoi on storage.objects for insert to authenticated
+    with check (bucket_id = 'lecons' and (select public.is_admin()));
+create policy lecons_admin_modif on storage.objects for update to authenticated
+    using (bucket_id = 'lecons' and (select public.is_admin()));
+create policy lecons_admin_retrait on storage.objects for delete to authenticated
+    using (bucket_id = 'lecons' and (select public.is_admin()));

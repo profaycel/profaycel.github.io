@@ -42,11 +42,29 @@
     }
     document.getElementById("titre").textContent = l.titre;
     document.getElementById("sous").textContent = "رياضيات · " + l.niveau + (l.partie === "geometrie" ? " · هندسة" : "");
-    const sc = document.createElement("script");
-    sc.src = "lecons/" + l.f + ".js?v=2";
-    sc.onload = function () { window.LECON = window.LECONS[id]; demarrer(); };
-    sc.onerror = function () { document.getElementById("app").innerHTML = `<div class="carte centre">تعذّر تحميل الدرس. تحقّق من الأنترنت.</div>`; };
-    document.body.appendChild(sc);
+    // Le contenu des leçons est dans le stockage privé : lu seulement par un compte connecté, et seulement pour son niveau
+    (async function () {
+        const app = document.getElementById("app");
+        try {
+            if (!await attendreSupabase()) { throw new Error("connexion"); }
+            const { data: { session } } = await sb().auth.getSession();
+            if (!session) { location.href = "../login.html"; return; }
+            const r = await sb().storage.from("lecons").download("lecons/" + l.f + ".js");
+            if (r.error || !r.data) {
+                app.innerHTML = `<div class="carte centre"><h2>لا يمكن فتح هذا الدرس</h2><p>هذا الدرس ليس من مستواك، أو تعذّر الاتّصال.</p><a class="btn" href="index.html" style="text-decoration:none">← كلّ الدروس</a></div>`;
+                return;
+            }
+            const sc = document.createElement("script");
+            sc.textContent = await r.data.text();
+            document.body.appendChild(sc);
+            window.LECON = window.LECONS && window.LECONS[id];
+            if (!window.LECON) { throw new Error("vide"); }
+            demarrer();
+        } catch (e) {
+            console.error("Erreur leçon:", e);
+            app.innerHTML = `<div class="carte centre">تعذّر تحميل الدرس. تحقّق من الأنترنت.</div>`;
+        }
+    })();
 })();
 </script>
 </body>
