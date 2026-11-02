@@ -1482,3 +1482,26 @@ select p.user_id, p.lecon,
   from public.progression p
  where p.updated_at >= now() - interval '7 days'
    and not exists (select 1 from public.progression_journal);
+
+-- 13. Stockage privé des fichiers (02/11/2026) : séries / corrections PDF et photos de documents.
+--     Plus aucune adresse publique : le site crée un lien temporaire (10 min) au clic (createSignedUrl).
+--     Lecture : administrateur, ou compte connecté pour qui la ligne `documents` correspondante est visible
+--     (la policy documents_lecture filtre déjà par niveau et par statut « publie »).
+--     Le chemin d'un PDF du site est `documents.lien` (ex. series/7e-serie3-enonce.pdf) ; celui d'une photo
+--     envoyée par l'administrateur est `fichiers[].chemin`.
+update storage.buckets set public = false where id = 'documents';
+
+drop policy if exists documents_lecture_fichiers on storage.objects;
+create policy documents_lecture_fichiers on storage.objects
+    for select to authenticated
+    using (
+        bucket_id = 'documents'
+        and (
+            (select public.is_admin())
+            or exists (
+                select 1 from public.documents d
+                where d.lien = storage.objects.name
+                   or d.fichiers @> jsonb_build_array(jsonb_build_object('chemin', storage.objects.name))
+            )
+        )
+    );
