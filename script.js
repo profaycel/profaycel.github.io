@@ -4848,7 +4848,7 @@ console.log("Page actuelle:", currentPage);
 
     }
 
-    function htmlListeTrimestre(docs) {
+    function htmlListeTrimestre(docs, trimestre) {
 
         // une « paire » = la série n°X et sa correction (même numéro)
         const paires = [];
@@ -4912,7 +4912,9 @@ console.log("Page actuelle:", currentPage);
             return dc === 0 ? "📄 Autres" : `⭐ ما قبل فرض المراقبة عدد <bdi>${dc}</bdi>`;
         };
 
-        if (ordreDc.length < 2) {
+        // Trimestre 1 : « ما قبل الفرض التأليفي عدد 1 » arrive bientôt (disparaît dès qu'il y a des séries au-delà du DC n°2)
+        const bientotSynthese = trimestre === 1 && ordreDc.some(function (dc) { return dc > 0; }) && !ordreDc.some(function (dc) { return dc >= 3; });
+        if (ordreDc.length < 2 && !bientotSynthese) {
             return ordreDc.map(function (dc) {
                 return (dc > 0 ? `<div class="docs-dc">${titreDc(dc)}<br><small>Avant le devoir de contrôle n°${dc}</small></div>` : "") + groupes[dc].map(htmlPaire).join("");
             }).join("");
@@ -4920,7 +4922,7 @@ console.log("Page actuelle:", currentPage);
 
         return `<div class="docs-dcs">${ordreDc.map(function (dc) {
             return `<button type="button" class="docs-dc-btn${dc === actif ? " on" : ""}" data-dc="${dc}">${titreDc(dc)}${dc > 0 ? `<small>Avant le DC n°${dc}</small>` : ""}</button>`;
-        }).join("")}</div>` + ordreDc.map(function (dc) {
+        }).join("")}${bientotSynthese ? `<button type="button" class="docs-dc-btn docs-dc-bientot" disabled>⭐ ما قبل الفرض التأليفي عدد <bdi>1</bdi><small>Bientôt</small></button>` : ""}</div>` + ordreDc.map(function (dc) {
             return `<div class="docs-dc-groupe" data-dc="${dc}"${dc === actif ? "" : " hidden"}>${groupes[dc].map(htmlPaire).join("")}</div>`;
         }).join("");
 
@@ -4988,7 +4990,7 @@ console.log("Page actuelle:", currentPage);
             }).join("");
 
             const listes = [1, 2, 3].map(function (t) {
-                return `<div class="docs-liste" data-trimestre="${t}"${t === premier ? "" : " hidden"}>${htmlListeTrimestre(parTrimestre[t])}</div>`;
+                return `<div class="docs-liste" data-trimestre="${t}"${t === premier ? "" : " hidden"}>${htmlListeTrimestre(parTrimestre[t], t)}</div>`;
             }).join("");
 
             return `
@@ -5438,8 +5440,8 @@ console.log("Page actuelle:", currentPage);
             const apercu = window.pfApercu ? window.pfApercu(session.user) : null;
 
             if (apercu) {
-                eleveNameEl.textContent = "تلميذ مستوى " + apercu + " (تجريبي)";
-                eleveClasseEl.innerHTML = `Niveau : <bdi>${apercu}</bdi>`;
+                eleveNameEl.textContent = "(تجريبي)";
+                eleveClasseEl.innerHTML = `<bdi>${apercu}</bdi>`;
                 eleveStatutEl.textContent = "🧪 Aperçu";
                 loadEleveSeances(apercu);
                 loadEleveDocuments(apercu);
@@ -5459,7 +5461,7 @@ console.log("Page actuelle:", currentPage);
             if (!eleves || eleves.length === 0) {
                 console.log("Aucun élève associé à cet utilisateur.");
                 const meta = session.user.user_metadata || {};
-                eleveNameEl.textContent = meta.nom || meta.full_name || "Bienvenue";
+                eleveNameEl.textContent = String(meta.nom || meta.full_name || meta.name || "").trim().split(/\s+/)[0] || "👋";
                 eleveClasseEl.textContent = "Niveau : —";
                 eleveStatutEl.textContent = "—";
                 document.querySelector("#eleve-code-card").hidden = false;
@@ -5474,9 +5476,9 @@ console.log("Page actuelle:", currentPage);
 
             console.log("Élève:", eleve);
 
-            eleveNameEl.textContent = `${eleve.prenom} ${eleve.nom}`.trim();
+            eleveNameEl.textContent = (eleve.prenom || `${eleve.prenom} ${eleve.nom}`).trim();
             eleveClasseEl.innerHTML = eleve.classe
-                ? `Niveau : <bdi>${eleve.classe}</bdi>`
+                ? `<bdi>${eleve.classe}</bdi>`
                 : "Niveau : à choisir";
             eleveStatutEl.textContent = eleve.mode === "distance" ? "💻 À distance" : "🏫 Présentiel";
 

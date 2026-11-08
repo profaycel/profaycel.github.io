@@ -7843,6 +7843,19 @@ html[dir="rtl"] .auth-parent-arrow {
     color: #eadcf7;
 }
 
+/* « قريبًا » : ما قبل الفرض التأليفي */
+.docs-dc-btn.docs-dc-bientot {
+    cursor: default;
+    opacity: 0.7;
+    background: #f1f5f9;
+    border: 1px dashed #cbd5e1;
+    color: #64748b;
+}
+
+.docs-dc-btn.docs-dc-bientot small {
+    color: #64748b;
+}
+
 .docs-dc-groupe {
     display: flex;
     flex-direction: column;

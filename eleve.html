@@ -12,8 +12,8 @@
         content="Espace personnel de l'élève sur Profaycel."
     >
 
-    <link rel="stylesheet" href="style.css?v=17">
-    <link rel="stylesheet" href="honneur.css?v=1">
+    <link rel="stylesheet" href="style.css?v=18">
+    <link rel="stylesheet" href="honneur.css?v=2">
     <meta name="robots" content="noindex">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2563eb">
@@ -71,6 +71,9 @@
 
             </nav>
 
+            <!-- « رسائلي » : icône des messages en haut (remplie par messages.js) -->
+            <div id="messages-zone" class="msg-zone"></div>
+
         </div>
 
     </header>
@@ -84,33 +87,9 @@
     <main>
 
 
-        <!-- HERO -->
-
-        <section class="student-dashboard-hero">
-
-            <div class="container">
-
-                <p class="section-label">
-                    ESPACE PERSONNEL
-                </p>
-
-                <h1>
-                    Bienvenue dans ton espace élève
-                </h1>
-
-                <p>
-                    Tes séances et tes documents, au même endroit.
-                </p>
-
-            </div>
-
-        </section>
-
-
-
         <!-- TABLEAU DE BORD -->
 
-        <section class="student-dashboard">
+        <section class="student-dashboard eleve-accueil">
 
             <div class="container">
 
@@ -118,50 +97,75 @@
 
 
 
-                <!-- MESSAGES DE L'ÉLÈVE : « رسائلي » (remplie par messages.js) -->
+                <!-- SALUTATION (petite) : Bonjour + prénom + niveau -->
 
-                <div id="messages-zone"></div>
+                <div class="eleve-salut">
 
+                    <h1>
+                        <span>Bonjour</span>
+                        <strong id="eleve-name">Chargement...</strong>
+                    </h1>
 
+                    <span class="eleve-niveau" id="eleve-classe">...</span>
 
-                <!-- PROFIL -->
-
-                <div class="student-welcome-card">
-
-                    <div>
-
-                        <span class="student-label">
-                            Élève
-                        </span>
-
-                        <h2 id="eleve-name">
-                            Chargement...
-                        </h2>
-
-                        <p id="eleve-classe">
-                            ...
-                        </p>
-
-                    </div>
-
-
-                    <div class="student-status">
-
-                        <span>
-                            Statut
-                        </span>
-
-                        <strong id="eleve-statut">
-                            ...
-                        </strong>
-
-                    </div>
+                    <span id="eleve-statut" hidden>...</span>
 
                 </div>
 
 
 
-                <!-- ANNONCES DU PROFESSEUR (remplies par script.js) -->
+                <!-- LES TROIS ENTRÉES -->
+
+                <div class="eleve-menu">
+
+                    <a class="eleve-tuile eleve-tuile-cours" href="parcours/index.html">
+                        <span class="eleve-tuile-ic">🎯</span>
+                        <span class="eleve-tuile-texte">
+                            <strong>Cours interactifs</strong>
+                            <small>Apprends étape par étape, niveau après niveau</small>
+                        </span>
+                        <span class="eleve-fleche">›</span>
+                    </a>
+
+                    <a class="eleve-tuile eleve-tuile-qcm" href="parcours/qcm.html">
+                        <span class="eleve-tuile-ic">🧠</span>
+                        <span class="eleve-tuile-texte">
+                            <strong>QCM interactifs</strong>
+                            <small>Réponds, lis l'explication, passe à la suivante</small>
+                        </span>
+                        <span class="eleve-fleche">›</span>
+                    </a>
+
+                    <details class="eleve-devoirs" id="devoirs">
+
+                        <summary class="eleve-tuile eleve-tuile-devoirs">
+                            <span class="eleve-tuile-ic">📝</span>
+                            <span class="eleve-tuile-texte">
+                                <strong>Devoirs</strong>
+                                <small>Séries d'exercices et corrections avant chaque devoir</small>
+                            </span>
+                            <span class="eleve-fleche">›</span>
+                        </summary>
+
+                        <div class="eleve-devoirs-corps">
+
+                            <p id="eleve-documents-intro">
+                                Choisis la matière, puis le trimestre.
+                            </p>
+
+                            <div id="eleve-documents">
+                                <p>Chargement...</p>
+                            </div>
+
+                        </div>
+
+                    </details>
+
+                </div>
+
+
+
+                <!-- ANNONCES / NOUVEAUTÉS DU SITE (remplies par script.js) -->
 
                 <div id="annonces-zone" data-public="eleves"></div>
 
@@ -243,76 +247,6 @@
                 </section>
 
 
-
-                <!-- NOUVEAU : QCM -->
-
-                <section class="student-welcome-card is-stacked" style="border:2px solid #2563eb;box-shadow:0 8px 28px rgba(37,99,235,.18);">
-
-                    <span class="student-label" style="background:#dc2626;color:#fff;padding:4px 14px;border-radius:999px;">
-                        ✨ جديد في الموقع
-                    </span>
-
-                    <h2>
-                        🧠 تدريبات QCM
-                    </h2>
-
-                    <p>
-                        100 سؤال لكلّ مستوى : 50 سؤالًا قبل فرض المراقبة عدد 2 و50 سؤالًا قبل الفرض التأليفي عدد 1. بعد كلّ جواب يظهر لك الشرح، وعندما تُجيب تنتقل إلى السؤال الموالي. وفي الآخر تحصل على شهادتك 🎓
-                    </p>
-
-                    <p>
-                        <a class="button button-primary" href="parcours/qcm.html">ابدأ QCM ←</a>
-                    </p>
-
-                </section>
-
-
-
-                <!-- COURS PAR NIVEAUX -->
-
-                <section class="student-welcome-card is-stacked">
-
-                    <span class="student-label">
-                        COURS INTERACTIFS
-                    </span>
-
-                    <h2>
-                        🎯 Mes cours par niveaux
-                    </h2>
-
-                    <p>
-                        Apprends étape par étape : chaque niveau réussi ouvre le suivant. À la fin, un examen et ton certificat officiel 🎓
-                    </p>
-
-                    <p>
-                        <a class="button button-primary" href="parcours/index.html">Commencer →</a>
-                    </p>
-
-                </section>
-
-
-
-                <!-- SÉRIES D'EXERCICES -->
-
-                <section class="student-welcome-card is-stacked">
-
-                    <span class="student-label">
-                        DOCUMENTS
-                    </span>
-
-                    <h2>
-                        📁 Mes documents
-                    </h2>
-
-                    <p id="eleve-documents-intro">
-                        Choisis la matière, puis le trimestre.
-                    </p>
-
-                    <div id="eleve-documents">
-                        <p>Chargement...</p>
-                    </div>
-
-                </section>
 
                 <!-- CODE (élèves en présentiel) : replié -->
 
@@ -414,10 +348,10 @@
 
     <!-- JAVASCRIPT -->
 
-    <script src="i18n.js?v=19"></script>
+    <script src="i18n.js?v=20"></script>
     <script src="apercu.js?v=1"></script>
-    <script src="script.js?v=30"></script>
-    <script src="messages.js?v=1"></script>
+    <script src="script.js?v=31"></script>
+    <script src="messages.js?v=2"></script>
 
 </body>
 
