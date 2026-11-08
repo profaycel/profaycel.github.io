@@ -49,7 +49,7 @@
     function dessiner(messages) {
 
         const t = T[langue];
-        const nonLus = messages.filter(function (m) { return !m.lu; }).length;
+        let nonLus = messages.filter(function (m) { return !m.lu; }).length;
 
         const corps = messages.length
             ? messages.map(function (m) {
@@ -61,38 +61,57 @@
             }).join("")
             : '<p class="msg-vide">' + esc(t.vide) + "</p>";
 
-        // Ouverte automatiquement s'il y a du nouveau (ou si la boîte est encore vide, pour expliquer à quoi elle sert)
-        const ouvert = nonLus > 0 || messages.length === 0;
-
+        // Icône d'enveloppe dans l'en-tête, avec pastille rouge (nombre de nouveaux messages)
         zone.innerHTML =
-            '<section class="student-welcome-card is-stacked msg-carte">' +
-            '<button type="button" class="msg-tete" aria-expanded="' + ouvert + '">' +
-            '<span class="msg-titre">💌 ' + esc(t.titre) + "</span>" +
-            (nonLus ? '<span class="msg-badge">' + esc(t.nouveaux(nonLus)) + "</span>" : "") +
-            '<span class="msg-fleche">▾</span>' +
+            '<button type="button" class="msg-icone" aria-expanded="false" aria-label="' + esc(t.titre) + '" title="' + esc(t.titre) + '">' +
+            '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+            '<rect x="3" y="5" width="18" height="14" rx="3"></rect><path d="M3.5 7.5l8.5 6 8.5-6"></path></svg>' +
+            '<span class="msg-pastille"' + (nonLus ? "" : " hidden") + ">" + (nonLus > 9 ? "9+" : nonLus) + "</span>" +
             "</button>" +
-            '<div class="msg-corps"' + (ouvert ? "" : " hidden") + ">" + corps + "</div>" +
-            "</section>";
+            '<div class="msg-panneau" hidden>' +
+            '<div class="msg-panneau-tete"><strong>' + esc(t.titre) + "</strong>" +
+            '<button type="button" class="msg-fermer" aria-label="×">×</button></div>' +
+            '<div class="msg-corps">' + corps + "</div>" +
+            "</div>";
 
-        const bouton = zone.querySelector(".msg-tete");
-        const contenu = zone.querySelector(".msg-corps");
+        const bouton = zone.querySelector(".msg-icone");
+        const panneau = zone.querySelector(".msg-panneau");
+        const pastille = zone.querySelector(".msg-pastille");
 
         function marquerLus() {
             if (!nonLus) { return; }
+            nonLus = 0;
             sb().rpc("marquer_messages_lus").then(function () {
-                const pastille = bouton.querySelector(".msg-badge");
-                if (pastille) { pastille.remove(); }
-            }, function () { /* on réessaiera à la prochaine visite */ });
+                pastille.hidden = true;
+            }, function () { nonLus = messages.filter(function (m) { return !m.lu; }).length; /* on réessaiera */ });
         }
 
-        bouton.addEventListener("click", function () {
-            const ouvrir = contenu.hidden;
-            contenu.hidden = !ouvrir;
-            bouton.setAttribute("aria-expanded", String(ouvrir));
-            if (ouvrir) { marquerLus(); }
-        });
+        function placer() {
+            const r = bouton.getBoundingClientRect();
+            panneau.style.top = Math.round(r.bottom + 10) + "px";
+        }
 
-        if (ouvert) { marquerLus(); }
+        function fermer() {
+            panneau.hidden = true;
+            bouton.setAttribute("aria-expanded", "false");
+        }
+
+        function ouvrir() {
+            placer();
+            panneau.hidden = false;
+            bouton.setAttribute("aria-expanded", "true");
+            marquerLus();
+        }
+
+        bouton.addEventListener("click", function (e) {
+            e.stopPropagation();
+            if (panneau.hidden) { ouvrir(); } else { fermer(); }
+        });
+        zone.querySelector(".msg-fermer").addEventListener("click", fermer);
+        panneau.addEventListener("click", function (e) { e.stopPropagation(); });
+        document.addEventListener("click", function () { if (!panneau.hidden) { fermer(); } });
+        document.addEventListener("keydown", function (e) { if (e.key === "Escape") { fermer(); } });
+        window.addEventListener("resize", function () { if (!panneau.hidden) { placer(); } });
 
     }
 
