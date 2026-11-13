@@ -1707,3 +1707,94 @@ begin
 end $$;
 revoke all on function public.qcm_suivi() from public, anon;
 grant execute on function public.qcm_suivi() to authenticated;
+
+-- =================================================
+-- 16. AVIS SUR LE SITE (13/11/2026) : note de 1 à 5 étoiles donnée par chaque élève
+--     Une note par élève (modifiable). Aucun accès direct à la table : tout passe par les fonctions.
+--     Le pourcentage « satisfaits » = notes de 4 et 5 étoiles. Les statistiques ne sont visibles
+--     qu'après avoir donné sa note (et toujours pour l'administrateur). La note de l'administrateur
+--     n'est jamais enregistrée (il peut tester sans fausser les chiffres).
+-- =================================================
+
+create table if not exists public.avis_site (
+    user_id    uuid primary key references auth.users (id) on delete cascade,
+    etoiles    smallint not null check (etoiles between 1 and 5),
+    cree_le    timestamptz not null default now(),
+    modifie_le timestamptz not null default now()
+);
+alter table public.avis_site enable row level security;
+revoke all on public.avis_site from anon, authenticated;
+
+-- Statistiques globales (interne, ne renvoie jamais d'identité)
+create or replace function prive.avis_stats()
+returns json
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+    select json_build_object(
+        'total', count(*)::int,
+        'moyenne', coalesce(round(avg(a.etoiles)::numeric, 1), 0),
+        'pct', case when count(*) = 0 then 0
+                    else round(100.0 * count(*) filter (where a.etoiles >= 4) / count(*))::int end,
+        'repartition', json_build_array(
+            (count(*) filter (where a.etoiles = 1))::int,
+            (count(*) filter (where a.etoiles = 2))::int,
+            (count(*) filter (where a.etoiles = 3))::int,
+            (count(*) filter (where a.etoiles = 4))::int,
+            (count(*) filter (where a.etoiles = 5))::int)
+    )
+    from public.avis_site a
+    join auth.users u on u.id = a.user_id
+    where lower(coalesce(u.email, '')) <> 'faycel.khlifiii@gmail.com';
+$$;
+revoke all on function prive.avis_stats() from public, anon, authenticated;
+
+-- L'élève donne (ou change) sa note, puis reçoit les statistiques
+create or replace function public.donner_avis_site(p_etoiles int)
+returns json
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+    uid uuid := auth.uid();
+begin
+    if uid is null then raise exception 'Connexion requise'; end if;
+    if p_etoiles is null or p_etoiles < 1 or p_etoiles > 5 then raise exception 'Note invalide'; end if;
+    if not public.is_admin() then
+        if not exists (select 1 from public.eleves e where e.user_id = uid and e.statut is distinct from 'archive') then
+            raise exception 'Réservé aux élèves';
+        end if;
+        insert into public.avis_site (user_id, etoiles)
+        values (uid, p_etoiles)
+        on conflict (user_id) do update set etoiles = excluded.etoiles, modifie_le = now();
+    end if;
+    return json_build_object('etoiles', p_etoiles, 'stats', prive.avis_stats());
+end $$;
+revoke all on function public.donner_avis_site(int) from public, anon;
+grant execute on function public.donner_avis_site(int) to authenticated;
+
+-- Ma note actuelle (et les statistiques seulement si j'ai déjà noté ; toujours pour l'administrateur)
+create or replace function public.mon_avis_site()
+returns json
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $$
+declare
+    uid uuid := auth.uid();
+    n smallint;
+begin
+    if uid is null then return json_build_object('etoiles', null); end if;
+    if public.is_admin() then
+        return json_build_object('etoiles', null, 'stats', prive.avis_stats());
+    end if;
+    select a.etoiles into n from public.avis_site a where a.user_id = uid;
+    if n is null then return json_build_object('etoiles', null); end if;
+    return json_build_object('etoiles', n, 'stats', prive.avis_stats());
+end $$;
+revoke all on function public.mon_avis_site() from public, anon;
+grant execute on function public.mon_avis_site() to authenticated;

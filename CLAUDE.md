@@ -132,5 +132,14 @@
   titre « تدريبات QCM », note = nombre de bonnes réponses), `qcm_importer`, `qcm_suivi` (section 15 de `supabase/schema.sql`). Le niveau vient de la fiche
   élève ; l'administrateur teste avec l'aperçu (`apercu.js`) ou `?niv=`. Cartes d'accès dans `parcours/index.html` et `eleve.html`.
   Pour ajouter ou corriger des questions : modifier le JSON et le réimporter (mêmes `id` = mise à jour).
+- **Avis des élèves sur le site (13/11/2026)** : carte « ما رأيك في الموقع؟ / Que penses-tu du site ? » dans `eleve.html` (`#avis-zone`, `avis.js` + `avis.css`).
+  L'élève donne de 1 à 5 étoiles (modifiable) ; juste après, il voit le pourcentage d'élèves satisfaits (notes 4 et 5), la moyenne et le nombre d'avis.
+  Les chiffres ne sont visibles qu'après avoir noté. Table `avis_site` (aucun accès direct) + fonctions `donner_avis_site(int)` et `mon_avis_site()`
+  (section 16 de `supabase/schema.sql`, déjà appliquée). Réservé aux élèves (fiche non archivée) ; la note du compte administrateur n'est jamais enregistrée ni comptée
+  (il voit les chiffres en aperçu). Ne PAS publier ces notes comme « AggregateRating » dans le balisage Google : un site qui s'évalue lui-même n'est pas éligible aux étoiles.
+- **Pages publiques pour Google (13/11/2026)** : dossier `exercices/` (`exercices.css` + une page par niveau/partie, la première : `exercices/8-geometrie.html`).
+  Contenu ouvert à tous : titre, présentation des leçons (titres du catalogue), 2 exercices d'échantillon sans réponse, bouton d'inscription. JAMAIS de correction, de réponse
+  ni de PDF ici (le contenu complet reste privé). Chaque nouvelle page doit être ajoutée à `sitemap.xml` et liée depuis l'accueil ; texte arabe (فصحى), lettres et symboles
+  mathématiques dans `<span class="ltr">`, aucun balisage d'avis/étoiles.
 - Limite connue : un élève connecté peut toujours enregistrer ou partager ce qu'il a le droit de voir (PDF, leçon).
 - À activer dans Supabase (Authentication → Policies/Passwords) : « Leaked password protection ».

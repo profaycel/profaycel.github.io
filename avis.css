@@ -1,0 +1,143 @@
+/* =====================================================
+   PROFAYCEL — « رأيك في الموقع » : note de 1 à 5 étoiles (eleve.html)
+   Classes .avis-  ·  utilisé avec avis.js
+   ===================================================== */
+
+.avis-carte {
+    margin: 18px 0;
+    padding: 20px 18px;
+    background: #fff;
+    border: 2px solid #fde68a;
+    border-radius: var(--radius-md, 16px);
+    box-shadow: var(--shadow-sm, 0 4px 15px rgba(15, 23, 42, 0.06));
+    text-align: center;
+}
+
+.avis-carte[hidden] {
+    display: none;
+}
+
+.avis-titre {
+    margin: 0 0 4px;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.avis-sous {
+    margin: 0 0 12px;
+    font-size: 0.95rem;
+    color: #64748b;
+}
+
+/* Les 5 étoiles : toujours de gauche à droite (1 → 5), même en arabe */
+.avis-etoiles {
+    display: inline-flex;
+    direction: ltr;
+    gap: 6px;
+}
+
+.avis-etoile {
+    width: 52px;
+    height: 52px;
+    padding: 0;
+    border: 0;
+    border-radius: 12px;
+    background: none;
+    color: #cbd5e1;
+    font-size: 40px;
+    line-height: 1;
+    cursor: pointer;
+    transition: transform 0.15s ease, color 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.avis-etoile.avis-pleine {
+    color: #f59e0b;
+}
+
+.avis-etoile:hover,
+.avis-etoile:focus-visible {
+    transform: scale(1.15);
+}
+
+.avis-etoile:focus-visible {
+    outline: 3px solid #93c5fd;
+}
+
+.avis-etoile:disabled {
+    cursor: wait;
+    opacity: 0.6;
+}
+
+.avis-erreur {
+    margin: 10px 0 0;
+    color: #b91c1c;
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.avis-resultat {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px dashed #e2e8f0;
+}
+
+.avis-merci {
+    margin: 0 0 10px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.avis-pct {
+    margin: 0;
+    font-size: 2.4rem;
+    font-weight: 800;
+    line-height: 1.1;
+    color: #16a34a;
+}
+
+.avis-pct-texte {
+    margin: 2px 0 10px;
+    font-weight: 700;
+    color: #334155;
+}
+
+.avis-barre {
+    height: 12px;
+    margin: 0 auto 10px;
+    max-width: 320px;
+    background: #e2e8f0;
+    border-radius: 99px;
+    overflow: hidden;
+    direction: ltr;
+}
+
+.avis-barre > span {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: #16a34a;
+    border-radius: 99px;
+    transition: width 0.7s ease;
+}
+
+.avis-detail {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #64748b;
+}
+
+.avis-modifier {
+    margin: 10px 0 0;
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+@media (max-width: 380px) {
+    .avis-etoile {
+        width: 46px;
+        height: 46px;
+        font-size: 36px;
+    }
+}
