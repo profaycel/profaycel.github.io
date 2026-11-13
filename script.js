@@ -5552,6 +5552,48 @@ console.log("Page actuelle:", currentPage);
         }
 
 
+        // Panneau Français : indique l'année de l'élève et met « Bientôt » sur ce qui n'existe pas encore pour son niveau
+        function adapterFrancaisAuNiveau(classe) {
+
+            const num = parseInt(classe, 10);
+            if (!num) { return; }
+
+            // ce qui est disponible, par niveau (à compléter au fur et à mesure)
+            const dispo = {
+                7: { cours: true, qcm: true, synthese: true },
+                8: { cours: true, qcm: false, synthese: false }
+            }[num] || { cours: false, qcm: false, synthese: false };
+
+            const annee = num === 1 ? "1<sup>re</sup> année secondaire" : num + "<sup>e</sup> année";
+
+            const sousCours = document.querySelector("#fr-sous-cours");
+            if (sousCours) { sousCours.innerHTML = annee + " : leçons interactives, examens et certificat"; }
+
+            const sousQcm = document.querySelector("#fr-sous-qcm");
+            if (sousQcm) { sousQcm.innerHTML = annee + " : avant le contrôle n°1 et avant la synthèse n°1"; }
+
+            function enBientot(id) {
+                const tuile = document.querySelector(id);
+                if (!tuile) { return; }
+                tuile.removeAttribute("href");
+                tuile.classList.add("eleve-tuile-bientot");
+                const fleche = tuile.querySelector(".eleve-fleche");
+                if (fleche) { fleche.outerHTML = '<span class="eleve-bientot">Bientôt</span>'; }
+            }
+
+            if (!dispo.cours) { enBientot("#fr-tuile-cours"); }
+            if (!dispo.qcm) { enBientot("#fr-tuile-qcm"); }
+
+            if (!dispo.synthese) {
+                const details = document.querySelector("#devoirs-synthese-fr");
+                const bientot = document.querySelector("#fr-synthese-bientot");
+                if (details) { details.hidden = true; }
+                if (bientot) { bientot.hidden = false; }
+            }
+
+        }
+
+
         // Séries d'exercices publiées, regroupées par niveau
         async function loadEleveDocuments(classe) {
 
@@ -5575,6 +5617,8 @@ console.log("Page actuelle:", currentPage);
             if (conteneurFr) {
                 conteneurFr.innerHTML = htmlDocumentsFrancais(documents);
             }
+
+            adapterFrancaisAuNiveau(classe);
 
         }
 
