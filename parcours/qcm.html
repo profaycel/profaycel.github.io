@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../icons/icon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="moteur.css?v=5">
+<link rel="stylesheet" href="moteur.css?v=6">
 <style>
   .serie-badge{display:inline-block;font-size:15px;font-weight:700;padding:2px 12px;border-radius:99px;background:var(--bleu-clair);color:var(--bleu)}
   .opt{display:block;width:100%}
@@ -30,7 +30,7 @@
 <body>
 <nav class="pf-nav no-print"><div class="wrap"><a class="pf-logo" href="../index.html">Profaycel</a><a href="index.html">📚 دروسي</a><a href="../eleve.html">🏠 فضائي</a></div></nav>
 <div class="prof-bande">الأستاذ فيصل خليفي</div>
-<header class="top"><div class="wrap"><a class="retour" href="index.html" aria-label="رجوع">→</a><div style="flex:1"><h1>تدريبات QCM</h1><small id="sousTitre">أسئلة اختيار من متعدّد · رياضيات</small></div></div></header>
+<header class="top"><div class="wrap"><a class="fleche-retour" href="index.html" aria-label="رجوع">→</a><div style="flex:1"><h1>تدريبات QCM</h1><small id="sousTitre">أسئلة اختيار من متعدّد · رياضيات</small></div></div></header>
 <main class="wrap" id="app"><div class="carte chargement">⏳ تحميل…</div></main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js" integrity="sha384-TcHRA3zBbn+Lexh5n+Oil4guNPOS3rjNDpGRAN46u/s/mB2IZ50ceC6TYDU2yvgK" crossorigin="anonymous"></script>
@@ -91,7 +91,7 @@ function dessiner() {
         <div class="opts">` + q.options.map((o, i) => {
             let cl = "opt";
             if (rep) { if (i === q.bonne) cl += " ok"; else if (i === q.choix) cl += " ko"; }
-            return `<button type="button" class="${cl}" dir="auto" data-i="${i}" ${rep ? "disabled" : ""}><span class="lettre">${L[i]})</span> ${esc(o)}</button>`;
+            return `<button type="button" class="${cl}" dir="${dir}" style="text-align:${FR ? 'left' : 'right'}" data-i="${i}" ${rep ? "disabled" : ""}><span class="lettre">${L[i]})</span> ${esc(o)}</button>`;
         }).join("") + `</div>`;
     if (rep) {
         h += `<div class="verdict ${q.juste ? "ok" : "ko"}" style="direction:rtl">${q.juste ? "✅ أحسنت، جوابك صحيح!" : "❌ جوابك غير صحيح — الجواب الصحيح مُلوَّن بالأخضر"}</div>
