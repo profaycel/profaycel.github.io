@@ -125,8 +125,8 @@
         const { data, error } = await sb.rpc("qcm_suivi");
         if (error) { console.error(error); zone.innerHTML = "<p>Erreur de chargement.</p>"; return; }
         if (!data.length) { zone.innerHTML = "<p>Aucun élève n'a encore répondu.</p>"; return; }
-        zone.innerHTML = '<div style="overflow-x:auto"><table class="q-tab"><tr><th>Élève</th><th>Niveau</th><th>Répondues</th><th>Justes</th><th>Dernière réponse</th></tr>' +
-            data.map(r => `<tr><td>${esc(r.prenom)} ${esc(r.nom)}</td><td><bdi>${esc(r.niveau)}</bdi></td><td>${r.repondues} / 100</td><td>${r.justes}</td><td>${new Date(r.derniere).toLocaleString("fr-FR")}</td></tr>`).join("") + "</table></div>";
+        zone.innerHTML = '<div style="overflow-x:auto"><table class="q-tab"><tr><th>Élève</th><th>Niveau</th><th>Matière</th><th>Répondues</th><th>Justes</th><th>Dernière réponse</th></tr>' +
+            data.map(r => `<tr><td>${esc(r.prenom)} ${esc(r.nom)}</td><td><bdi>${esc(r.niveau)}</bdi></td><td>${r.matiere === 'francais' ? 'Français' : 'Maths'}</td><td>${r.repondues} / 100</td><td>${r.justes}</td><td>${new Date(r.derniere).toLocaleString("fr-FR")}</td></tr>`).join("") + "</table></div>";
     }
     document.getElementById("q-import").addEventListener("click", async () => {
         const res = document.getElementById("q-res"), f = document.getElementById("q-fichier").files[0];
