@@ -4806,7 +4806,6 @@ console.log("Page actuelle:", currentPage);
     // Documents publiés : matière → trimestre → série et sa correction
     const MATIERES = [
         { nom: "Mathématiques", icone: "📐" },
-        { nom: "Français", icone: "📖" },
         { nom: "Technologie", icone: "🔧" }
     ];
 
@@ -4929,9 +4928,49 @@ console.log("Page actuelle:", currentPage);
 
     }
 
+    // Devoirs de français : liste simple « série n°X + correction », avant la synthèse n°1
+    function htmlDocumentsFrancais(documents) {
+
+        const docs = (documents || []).filter(function (doc) { return doc.matiere === "Français"; });
+
+        if (docs.length === 0) {
+            return "<p>Les devoirs arrivent bientôt.</p>";
+        }
+
+        const parNumero = {};
+        const numeros = [];
+
+        docs.forEach(function (doc) {
+            const n = doc.numero || 999;
+            if (!parNumero[n]) { parNumero[n] = []; numeros.push(n); }
+            parNumero[n].push(doc);
+        });
+
+        numeros.sort(function (a, b) { return a - b; });
+
+        return `<div class="docs-dc">⭐ ما قبل الفرض التأليفي عدد <bdi>1</bdi><br><small>Avant la synthèse n°1</small></div>` + numeros.map(function (n) {
+            const paire = parNumero[n].sort(function (a, b) {
+                return ORDRE_TYPES.indexOf(a.type_fichier) - ORDRE_TYPES.indexOf(b.type_fichier);
+            });
+            return `<div class="docs-paire">${paire.map(function (doc) {
+                return `
+                    <div class="docs-item${doc.type_fichier === "Correction" ? " docs-item-correction" : ""}">
+                        <span class="docs-item-ic">${ICONES_TYPES[doc.type_fichier] || "📄"}</span>
+                        <div class="docs-item-texte">
+                            <strong dir="auto">${echapperHtml(doc.nom)}</strong>
+                            <small>${doc.type_fichier || "Document"}</small>
+                        </div>
+                        <div class="doc-boutons">${boutonsDocument(doc)}</div>
+                    </div>
+                `;
+            }).join("")}</div>`;
+        }).join("");
+
+    }
+
     function htmlDocuments(documents) {
 
-        documents = documents || [];
+        documents = (documents || []).filter(function (doc) { return doc.matiere !== "Français"; });
 
         // matières : les deux principales, puis celles qui ont des documents
         const matieres = MATIERES.slice();
@@ -5531,6 +5570,11 @@ console.log("Page actuelle:", currentPage);
             }
 
             container.innerHTML = htmlDocuments(documents);
+
+            const conteneurFr = document.querySelector("#eleve-documents-fr");
+            if (conteneurFr) {
+                conteneurFr.innerHTML = htmlDocumentsFrancais(documents);
+            }
 
         }
 
