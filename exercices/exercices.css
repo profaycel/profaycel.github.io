@@ -1,0 +1,127 @@
+/* =====================================================
+   PROFAYCEL — pages publiques d'exercices (exercices/*.html)
+   Pages ouvertes à tous (et à Google) : présentation + échantillon seulement.
+   Aucune réponse, aucune correction, aucun contenu protégé ici.
+   ===================================================== */
+
+:root {
+    --bleu: #2563eb; --bleu-fonce: #1d4ed8; --bleu-clair: #eff4ff;
+    --vert: #16a34a; --vert-clair: #ecfdf3;
+    --rouge: #dc2626; --or: #f59e0b;
+    --gris: #64748b; --fond: #f6f8fc; --carte: #ffffff; --texte: #0f172a; --bord: #e2e8f0;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: "Tajawal", system-ui, sans-serif;
+    background: var(--fond);
+    color: var(--texte);
+    font-size: 18px;
+    line-height: 1.8;
+}
+
+a { color: var(--bleu); }
+
+.wrap { max-width: 820px; margin: 0 auto; padding: 0 16px; }
+
+/* Barre du haut */
+.pf-nav { background: #fff; border-bottom: 1px solid var(--bord); }
+.pf-nav .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 10px; padding-bottom: 10px; }
+.pf-logo { font-weight: 800; font-size: 22px; color: var(--texte); text-decoration: none; direction: ltr; }
+.pf-logo span { color: var(--bleu); }
+.pf-liens { display: flex; gap: 14px; flex-wrap: wrap; font-weight: 700; font-size: 16px; }
+.pf-liens a { text-decoration: none; }
+
+.prof-bande { background: #fff; color: var(--rouge); font-weight: 800; text-align: center; padding: 6px; font-size: 17px; border-bottom: 1px solid var(--bord); }
+
+/* Fil d'Ariane */
+.fil { font-size: 15px; color: var(--gris); margin: 16px 0 0; }
+.fil a { color: var(--gris); text-decoration: none; }
+.fil a:hover { text-decoration: underline; }
+
+/* Titre */
+.entete { padding: 8px 0 4px; }
+h1 { margin: 10px 0 8px; font-size: 30px; line-height: 1.4; }
+.chapo { margin: 0 0 8px; color: #334155; }
+
+h2 { margin: 30px 0 10px; font-size: 24px; line-height: 1.4; }
+h3 { margin: 0 0 6px; font-size: 19px; }
+
+.carte {
+    background: var(--carte);
+    border: 1px solid var(--bord);
+    border-radius: 16px;
+    padding: 18px;
+    margin: 12px 0;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.carte p { margin: 4px 0; }
+.sous { color: var(--gris); font-size: 16px; }
+
+/* Les symboles et lettres mathématiques restent de gauche à droite */
+.ltr { direction: ltr; unicode-bidi: isolate; display: inline-block; font-weight: 700; white-space: nowrap; }
+
+.cadre-exo { border-right: 6px solid var(--bleu); }
+.cadre-exo ol { margin: 8px 0 0; padding-right: 22px; padding-left: 0; }
+.cadre-exo li { margin: 4px 0; }
+
+.note-echantillon {
+    margin: 12px 0 0;
+    padding: 12px 14px;
+    background: #fffbeb;
+    border-right: 5px solid var(--or);
+    border-radius: 10px;
+    font-size: 16px;
+}
+
+/* Étapes */
+.etapes { counter-reset: e; list-style: none; padding: 0; margin: 10px 0; }
+.etapes li { counter-increment: e; position: relative; background: #fff; border: 1px solid var(--bord); border-radius: 14px; padding: 12px 56px 12px 14px; margin: 10px 0; }
+.etapes li::before {
+    content: counter(e);
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    width: 34px; height: 34px; border-radius: 50%;
+    background: var(--bleu-clair); color: var(--bleu); font-weight: 800;
+    display: grid; place-items: center;
+}
+
+/* Bouton d'inscription */
+.appel {
+    margin: 28px 0 8px;
+    padding: 22px 18px;
+    background: linear-gradient(135deg, #1d4ed8, #2563eb);
+    color: #fff;
+    border-radius: 18px;
+    text-align: center;
+}
+.appel h2 { margin: 0 0 6px; color: #fff; font-size: 23px; }
+.appel p { margin: 0 0 14px; opacity: .95; }
+.bouton {
+    display: inline-block;
+    padding: 12px 28px;
+    background: #fff;
+    color: var(--bleu-fonce);
+    font-weight: 800;
+    font-size: 19px;
+    border-radius: 14px;
+    text-decoration: none;
+}
+.bouton:hover, .bouton:focus-visible { background: #fef9c3; }
+.appel .secondaire { display: block; margin-top: 10px; color: #dbeafe; font-size: 15px; }
+
+/* Questions fréquentes */
+details.q { background: #fff; border: 1px solid var(--bord); border-radius: 12px; padding: 10px 14px; margin: 8px 0; }
+details.q summary { cursor: pointer; font-weight: 800; }
+details.q p { margin: 8px 0 2px; }
+
+footer.pied { margin-top: 36px; padding: 18px 0 28px; border-top: 1px solid var(--bord); color: var(--gris); font-size: 15px; text-align: center; }
+footer.pied a { color: var(--gris); }
+
+@media (max-width: 520px) {
+    body { font-size: 17px; }
+    h1 { font-size: 25px; }
+    h2 { font-size: 21px; }
+}
