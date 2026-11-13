@@ -9,14 +9,14 @@
 <link rel="icon" type="image/svg+xml" href="../icons/icon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Aref+Ruqaa:wght@700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="moteur.css?v=5">
+<link rel="stylesheet" href="moteur.css?v=6">
 </head>
 <body>
 <nav class="pf-nav no-print"><div class="wrap"><a class="pf-logo" href="../index.html">Profaycel</a><a href="index.html">📚 دروسي</a><a href="../eleve.html">🏠 فضائي</a></div></nav>
 <div class="prof-bande">الأستاذ فيصل خليفي</div>
 <header class="top">
   <div class="wrap">
-    <a class="retour" id="retour" href="index.html" aria-label="رجوع">→</a>
+    <a class="fleche-retour" id="fleche-retour" href="index.html" aria-label="رجوع">→</a>
     <div style="flex:1">
       <h1 id="titre" dir="auto">…</h1>
       <small id="sous"></small>
@@ -42,7 +42,7 @@
         return;
     }
     document.getElementById("titre").textContent = l.titre;
-    if (l.matiere === "francais") document.getElementById("retour").href = "index.html?m=francais";
+    if (l.matiere === "francais") document.getElementById("fleche-retour").href = "index.html?m=francais";
     document.getElementById("sous").textContent = (l.matiere === "francais" ? "الفرنسية · " : "رياضيات · ") + l.niveau + (l.partie === "geometrie" ? " · هندسة" : "");
     // Le contenu des leçons est dans le stockage privé : lu seulement par un compte connecté, et seulement pour son niveau
     (async function () {
