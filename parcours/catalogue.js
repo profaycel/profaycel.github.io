@@ -64,7 +64,22 @@ window.CATALOGUE = [
     { id: "7-fr-2-futur", f: "7-fr-2-futur", niveau: "7 أساسي", matiere: "francais", partie: "francais", module: 2, n: 4, titre: "Le futur simple", sous: "Verbes réguliers et irréguliers, futur proche, parler de ses projets" },
     { id: "7-fr-2-orthographe-a-as", f: "7-fr-2-orthographe-a-as", niveau: "7 أساسي", matiere: "francais", partie: "francais", module: 2, n: 4, titre: "Orthographe : a/à, ou/où, la/là/l'a", sous: "Les homophones grammaticaux et leurs tests de remplacement" },
     { id: "7-fr-2-dialogue", f: "7-fr-2-dialogue", niveau: "7 أساسي", matiere: "francais", partie: "francais", module: 2, n: 4, titre: "Le dialogue dans le récit", sous: "Ponctuation, verbes introducteurs, varier les verbes, écrire un dialogue" },
-    { id: "7-fr-2-lecture-recit", f: "7-fr-2-lecture-recit", niveau: "7 أساسي", matiere: "francais", partie: "francais", module: 2, n: 4, titre: "Lecture : de la ville à la campagne", sous: "Comprendre, sentiments du personnage, comparer, planifier un récit" }
+    { id: "7-fr-2-lecture-recit", f: "7-fr-2-lecture-recit", niveau: "7 أساسي", matiere: "francais", partie: "francais", module: 2, n: 4, titre: "Lecture : de la ville à la campagne", sous: "Comprendre, sentiments du personnage, comparer, planifier un récit" },
+    { id: "8-fr-1-vocabulaire", f: "8-fr-1-vocabulaire", niveau: "8 أساسي", matiere: "francais", partie: "francais", module: 1, n: 4, titre: "Les années collège : le vocabulaire", sous: "Univers scolaire, qualités et défauts, nombres ordinaux, familles de mots" },
+    { id: "8-fr-1-presentatifs", f: "8-fr-1-presentatifs", niveau: "8 أساسي", matiere: "francais", partie: "francais", module: 1, n: 4, titre: "Se présenter et présenter : les présentatifs", sous: "Je suis, c'est, ce sont, voici, voilà, il y a, formules d'insistance" },
+    { id: "8-fr-1-recit", f: "8-fr-1-recit", niveau: "8 أساسي", matiere: "francais", partie: "francais", module: 1, n: 4, titre: "Le récit et ses composantes", sous: "Personnages, lieu, temps, situation initiale, intermédiaires et finale" },
+    { id: "8-fr-1-roles", f: "8-fr-1-roles", niveau: "8 أساسي", matiere: "francais", partie: "francais", module: 1, n: 4, titre: "Les personnages et leurs rôles", sous: "Héros, objet de valeur, adjuvant, opposant" },
+    { id: "8-fr-1-reprise", f: "8-fr-1-reprise", niveau: "8 أساسي", matiere: "francais", partie: "francais", module: 1, n: 4, titre: "Les mots de reprise", sous: "Pronoms, groupes nominaux, expressions, reprise qui informe" },
+    { id: "8-fr-1-pronoms", f: "8-fr-1-pronoms", niveau: "8 أساسي", matiere: "francais", partie: "francais", module: 1, n: 4, titre: "Les pronoms personnels sujets et COD", sous: "Je, tu, il…, le, la, les, accord du participe passé avec le COD" },
+    { id: "8-fr-1-personnes", f: "8-fr-1-personnes", niveau: "8 أساسي", matiere: "francais", partie: "francais", module: 1, n: 4, titre: "Raconter à la 1re ou à la 3e personne", sous: "Reconnaître et transformer un récit, relire son brouillon" },
+    { id: "8-fr-1-orthographe", f: "8-fr-1-orthographe", niveau: "8 أساسي", matiere: "francais", partie: "francais", module: 1, n: 4, titre: "Orthographe : cour / cours / court et autres homophones", sous: "a/à, et/est, on/ont, son/sont, ces/ses, s'est/c'est, répondre à une consigne" },
+    { id: "8-fr-2-vocabulaire", f: "8-fr-2-vocabulaire", niveau: "8 أساسي", matiere: "francais", partie: "francais", module: 2, n: 4, titre: "Allons voir un spectacle : le vocabulaire", sous: "Artistes et lieux du spectacle, demander et fournir des informations" },
+    { id: "8-fr-2-expansions", f: "8-fr-2-expansions", niveau: "8 أساسي", matiere: "francais", partie: "francais", module: 2, n: 4, titre: "Les expansions du groupe nominal", sous: "Groupe adjectival, groupe nominal prépositionnel, enrichir un texte" },
+    { id: "8-fr-2-relatives", f: "8-fr-2-relatives", niveau: "8 أساسي", matiere: "francais", partie: "francais", module: 2, n: 4, titre: "La proposition relative : qui, que, où", sous: "Reconnaître l'antécédent, choisir qui / que / où, réunir deux phrases" },
+    { id: "8-fr-2-imparfait", f: "8-fr-2-imparfait", niveau: "8 أساسي", matiere: "francais", partie: "francais", module: 2, n: 4, titre: "L'imparfait de l'indicatif", sous: "Formation, verbes irréguliers, décrire et exprimer l'habitude" },
+    { id: "8-fr-2-passe-simple", f: "8-fr-2-passe-simple", niveau: "8 أساسي", matiere: "francais", partie: "francais", module: 2, n: 4, titre: "Le passé simple", sous: "Verbes en -er, autres verbes, imparfait ou passé simple ?" },
+    { id: "8-fr-2-etat", f: "8-fr-2-etat", niveau: "8 أساسي", matiere: "francais", partie: "francais", module: 2, n: 4, titre: "Les verbes d'état et l'attribut du sujet", sous: "Être, sembler, paraître, devenir, accord de l'attribut" },
+    { id: "8-fr-2-description", f: "8-fr-2-description", niveau: "8 أساسي", matiere: "francais", partie: "francais", module: 2, n: 4, titre: "La description et le portrait dans le récit", sous: "Passage descriptif, verbes de perception, portrait physique et moral" }
 ];
 
 window.CATALOGUE_PAR_ID = Object.fromEntries(window.CATALOGUE.map(function (l) { return [l.id, l]; }));
@@ -92,6 +107,9 @@ window.PARTIES = [
       lecons: ["1-maths-angles", "1-maths-milieux", "1-maths-thales", "1-maths-trigonometrie", "1-maths-relations-metriques"] },
     // 7 أساسي : الفرنسية — شهادة واحدة في الآخر، بعد النجاح في امتحانات الدروس الـ15 كلّها
     { id: "7-francais-t1",  titre: "اللغة الفرنسية", niveau: "7 أساسي", partie: "francais", matiere: "francais",
-      lecons: ["7-fr-0-phrase-gn", "7-fr-0-verbe-present", "7-fr-1-vocabulaire", "7-fr-1-types-phrases", "7-fr-1-passe-compose", "7-fr-1-irreguliers", "7-fr-1-pronominaux", "7-fr-1-orthographe", "7-fr-1-lecture-recit", "7-fr-2-vocabulaire", "7-fr-2-phrase-simple", "7-fr-2-futur", "7-fr-2-orthographe-a-as", "7-fr-2-dialogue", "7-fr-2-lecture-recit"] }
+      lecons: ["7-fr-0-phrase-gn", "7-fr-0-verbe-present", "7-fr-1-vocabulaire", "7-fr-1-types-phrases", "7-fr-1-passe-compose", "7-fr-1-irreguliers", "7-fr-1-pronominaux", "7-fr-1-orthographe", "7-fr-1-lecture-recit", "7-fr-2-vocabulaire", "7-fr-2-phrase-simple", "7-fr-2-futur", "7-fr-2-orthographe-a-as", "7-fr-2-dialogue", "7-fr-2-lecture-recit"] },
+    // 8 أساسي : الفرنسية — شهادة واحدة بعد النجاح في امتحانات الدروس الـ15
+    { id: "8-francais-t1",  titre: "اللغة الفرنسية", niveau: "8 أساسي", partie: "francais", matiere: "francais",
+      lecons: ["8-fr-1-vocabulaire", "8-fr-1-presentatifs", "8-fr-1-recit", "8-fr-1-roles", "8-fr-1-reprise", "8-fr-1-pronoms", "8-fr-1-personnes", "8-fr-1-orthographe", "8-fr-2-vocabulaire", "8-fr-2-expansions", "8-fr-2-relatives", "8-fr-2-imparfait", "8-fr-2-passe-simple", "8-fr-2-etat", "8-fr-2-description"] }
 ];
 window.partieDe = function (lid) { return window.PARTIES.find(function (p) { return p.lecons.includes(lid); }); };

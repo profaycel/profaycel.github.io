@@ -740,7 +740,9 @@ insert into public.parties (id, titre, niveau, detail, lecons) values
  ('1-geometrie-t1', 'الهندسة', '1 ثانوي', '5 دروس (بالفرنسية) · الثلاثي الأوّل',
   array['1-maths-angles','1-maths-milieux','1-maths-thales','1-maths-trigonometrie','1-maths-relations-metriques']),
  ('7-francais-t1', 'اللغة الفرنسية', '7 أساسي', '15 درسا · الثلاثي الأوّل',
-  array['7-fr-0-phrase-gn','7-fr-0-verbe-present','7-fr-1-vocabulaire','7-fr-1-types-phrases','7-fr-1-passe-compose','7-fr-1-irreguliers','7-fr-1-pronominaux','7-fr-1-orthographe','7-fr-1-lecture-recit','7-fr-2-vocabulaire','7-fr-2-phrase-simple','7-fr-2-futur','7-fr-2-orthographe-a-as','7-fr-2-dialogue','7-fr-2-lecture-recit'])
+  array['7-fr-0-phrase-gn','7-fr-0-verbe-present','7-fr-1-vocabulaire','7-fr-1-types-phrases','7-fr-1-passe-compose','7-fr-1-irreguliers','7-fr-1-pronominaux','7-fr-1-orthographe','7-fr-1-lecture-recit','7-fr-2-vocabulaire','7-fr-2-phrase-simple','7-fr-2-futur','7-fr-2-orthographe-a-as','7-fr-2-dialogue','7-fr-2-lecture-recit']),
+ ('8-francais-t1', 'اللغة الفرنسية', '8 أساسي', '15 درسا · الثلاثي الأوّل',
+  array['8-fr-1-vocabulaire', '8-fr-1-presentatifs', '8-fr-1-recit', '8-fr-1-roles', '8-fr-1-reprise', '8-fr-1-pronoms', '8-fr-1-personnes', '8-fr-1-orthographe', '8-fr-2-vocabulaire', '8-fr-2-expansions', '8-fr-2-relatives', '8-fr-2-imparfait', '8-fr-2-passe-simple', '8-fr-2-etat', '8-fr-2-description'])
 on conflict (id) do update set titre = excluded.titre, niveau = excluded.niveau, detail = excluded.detail, lecons = excluded.lecons;
 
 alter table public.certificats add column if not exists detail text;
