@@ -215,14 +215,24 @@
                         <span class="eleve-bientot">Bientôt</span>
                     </div>
 
-                    <div class="eleve-tuile eleve-tuile-fr eleve-tuile-bientot">
-                        <span class="eleve-tuile-ic">🏆</span>
-                        <span class="eleve-tuile-texte">
-                            <strong>Devoirs de synthèse</strong>
-                            <small>Préparation avant chaque devoir de synthèse</small>
-                        </span>
-                        <span class="eleve-bientot">Bientôt</span>
-                    </div>
+                    <details class="eleve-devoirs" id="devoirs-synthese-fr">
+
+                        <summary class="eleve-tuile eleve-tuile-fr">
+                            <span class="eleve-tuile-ic">🏆</span>
+                            <span class="eleve-tuile-texte">
+                                <strong>Devoirs de synthèse</strong>
+                                <small>10 devoirs avec corrections avant la synthèse n°1</small>
+                            </span>
+                            <span class="eleve-fleche">›</span>
+                        </summary>
+
+                        <div class="eleve-devoirs-corps">
+                            <div id="eleve-documents-fr">
+                                <p>Chargement...</p>
+                            </div>
+                        </div>
+
+                    </details>
 
                 </div>
 
@@ -419,7 +429,7 @@
 
     <script src="i18n.js?v=20"></script>
     <script src="apercu.js?v=1"></script>
-    <script src="script.js?v=32"></script>
+    <script src="script.js?v=33"></script>
     <script src="messages.js?v=2"></script>
     <script src="avis.js?v=1"></script>
     <script src="matieres.js?v=1"></script>
