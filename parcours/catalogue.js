@@ -48,7 +48,23 @@ window.CATALOGUE = [
     { id: "1-maths-milieux", f: "1-geo2-milieux", niveau: "1 ثانوي", partie: "geometrie", n: 3, titre: "Théorème des milieux", sous: "Théorème et réciproque, droite des milieux dans un trapèze" },
     { id: "1-maths-thales", f: "1-geo3-thales", niveau: "1 ثانوي", partie: "geometrie", n: 4, titre: "Théorème de Thalès et sa réciproque", sous: "Rapports égaux, calculs de longueurs, parallélisme, configuration papillon" },
     { id: "1-maths-trigonometrie", f: "1-geo4-trigonometrie", niveau: "1 ثانوي", partie: "geometrie", n: 4, titre: "Rapports trigonométriques d'un angle aigu", sous: "Sinus, cosinus, tangente, valeurs remarquables, calculs de longueurs et d'angles" },
-    { id: "1-maths-relations-metriques", f: "1-geo5-relations-metriques", niveau: "1 ثانوي", partie: "geometrie", n: 3, titre: "Relations métriques dans un triangle rectangle", sous: "Pythagore, hauteur relative à l'hypoténuse, problèmes" }
+    { id: "1-maths-relations-metriques", f: "1-geo5-relations-metriques", niveau: "1 ثانوي", partie: "geometrie", n: 3, titre: "Relations métriques dans un triangle rectangle", sous: "Pythagore, hauteur relative à l'hypoténuse, problèmes" },
+    // ----- 7 أساسي : الفرنسية (الثلاثي الأوّل) : matiere "francais" ; module 0 = rappels, 1 = En famille, 2 = Vivre en ville, vivre à la campagne -----
+    { id: "7-fr-0-phrase-gn", f: "7-fr-0-phrase-gn", niveau: "7 أساسي", matiere: "francais", partie: "francais", module: 0, n: 4, titre: "Rappels : la phrase et le groupe nominal", sous: "Majuscule et ponctuation, nom, déterminant, adjectif, groupe nominal" },
+    { id: "7-fr-0-verbe-present", f: "7-fr-0-verbe-present", niveau: "7 أساسي", matiere: "francais", partie: "francais", module: 0, n: 4, titre: "Rappels : le verbe au présent", sous: "Infinitif et groupes, verbes en -er, être / avoir / aller / faire, et/est, on/ont, son/sont" },
+    { id: "7-fr-1-vocabulaire", f: "7-fr-1-vocabulaire", niveau: "7 أساسي", matiere: "francais", partie: "francais", module: 1, n: 4, titre: "En famille : le vocabulaire", sous: "La famille et l'adoption, les bonnes manières, les verbes de perception, dire l'heure" },
+    { id: "7-fr-1-types-phrases", f: "7-fr-1-types-phrases", niveau: "7 أساسي", matiere: "francais", partie: "francais", module: 1, n: 4, titre: "Les types et les formes de phrases", sous: "Déclarative, interrogative, impérative, exclamative, forme négative" },
+    { id: "7-fr-1-passe-compose", f: "7-fr-1-passe-compose", niveau: "7 أساسي", matiere: "francais", partie: "francais", module: 1, n: 4, titre: "Le passé composé", sous: "Auxiliaire et participe passé, avoir ou être, accord, valeurs des temps" },
+    { id: "7-fr-1-irreguliers", f: "7-fr-1-irreguliers", niveau: "7 أساسي", matiere: "francais", partie: "francais", module: 1, n: 4, titre: "Les verbes irréguliers du présent", sous: "Dire, lire, écrire, prendre, venir, voir, pouvoir, vouloir, devoir" },
+    { id: "7-fr-1-pronominaux", f: "7-fr-1-pronominaux", niveau: "7 أساسي", matiere: "francais", partie: "francais", module: 1, n: 4, titre: "Les verbes pronominaux", sous: "Reconnaître, conjuguer au présent et au passé composé, raconter sa journée" },
+    { id: "7-fr-1-orthographe", f: "7-fr-1-orthographe", niveau: "7 أساسي", matiere: "francais", partie: "francais", module: 1, n: 4, titre: "Orthographe : se/ce, ces/ses, c'est/s'est", sous: "Les homophones grammaticaux et leurs tests de remplacement" },
+    { id: "7-fr-1-lecture-recit", f: "7-fr-1-lecture-recit", niveau: "7 أساسي", matiere: "francais", partie: "francais", module: 1, n: 4, titre: "Lecture : un récit en famille", sous: "Comprendre, qui raconte, mots de reprise, étapes du récit" },
+    { id: "7-fr-2-vocabulaire", f: "7-fr-2-vocabulaire", niveau: "7 أساسي", matiere: "francais", partie: "francais", module: 2, n: 4, titre: "Vivre en ville, vivre à la campagne : le vocabulaire", sous: "Ville et campagne, métiers, avoir faim / soif / peur, s'orienter" },
+    { id: "7-fr-2-phrase-simple", f: "7-fr-2-phrase-simple", niveau: "7 أساسي", matiere: "francais", partie: "francais", module: 2, n: 4, titre: "La phrase simple et ses compléments", sous: "Sujet, groupe verbal, COD, COI, compléments circonstanciels" },
+    { id: "7-fr-2-futur", f: "7-fr-2-futur", niveau: "7 أساسي", matiere: "francais", partie: "francais", module: 2, n: 4, titre: "Le futur simple", sous: "Verbes réguliers et irréguliers, futur proche, parler de ses projets" },
+    { id: "7-fr-2-orthographe-a-as", f: "7-fr-2-orthographe-a-as", niveau: "7 أساسي", matiere: "francais", partie: "francais", module: 2, n: 4, titre: "Orthographe : a/à, ou/où, la/là/l'a", sous: "Les homophones grammaticaux et leurs tests de remplacement" },
+    { id: "7-fr-2-dialogue", f: "7-fr-2-dialogue", niveau: "7 أساسي", matiere: "francais", partie: "francais", module: 2, n: 4, titre: "Le dialogue dans le récit", sous: "Ponctuation, verbes introducteurs, varier les verbes, écrire un dialogue" },
+    { id: "7-fr-2-lecture-recit", f: "7-fr-2-lecture-recit", niveau: "7 أساسي", matiere: "francais", partie: "francais", module: 2, n: 4, titre: "Lecture : de la ville à la campagne", sous: "Comprendre, sentiments du personnage, comparer, planifier un récit" }
 ];
 
 window.CATALOGUE_PAR_ID = Object.fromEntries(window.CATALOGUE.map(function (l) { return [l.id, l]; }));
@@ -73,6 +89,9 @@ window.PARTIES = [
     { id: "1-algebre-t1",   titre: "الجبر والحساب", niveau: "1 ثانوي", partie: "algebre",
       lecons: ["1-maths-division-divisibilite", "1-maths-premiers-pgcd", "1-maths-ppcm-fractions", "1-maths-puissances-sci", "1-maths-racines-carrees", "1-maths-identites-remarquables", "1-maths-ordre-valeur-absolue", "1-maths-intervalles-encadrement"] },
     { id: "1-geometrie-t1", titre: "الهندسة",       niveau: "1 ثانوي", partie: "geometrie",
-      lecons: ["1-maths-angles", "1-maths-milieux", "1-maths-thales", "1-maths-trigonometrie", "1-maths-relations-metriques"] }
+      lecons: ["1-maths-angles", "1-maths-milieux", "1-maths-thales", "1-maths-trigonometrie", "1-maths-relations-metriques"] },
+    // 7 أساسي : الفرنسية — شهادة واحدة في الآخر، بعد النجاح في امتحانات الدروس الـ15 كلّها
+    { id: "7-francais-t1",  titre: "اللغة الفرنسية", niveau: "7 أساسي", partie: "francais", matiere: "francais",
+      lecons: ["7-fr-0-phrase-gn", "7-fr-0-verbe-present", "7-fr-1-vocabulaire", "7-fr-1-types-phrases", "7-fr-1-passe-compose", "7-fr-1-irreguliers", "7-fr-1-pronominaux", "7-fr-1-orthographe", "7-fr-1-lecture-recit", "7-fr-2-vocabulaire", "7-fr-2-phrase-simple", "7-fr-2-futur", "7-fr-2-orthographe-a-as", "7-fr-2-dialogue", "7-fr-2-lecture-recit"] }
 ];
 window.partieDe = function (lid) { return window.PARTIES.find(function (p) { return p.lecons.includes(lid); }); };

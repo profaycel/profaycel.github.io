@@ -134,3 +134,25 @@ input.rep:focus{outline:none;border-color:var(--bleu)}
 .enonce[dir="ltr"],.opt[dir="ltr"]{text-align:left}
 .legende{color:#64748b;font-size:14px;margin:2px 0 8px}
 .fig{max-width:100%;height:auto}
+
+/* ----- texte à lire (question avec « texte ») ----- */
+.texte-lecture{background:#fffdf5;border:1px solid #f3e3b3;border-radius:12px;padding:14px 16px;margin:10px 0 14px;font-size:19px;line-height:1.95}
+.texte-lecture p{margin:0 0 8px}
+.texte-lecture .texte-etiquette{font-size:14px;font-weight:700;color:#92400e;margin-bottom:6px}
+.texte-lecture .num-ligne{color:#92400e;font-size:13px;font-weight:700;margin-inline-end:6px}
+/* ----- type « ordre » : former une phrase en touchant les mots ----- */
+.ordre-reponse{min-height:58px;display:flex;flex-wrap:wrap;gap:8px;padding:10px;border:2px dashed #bfdbfe;border-radius:12px;background:var(--bleu-clair);margin:6px 0 12px;align-items:center}
+.ordre-banque{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}
+.mot-ordre{font:inherit;font-size:19px;padding:8px 14px;border-radius:10px;border:2px solid var(--bord);background:#fff;color:var(--texte);cursor:pointer}
+.mot-ordre.pris{border-color:var(--bleu);background:#fff}
+.mot-ordre.vide-case{visibility:hidden;cursor:default}
+.mot-ordre:disabled{cursor:default;opacity:.85}
+.ordre-vide{color:var(--gris)}
+.ordre-sol{background:var(--vert-clair);border-radius:8px;padding:6px 10px;margin:6px 0;font-weight:700}
+.fr .tableau{border-collapse:collapse;margin:8px 0;direction:ltr}
+.fr .tableau th,.fr .tableau td{border:1px solid var(--bord);padding:4px 10px}
+.fr .tableau th{background:var(--bleu-clair)}
+.fr .mot-cle{color:var(--bleu);font-weight:700}
+.fr .verbe{color:#b91c1c;font-weight:700}
+.fr .sujet{color:#047857;font-weight:700}
+.fr .ar{direction:rtl;unicode-bidi:isolate;display:inline-block;color:#475569}

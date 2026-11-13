@@ -738,7 +738,9 @@ insert into public.parties (id, titre, niveau, detail, lecons) values
  ('1-algebre-t1', 'الجبر والحساب', '1 ثانوي', '8 دروس (بالفرنسية) · الثلاثي الأوّل',
   array['1-maths-division-divisibilite','1-maths-premiers-pgcd','1-maths-ppcm-fractions','1-maths-puissances-sci','1-maths-racines-carrees','1-maths-identites-remarquables','1-maths-ordre-valeur-absolue','1-maths-intervalles-encadrement']),
  ('1-geometrie-t1', 'الهندسة', '1 ثانوي', '5 دروس (بالفرنسية) · الثلاثي الأوّل',
-  array['1-maths-angles','1-maths-milieux','1-maths-thales','1-maths-trigonometrie','1-maths-relations-metriques'])
+  array['1-maths-angles','1-maths-milieux','1-maths-thales','1-maths-trigonometrie','1-maths-relations-metriques']),
+ ('7-francais-t1', 'اللغة الفرنسية', '7 أساسي', '15 درسا · الثلاثي الأوّل',
+  array['7-fr-0-phrase-gn','7-fr-0-verbe-present','7-fr-1-vocabulaire','7-fr-1-types-phrases','7-fr-1-passe-compose','7-fr-1-irreguliers','7-fr-1-pronominaux','7-fr-1-orthographe','7-fr-1-lecture-recit','7-fr-2-vocabulaire','7-fr-2-phrase-simple','7-fr-2-futur','7-fr-2-orthographe-a-as','7-fr-2-dialogue','7-fr-2-lecture-recit'])
 on conflict (id) do update set titre = excluded.titre, niveau = excluded.niveau, detail = excluded.detail, lecons = excluded.lecons;
 
 alter table public.certificats add column if not exists detail text;

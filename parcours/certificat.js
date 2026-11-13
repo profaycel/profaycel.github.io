@@ -62,7 +62,7 @@ function renderCertificat(c) {
       <div class="cert-nom">${nom}</div>
       <p class="cert-texte">${qcm ? "قد أتمّ(ت) بنجاح تدريبات" : "قد أتمّ(ت) بنجاح جميع دروس"}</p>
       <div class="cert-lecon">« ${echapper(c.titre)} »</div>
-      <p class="cert-texte petit">رياضيات${c.niveau ? " · <bdi>" + echapper(c.niveau) + "</bdi>" : ""}${c.detail ? " · " + echapper(c.detail) : ""}</p>
+      <p class="cert-texte petit">${/فرنس/.test(c.titre || "") ? "الفرنسية" : "رياضيات"}${c.niveau ? " · <bdi>" + echapper(c.niveau) + "</bdi>" : ""}${c.detail ? " · " + echapper(c.detail) : ""}</p>
       ${stats}
       <div class="cert-bas">
         <div class="cert-col">
