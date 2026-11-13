@@ -39,10 +39,14 @@
 <script>
 const sb = () => window.supabaseClient;
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const SERIES = { dc2: "قبل فرض المراقبة عدد 2", ds1: "قبل الفرض التأليفي عدد 1" };
+const SERIES = { dc1: "قبل فرض المراقبة عدد 1", dc2: "قبل فرض المراقبة عدد 2", ds1: "قبل الفرض التأليفي عدد 1" };
+// Matière : ?m=francais ouvre les QCM de français, sinon mathématiques
+const MAT = new URLSearchParams(location.search).get("m") === "francais" ? "francais" : "maths";
+const RETOUR = "index.html" + (MAT === "francais" ? "?m=francais" : "");
 const LETTRES_AR = ["أ", "ب", "ج", "د"], LETTRES_FR = ["A", "B", "C", "D"];
 let QS = [], NIVEAU = null, PARAM = null, VUE = 0, FR = false, OCCUPE = false;
 
+document.querySelectorAll('a[href="index.html"]').forEach(a => a.href = RETOUR);
 async function lancer() {
     for (let i = 0; i < 100 && !sb(); i++) await new Promise(r => setTimeout(r, 100));
     const app = document.getElementById("app");
@@ -54,17 +58,17 @@ async function lancer() {
     if (!admin && role !== "eleve") { location.href = "../index.html"; return; }
     // L'administrateur teste avec le niveau de l'aperçu (apercu.js) ou ?niv=
     if (admin) PARAM = (window.pfApercu && window.pfApercu(user)) || new URLSearchParams(location.search).get("niv") || "7 أساسي";
-    const { data, error } = await sb().rpc("qcm_charger", { p_niveau: PARAM });
+    const { data, error } = await sb().rpc("qcm_charger", { p_niveau: PARAM, p_matiere: MAT });
     if (error) {
         console.error(error);
         app.innerHTML = `<div class="carte centre"><h3>اختر مستواك أوّلا 📚</h3><p>لا تظهر الأسئلة إلا بعد اختيار المستوى الدراسي في فضائك.</p><a class="btn" href="../eleve.html" style="text-decoration:none">← فضائي</a></div>`;
         return;
     }
     NIVEAU = data.niveau; QS = data.questions || [];
-    FR = NIVEAU === "1 ثانوي";
-    document.getElementById("sousTitre").innerHTML = "أسئلة اختيار من متعدّد · <bdi>" + esc(NIVEAU) + "</bdi>";
+    FR = NIVEAU === "1 ثانوي" || MAT === "francais";
+    document.getElementById("sousTitre").innerHTML = "أسئلة اختيار من متعدّد · " + (MAT === "francais" ? "الفرنسية · " : "") + "<bdi>" + esc(NIVEAU) + "</bdi>";
     if (!QS.length) {
-        app.innerHTML = `<div class="carte centre"><h3>الأسئلة في الطريق ✍️</h3><p>أسئلة مستواك ستُضاف قريبا.</p><a class="btn" href="index.html" style="text-decoration:none">← دروسي</a></div>`;
+        app.innerHTML = `<div class="carte centre"><h3>الأسئلة في الطريق ✍️</h3><p>أسئلة مستواك ستُضاف قريبا.</p><a class="btn" href="${RETOUR}" style="text-decoration:none">← دروسي</a></div>`;
         return;
     }
     VUE = premiereNonRepondue();
@@ -83,7 +87,7 @@ function dessiner() {
     const dir = FR ? "ltr" : "rtl";
     h += `<div class="carte ${FR ? "fr" : ""}">
         <div class="qhead" style="direction:rtl"><span class="serie-badge">${SERIES[q.serie] || ""}</span><span>السؤال <b class="ltr">${q.ordre} / ${total}</b></span></div>
-        <div class="enonce" dir="${dir}">${esc(q.enonce)}</div>
+        <div class="enonce" dir="${dir}" style="white-space:pre-line">${esc(q.enonce)}</div>
         <div class="opts">` + q.options.map((o, i) => {
             let cl = "opt";
             if (rep) { if (i === q.bonne) cl += " ok"; else if (i === q.choix) cl += " ko"; }
@@ -133,12 +137,12 @@ function fin(faites, justes, total) {
         <h2>${complet ? "أتممت كلّ الأسئلة!" : "لم تُتمّ كلّ الأسئلة بعد"}</h2>
         <p>نتيجتك: <b class="ltr">${justes} / ${total}</b> (${pc}%)</p>
         ${complet ? `<button class="btn vert" id="cert">🎓 احصل على شهادتي</button>` : `<button class="btn" onclick="VUE=premiereNonRepondue();dessiner()">متابعة الأسئلة ←</button>`}
-        <p style="margin-top:14px"><a href="index.html">← دروسي</a></p></div>`;
+        <p style="margin-top:14px"><a href="${RETOUR}">← دروسي</a></p></div>`;
 }
 document.addEventListener("click", async e => {
     if (e.target && e.target.id === "cert") {
         e.target.disabled = true; e.target.textContent = "⏳ …";
-        const { data, error } = await sb().rpc("qcm_certificat", { p_niveau: PARAM });
+        const { data, error } = await sb().rpc("qcm_certificat", { p_niveau: PARAM, p_matiere: MAT });
         if (error) { console.error(error); e.target.disabled = false; e.target.textContent = "😕 أعد المحاولة"; return; }
         location.href = "certificat.html?n=" + encodeURIComponent(data.numero);
     }

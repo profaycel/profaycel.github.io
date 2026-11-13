@@ -1800,3 +1800,125 @@ begin
 end $$;
 revoke all on function public.mon_avis_site() from public, anon;
 grant execute on function public.mon_avis_site() to authenticated;
+
+-- =================================================
+-- 17. QCM DE FRANÇAIS (13/11/2026) : le même système de QCM, avec une colonne « matière »
+--     ('maths' par défaut, 'francais'). Séries françaises : dc1 (avant le devoir de contrôle n°1) puis ds1 (avant le devoir de synthèse n°1).
+--     Les anciens appels (sans matière) continuent de fonctionner : ils lisent les maths.
+alter table public.qcm_questions add column if not exists matiere text not null default 'maths';
+alter table public.qcm_questions drop constraint if exists qcm_questions_matiere_check;
+alter table public.qcm_questions add constraint qcm_questions_matiere_check check (matiere in ('maths', 'francais'));
+alter table public.qcm_questions drop constraint if exists qcm_questions_serie_check;
+alter table public.qcm_questions add constraint qcm_questions_serie_check check (serie in ('dc1', 'dc2', 'ds1'));
+alter table public.qcm_questions drop constraint if exists qcm_questions_niveau_ordre_key;
+alter table public.qcm_questions drop constraint if exists qcm_questions_niveau_matiere_ordre_key;
+alter table public.qcm_questions add constraint qcm_questions_niveau_matiere_ordre_key unique (niveau, matiere, ordre);
+
+drop function if exists public.qcm_charger(text);
+create or replace function public.qcm_charger(p_niveau text default null, p_matiere text default 'maths')
+returns json language plpgsql security definer set search_path = '' as $$
+declare uid uuid := auth.uid(); niv text := prive.qcm_niveau(p_niveau); mat text := coalesce(nullif(p_matiere, ''), 'maths');
+begin
+    return json_build_object('niveau', niv, 'matiere', mat, 'questions', coalesce((
+        select json_agg(
+            jsonb_build_object('id', q.id, 'ordre', q.ordre, 'serie', q.serie, 'partie', q.partie, 'lecon', q.lecon,
+                               'enonce', q.enonce, 'options', q.options)
+            || case when r.qid is not null
+                    then jsonb_build_object('choix', r.choix, 'juste', r.juste, 'bonne', q.bonne, 'explication', q.explication)
+                    else '{}'::jsonb end
+            order by q.ordre)
+        from public.qcm_questions q
+        left join public.qcm_reponses r on r.qid = q.id and r.user_id = uid
+        where q.niveau = niv and q.matiere = mat), '[]'::json));
+end $$;
+revoke all on function public.qcm_charger(text, text) from public, anon;
+grant execute on function public.qcm_charger(text, text) to authenticated;
+
+create or replace function public.qcm_repondre(p_qid text, p_choix int, p_niveau text default null)
+returns json language plpgsql security definer set search_path = '' as $$
+declare uid uuid := auth.uid(); niv text := prive.qcm_niveau(p_niveau); q public.qcm_questions; r public.qcm_reponses; ok boolean;
+begin
+    if p_choix is null or p_choix < 0 or p_choix > 3 then raise exception 'Choix invalide'; end if;
+    select * into q from public.qcm_questions where id = p_qid and niveau = niv;
+    if not found then raise exception 'Question inconnue'; end if;
+    select * into r from public.qcm_reponses where user_id = uid and qid = q.id;
+    if found then
+        return json_build_object('juste', r.juste, 'choix', r.choix, 'bonne', q.bonne, 'explication', q.explication);
+    end if;
+    if q.ordre > 1 and not exists (
+        select 1 from public.qcm_questions p join public.qcm_reponses x on x.qid = p.id and x.user_id = uid
+         where p.niveau = niv and p.matiere = q.matiere and p.ordre = q.ordre - 1) then
+        raise exception 'Réponds d''abord à la question précédente';
+    end if;
+    ok := (p_choix = q.bonne);
+    insert into public.qcm_reponses (user_id, qid, choix, juste) values (uid, q.id, p_choix, ok);
+    return json_build_object('juste', ok, 'choix', p_choix, 'bonne', q.bonne, 'explication', q.explication);
+end $$;
+revoke all on function public.qcm_repondre(text, int, text) from public, anon;
+grant execute on function public.qcm_repondre(text, int, text) to authenticated;
+
+drop function if exists public.qcm_certificat(text);
+create or replace function public.qcm_certificat(p_niveau text default null, p_matiere text default 'maths')
+returns json language plpgsql security definer set search_path = '' as $$
+declare uid uuid := auth.uid(); niv text := prive.qcm_niveau(p_niveau); mat text := coalesce(nullif(p_matiere, ''), 'maths');
+        code text; c public.certificats; e public.eleves; nom text; total int; faites int; bonnes int;
+begin
+    code := case when mat = 'francais' then 'qcm-fr-' else 'qcm-' end || split_part(niv, ' ', 1);
+    select * into c from public.certificats where user_id = uid and lecon = code;
+    if found then return row_to_json(c); end if;
+    select count(*) into total from public.qcm_questions where niveau = niv and matiere = mat;
+    select count(*), count(*) filter (where r.juste) into faites, bonnes
+      from public.qcm_questions q join public.qcm_reponses r on r.qid = q.id and r.user_id = uid where q.niveau = niv and q.matiere = mat;
+    if total = 0 or faites < total then raise exception 'Toutes les questions ne sont pas encore traitées'; end if;
+    select * into e from public.eleves where user_id = uid and statut is distinct from 'archive' order by id limit 1;
+    nom := trim(coalesce(e.prenom, '') || ' ' || coalesce(e.nom, ''));
+    if nom = '' then
+        select trim(coalesce(raw_user_meta_data ->> 'full_name', raw_user_meta_data ->> 'nom', '')) into nom from auth.users where id = uid;
+        nom := regexp_replace(coalesce(nom, ''), '[<>"`]', '', 'g');
+    end if;
+    if coalesce(nom, '') = '' then nom := 'تلميذ(ة) Profaycel'; end if;
+    insert into public.certificats (numero, user_id, lecon, titre, detail, nom_complet, niveau, score, total)
+    values ('PF-' || to_char(now(), 'YYYY') || '-' || lpad(nextval('public.certificat_seq')::text, 4, '0')
+                || '-' || upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 6)),
+            uid, code,
+            case when mat = 'francais' then 'تدريبات QCM الفرنسية' else 'تدريبات QCM' end,
+            case when mat = 'francais' then total || ' سؤالا في اللغة الفرنسية' else total || ' سؤالا في الجبر والهندسة' end,
+            nom, niv, bonnes, total)
+    returning * into c;
+    return row_to_json(c);
+end $$;
+revoke all on function public.qcm_certificat(text, text) from public, anon;
+grant execute on function public.qcm_certificat(text, text) to authenticated;
+
+create or replace function public.qcm_importer(p_data jsonb)
+returns int language plpgsql security definer set search_path = '' as $$
+declare n int;
+begin
+    if not public.is_admin() then raise exception 'Réservé à l''administrateur'; end if;
+    insert into public.qcm_questions (id, niveau, matiere, serie, ordre, partie, lecon, enonce, options, bonne, explication)
+    select x.id, x.niveau, coalesce(x.matiere, 'maths'), x.serie, x.ordre, x.partie, x.lecon, x.enonce, x.options, x.bonne, x.explication
+      from jsonb_to_recordset(p_data) as x(id text, niveau text, matiere text, serie text, ordre int, partie text, lecon text,
+                                           enonce text, options jsonb, bonne int, explication text)
+    on conflict (id) do update set niveau = excluded.niveau, matiere = excluded.matiere, serie = excluded.serie, ordre = excluded.ordre,
+        partie = excluded.partie, lecon = excluded.lecon, enonce = excluded.enonce, options = excluded.options,
+        bonne = excluded.bonne, explication = excluded.explication;
+    get diagnostics n = row_count;
+    return n;
+end $$;
+revoke all on function public.qcm_importer(jsonb) from public, anon;
+grant execute on function public.qcm_importer(jsonb) to authenticated;
+
+drop function if exists public.qcm_suivi();
+create or replace function public.qcm_suivi()
+returns table (user_id uuid, prenom text, nom text, niveau text, matiere text, repondues int, justes int, derniere timestamptz)
+language plpgsql security definer set search_path = '' as $$
+begin
+    if not public.is_admin() then raise exception 'Réservé à l''administrateur'; end if;
+    return query
+    select e.user_id, e.prenom, e.nom, e.classe, q.matiere, count(r.qid)::int, (count(r.qid) filter (where r.juste))::int, max(r.repondu_le)
+      from public.eleves e join public.qcm_reponses r on r.user_id = e.user_id join public.qcm_questions q on q.id = r.qid
+     where e.statut is distinct from 'archive'
+     group by e.user_id, e.prenom, e.nom, e.classe, q.matiere order by max(r.repondu_le) desc;
+end $$;
+revoke all on function public.qcm_suivi() from public, anon;
+grant execute on function public.qcm_suivi() to authenticated;

@@ -104,43 +104,22 @@ async function lancer() {
         <small style="color:var(--gris)">تقدّمك: ${N(pt + "%")} · الشهادات: ${N((certs.data || []).length + " / " + parties.length)} 🎓</small>
       </div>`;
     // تدريبات QCM : 100 سؤال لكلّ مستوى (الأسئلة والأجوبة في قاعدة البيانات، لا تُقرأ إلا عبر دوالّ محميّة)
+    // الرياضيات : معرّفات الأسئلة تبدأ بـ q ؛ الفرنسية (السابعة أساسي) : تبدأ بـ fr
     let qcmFaites = 0, qcmJustes = 0;
-    if ((eleve.classe || voirTout) && !FR) {
-        const rq = await sb().from("qcm_reponses").select("juste").eq("user_id", user.id);
+    const qcmDispo = !FR || voirTout || eleve.classe === "7 أساسي";
+    if ((eleve.classe || voirTout) && qcmDispo) {
+        const rq = await sb().from("qcm_reponses").select("juste").eq("user_id", user.id).like("qid", FR ? "fr%" : "q%");
         (rq.data || []).forEach(r => { qcmFaites++; if (r.juste) qcmJustes++; });
     }
-    if (eleve.classe && !FR) {
-        h += `<a class="carte" href="qcm.html" style="display:block;text-decoration:none;color:inherit;background:#eff4ff;border-color:#bfdbfe">
-            <b>🧠 تدريبات QCM · 100 سؤال</b> <span class="badge vert ltr" style="float:left">${qcmFaites} / 100</span>
-            <div style="color:var(--gris);font-size:16px">50 سؤالا قبل فرض المراقبة عدد 2 و50 قبل الفرض التأليفي عدد 1. جاوب لتنتقل للسؤال الموالي، ويظهر لك التفسير دائما. 🎓 شهادة عند إتمام الأسئلة.</div>
+    if (eleve.classe && qcmDispo) {
+        const lien = FR ? "qcm.html?m=francais" : "qcm.html";
+        const texte = FR ? "50 سؤالا قبل فرض المراقبة عدد 1 و50 قبل الفرض التأليفي عدد 1، بالفرنسية. جاوب لتنتقل للسؤال الموالي، ويظهر لك التفسير دائما. 🎓 شهادة عند إتمام الأسئلة."
+            : "50 سؤالا قبل فرض المراقبة عدد 2 و50 قبل الفرض التأليفي عدد 1. جاوب لتنتقل للسؤال الموالي، ويظهر لك التفسير دائما. 🎓 شهادة عند إتمام الأسئلة.";
+        h += `<a class="carte" href="${lien}" style="display:block;text-decoration:none;color:inherit;background:#eff4ff;border-color:#bfdbfe">
+            <b>🧠 تدريبات QCM${FR ? " · الفرنسية" : ""} · 100 سؤال</b> <span class="badge vert ltr" style="float:left">${qcmFaites} / 100</span>
+            <div style="color:var(--gris);font-size:16px">${texte}</div>
             <div class="prog"><div style="width:${qcmFaites}%"></div></div>
             <small style="color:var(--gris)">${qcmFaites ? "✔️ الأجوبة الصحيحة: " + N(qcmJustes + " / " + qcmFaites) + " · " : ""}${qcmFaites >= 100 ? "احصل على شهادتك" : qcmFaites ? "تابع من حيث توقّفت ←" : "ابدأ الآن ←"}</small></a>`;
-    }
-    if (!eleve.classe && !voirTout) {
-        h += `<div class="carte centre"><h3>اختر مستواك أوّلا 📚</h3><p>لا تظهر الدروس إلا بعد اختيار المستوى الدراسي في فضائك.</p><a class="btn" href="../eleve.html" style="text-decoration:none">← فضائي</a></div>`;
-    } else if (!lecons.length) {
-        h += `<div class="carte centre"><h3>دروس مستواك في الطريق ✍️</h3><p>${FR ? "دروس اللغة الفرنسية متوفّرة حاليّا للسنة السابعة أساسي، ودروس مستواك قادمة قريبا." : "الدروس التفاعليّة متوفّرة حاليّا للسنة السابعة والثامنة والتاسعة أساسي وللسنة الأولى ثانوي."}</p><a href="?${FR ? "m=francais&" : ""}tout=1">عرض كلّ الدروس</a></div>`;
-    } else {
-        if (FR) {
-            const MODS = [[0, "📚 Rappels", "مراجعات أساسية قبل البداية"], [1, "👨‍👩‍👧 Module 1 : En famille", ""], [2, "🏙️ Module 2 : Vivre en ville, vivre à la campagne", ""]];
-            niveaux.forEach(niv => {
-                if (plusieurs) h += `<h2 class="niveau-titre">📘 <bdi>${niv}</bdi></h2>`;
-                MODS.forEach(([m, titre]) => {
-                    const lst = lecons.filter(l => l.niveau === niv && l.module === m).map(carteLecon).join("");
-                    if (lst) h += `<div class="section" dir="ltr" style="text-align:left">${titre}</div>${lst}`;
-                });
-                h += parties.filter(pa => pa.niveau === niv).map(cartePartie).join("");
-            });
-        } else niveaux.forEach(niv => {
-            const alg = section("algebre", niv), geo = section("geometrie", niv);
-            if (plusieurs) h += `<h2 class="niveau-titre">📘 <bdi>${niv}</bdi></h2>`;
-            if (alg) h += `<div class="section">🔢 الجبر والحساب</div>${alg}`;
-            if (geo) h += `<div class="section">📐 الهندسة</div>${geo}`;
-        });
-    }
-    if ((certs.data || []).length) {
-        h += `<div class="section">🎓 شهاداتي</div><div class="certifs">` + certs.data.map(c =>
-            `<a href="certificat.html?n=${encodeURIComponent(c.numero)}"><span><b>${c.titre}</b><br><small class="ltr" style="color:var(--gris)">${c.numero}</small></span><span class="badge or">عرض ←</span></a>`).join("") + `</div>`;
     }
     // لوحة الشرف الأسبوعيّة (honneur.js) : تظهر في آخر الصفحة، بعد الدروس
     h += `<div class="carte" id="honneur-carte" data-honneur-section>
