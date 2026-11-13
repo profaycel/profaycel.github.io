@@ -188,20 +188,20 @@
 
                 <div class="eleve-menu" id="matiere-francais" hidden>
 
-                    <a class="eleve-tuile eleve-tuile-fr" href="parcours/index.html?m=francais">
+                    <a class="eleve-tuile eleve-tuile-fr" id="fr-tuile-cours" href="parcours/index.html?m=francais">
                         <span class="eleve-tuile-ic">📚</span>
                         <span class="eleve-tuile-texte">
                             <strong>Cours de français</strong>
-                            <small>7<sup>e</sup> année : leçons interactives, examens et certificat</small>
+                            <small id="fr-sous-cours">7<sup>e</sup> année : leçons interactives, examens et certificat</small>
                         </span>
                         <span class="eleve-fleche">›</span>
                     </a>
 
-                    <a class="eleve-tuile eleve-tuile-qcm" href="parcours/qcm.html?m=francais">
+                    <a class="eleve-tuile eleve-tuile-qcm" id="fr-tuile-qcm" href="parcours/qcm.html?m=francais">
                         <span class="eleve-tuile-ic">🧠</span>
                         <span class="eleve-tuile-texte">
                             <strong>QCM de français</strong>
-                            <small>7<sup>e</sup> année : avant le contrôle n°1 et avant la synthèse n°1</small>
+                            <small id="fr-sous-qcm">7<sup>e</sup> année : avant le contrôle n°1 et avant la synthèse n°1</small>
                         </span>
                         <span class="eleve-fleche">›</span>
                     </a>
@@ -211,6 +211,15 @@
                         <span class="eleve-tuile-texte">
                             <strong>Devoirs de contrôle</strong>
                             <small>Préparation avant chaque devoir de contrôle</small>
+                        </span>
+                        <span class="eleve-bientot">Bientôt</span>
+                    </div>
+
+                    <div class="eleve-tuile eleve-tuile-fr eleve-tuile-bientot" id="fr-synthese-bientot" hidden>
+                        <span class="eleve-tuile-ic">🏆</span>
+                        <span class="eleve-tuile-texte">
+                            <strong>Devoirs de synthèse</strong>
+                            <small>Devoirs avec corrections avant la synthèse n°1</small>
                         </span>
                         <span class="eleve-bientot">Bientôt</span>
                     </div>
@@ -429,7 +438,7 @@
 
     <script src="i18n.js?v=20"></script>
     <script src="apercu.js?v=1"></script>
-    <script src="script.js?v=33"></script>
+    <script src="script.js?v=34"></script>
     <script src="messages.js?v=2"></script>
     <script src="avis.js?v=1"></script>
     <script src="matieres.js?v=1"></script>
