@@ -31,7 +31,7 @@ a { color: var(--bleu); }
 .pf-nav .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 10px; padding-bottom: 10px; }
 .pf-logo { font-weight: 800; font-size: 22px; color: var(--texte); text-decoration: none; direction: ltr; }
 .pf-logo span { color: var(--bleu); }
-.pf-liens { display: flex; gap: 14px; flex-wrap: wrap; font-weight: 700; font-size: 16px; }
+.pf-liens { display: flex; gap: 14px; flex-wrap: nowrap; white-space: nowrap; font-weight: 700; font-size: 15px; }
 .pf-liens a { text-decoration: none; }
 
 .prof-bande { background: #fff; color: var(--rouge); font-weight: 800; text-align: center; padding: 6px; font-size: 17px; border-bottom: 1px solid var(--bord); }
@@ -125,3 +125,19 @@ footer.pied a { color: var(--gris); }
     h1 { font-size: 25px; }
     h2 { font-size: 21px; }
 }
+
+/* Listes de liens (pages liées, choix du niveau) */
+.liens-utiles { list-style: none; margin: 8px 0; padding: 0; }
+.liens-utiles li { margin: 8px 0; }
+.liens-utiles a { display: block; padding: 12px 14px; background: #fff; border: 1px solid var(--bord); border-radius: 12px; font-weight: 700; text-decoration: none; }
+.liens-utiles a:hover, .liens-utiles a:focus-visible { border-color: var(--bleu); background: var(--bleu-clair); }
+.niveau-bloc h3 { margin-bottom: 8px; }
+.niveau-bloc .liens-utiles { margin: 0; }
+
+/* Pages en français (1ère secondaire) : même mise en page, de gauche à droite */
+html[dir="ltr"] .cadre-exo { border-right: 1px solid var(--bord); border-left: 6px solid var(--bleu); }
+html[dir="ltr"] .cadre-exo ol { padding-right: 0; padding-left: 22px; }
+html[dir="ltr"] .note-echantillon { border-right: 0; border-left: 5px solid var(--or); }
+html[dir="ltr"] .etapes li { padding: 12px 14px 12px 56px; }
+html[dir="ltr"] .etapes li::before { right: auto; left: 12px; }
+html[dir="ltr"] .pf-logo { direction: ltr; }
