@@ -116,12 +116,6 @@ async function lancer() {
             <div class="prog"><div style="width:${qcmFaites}%"></div></div>
             <small style="color:var(--gris)">${qcmFaites ? "✔️ الأجوبة الصحيحة: " + N(qcmJustes + " / " + qcmFaites) + " · " : ""}${qcmFaites >= 100 ? "احصل على شهادتك" : qcmFaites ? "تابع من حيث توقّفت ←" : "ابدأ الآن ←"}</small></a>`;
     }
-    // لوحة الشرف الأسبوعيّة (honneur.js) : تظهر في أعلى الصفحة
-    h += `<div class="carte" id="honneur-carte" data-honneur-section>
-        <h2>🏆 لوحة الشرف</h2>
-        <div style="color:var(--gris);margin-bottom:12px">أفضل تلاميذ هذا الأسبوع. اجتهد في دروسك لتصل إلى المراتب الثلاث الأولى!</div>
-        <div id="honneur-zone" data-auto="non"></div>
-      </div>`;
     if (!eleve.classe && !voirTout) {
         h += `<div class="carte centre"><h3>اختر مستواك أوّلا 📚</h3><p>لا تظهر الدروس إلا بعد اختيار المستوى الدراسي في فضائك.</p><a class="btn" href="../eleve.html" style="text-decoration:none">← فضائي</a></div>`;
     } else if (!lecons.length) {
@@ -148,6 +142,12 @@ async function lancer() {
         h += `<div class="section">🎓 شهاداتي</div><div class="certifs">` + certs.data.map(c =>
             `<a href="certificat.html?n=${encodeURIComponent(c.numero)}"><span><b>${c.titre}</b><br><small class="ltr" style="color:var(--gris)">${c.numero}</small></span><span class="badge or">عرض ←</span></a>`).join("") + `</div>`;
     }
+    // لوحة الشرف الأسبوعيّة (honneur.js) : تظهر في آخر الصفحة، بعد الدروس
+    h += `<div class="carte" id="honneur-carte" data-honneur-section>
+        <h2>🏆 لوحة الشرف</h2>
+        <div style="color:var(--gris);margin-bottom:12px">أفضل تلاميذ هذا الأسبوع. اجتهد في دروسك لتصل إلى المراتب الثلاث الأولى!</div>
+        <div id="honneur-zone" data-auto="non"></div>
+      </div>`;
     app.innerHTML = h;
     if (window.Honneur) Honneur.monter(document.getElementById("honneur-zone"), { langue: "ar", niveau: eleve.classe });
 }
