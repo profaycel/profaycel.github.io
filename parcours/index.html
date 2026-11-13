@@ -103,24 +103,6 @@ async function lancer() {
         <div class="prog"><div style="width:${pt}%"></div></div>
         <small style="color:var(--gris)">تقدّمك: ${N(pt + "%")} · الشهادات: ${N((certs.data || []).length + " / " + parties.length)} 🎓</small>
       </div>`;
-    // تدريبات QCM : 100 سؤال لكلّ مستوى (الأسئلة والأجوبة في قاعدة البيانات، لا تُقرأ إلا عبر دوالّ محميّة)
-    // الرياضيات : معرّفات الأسئلة تبدأ بـ q ؛ الفرنسية (السابعة أساسي) : تبدأ بـ fr
-    let qcmFaites = 0, qcmJustes = 0;
-    const qcmDispo = !FR || voirTout || eleve.classe === "7 أساسي";
-    if ((eleve.classe || voirTout) && qcmDispo) {
-        const rq = await sb().from("qcm_reponses").select("juste").eq("user_id", user.id).like("qid", FR ? "fr%" : "q%");
-        (rq.data || []).forEach(r => { qcmFaites++; if (r.juste) qcmJustes++; });
-    }
-    if (eleve.classe && qcmDispo) {
-        const lien = FR ? "qcm.html?m=francais" : "qcm.html";
-        const texte = FR ? "50 سؤالا قبل فرض المراقبة عدد 1 و50 قبل الفرض التأليفي عدد 1، بالفرنسية. جاوب لتنتقل للسؤال الموالي، ويظهر لك التفسير دائما. 🎓 شهادة عند إتمام الأسئلة."
-            : "50 سؤالا قبل فرض المراقبة عدد 2 و50 قبل الفرض التأليفي عدد 1. جاوب لتنتقل للسؤال الموالي، ويظهر لك التفسير دائما. 🎓 شهادة عند إتمام الأسئلة.";
-        h += `<a class="carte" href="${lien}" style="display:block;text-decoration:none;color:inherit;background:#eff4ff;border-color:#bfdbfe">
-            <b>🧠 تدريبات QCM${FR ? " · الفرنسية" : ""} · 100 سؤال</b> <span class="badge vert ltr" style="float:left">${qcmFaites} / 100</span>
-            <div style="color:var(--gris);font-size:16px">${texte}</div>
-            <div class="prog"><div style="width:${qcmFaites}%"></div></div>
-            <small style="color:var(--gris)">${qcmFaites ? "✔️ الأجوبة الصحيحة: " + N(qcmJustes + " / " + qcmFaites) + " · " : ""}${qcmFaites >= 100 ? "احصل على شهادتك" : qcmFaites ? "تابع من حيث توقّفت ←" : "ابدأ الآن ←"}</small></a>`;
-    }
     if (!eleve.classe && !voirTout) {
         h += `<div class="carte centre"><h3>اختر مستواك أوّلا 📚</h3><p>لا تظهر الدروس إلا بعد اختيار المستوى الدراسي في فضائك.</p><a class="btn" href="../eleve.html" style="text-decoration:none">← فضائي</a></div>`;
     } else if (!lecons.length) {
