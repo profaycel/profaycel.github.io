@@ -13,7 +13,7 @@
     >
 
     <link rel="stylesheet" href="style.css?v=18">
-    <link rel="stylesheet" href="honneur.css?v=2">
+    <link rel="stylesheet" href="honneur.css?v=3">
     <link rel="stylesheet" href="avis.css?v=1">
     <meta name="robots" content="noindex">
     <link rel="manifest" href="manifest.json">
@@ -115,9 +115,27 @@
 
 
 
-                <!-- LES TROIS ENTRÉES -->
+                <!-- CHOIX DE LA MATIÈRE : Mathématiques / Français (matieres.js) -->
 
-                <div class="eleve-menu">
+                <div class="matieres-choix">
+
+                    <button type="button" class="matiere-btn matiere-maths" data-matiere="maths" aria-expanded="false" aria-controls="matiere-maths">
+                        <span class="matiere-ic">📐</span>
+                        <strong>Mathématiques</strong>
+                    </button>
+
+                    <button type="button" class="matiere-btn matiere-francais" data-matiere="francais" aria-expanded="false" aria-controls="matiere-francais">
+                        <span class="matiere-ic">📖</span>
+                        <strong>Français</strong>
+                    </button>
+
+                </div>
+
+
+
+                <!-- MATHÉMATIQUES : LES TROIS ENTRÉES -->
+
+                <div class="eleve-menu" id="matiere-maths" hidden>
 
                     <a class="eleve-tuile eleve-tuile-cours" href="parcours/index.html">
                         <span class="eleve-tuile-ic">🎯</span>
@@ -161,6 +179,41 @@
                         </div>
 
                     </details>
+
+                </div>
+
+
+
+                <!-- FRANÇAIS : ce qui est prévu (bientôt) -->
+
+                <div class="eleve-menu" id="matiere-francais" hidden>
+
+                    <div class="eleve-tuile eleve-tuile-fr eleve-tuile-bientot">
+                        <span class="eleve-tuile-ic">📚</span>
+                        <span class="eleve-tuile-texte">
+                            <strong>Cours de français</strong>
+                            <small>Les leçons expliquées pour chaque niveau</small>
+                        </span>
+                        <span class="eleve-bientot">Bientôt</span>
+                    </div>
+
+                    <div class="eleve-tuile eleve-tuile-fr eleve-tuile-bientot">
+                        <span class="eleve-tuile-ic">✏️</span>
+                        <span class="eleve-tuile-texte">
+                            <strong>Devoirs de contrôle</strong>
+                            <small>Préparation avant chaque devoir de contrôle</small>
+                        </span>
+                        <span class="eleve-bientot">Bientôt</span>
+                    </div>
+
+                    <div class="eleve-tuile eleve-tuile-fr eleve-tuile-bientot">
+                        <span class="eleve-tuile-ic">🏆</span>
+                        <span class="eleve-tuile-texte">
+                            <strong>Devoirs de synthèse</strong>
+                            <small>Préparation avant chaque devoir de synthèse</small>
+                        </span>
+                        <span class="eleve-bientot">Bientôt</span>
+                    </div>
 
                 </div>
 
@@ -360,6 +413,7 @@
     <script src="script.js?v=31"></script>
     <script src="messages.js?v=2"></script>
     <script src="avis.js?v=1"></script>
+    <script src="matieres.js?v=1"></script>
 
 </body>
 

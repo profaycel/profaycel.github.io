@@ -543,3 +543,69 @@ html[dir="rtl"] .eleve-devoirs[open] .eleve-fleche {
         padding: 14px;
     }
 }
+
+/* choix de la matière : Mathématiques / Français */
+.matieres-choix {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.matiere-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 18px 10px;
+    border: 3px solid transparent;
+    border-radius: 20px;
+    color: #fff;
+    font: inherit;
+    cursor: pointer;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.14);
+    transition: transform 0.15s, border-color 0.15s;
+}
+
+.matiere-btn:active {
+    transform: scale(0.98);
+}
+
+.matiere-btn strong {
+    font-size: 1.15rem;
+}
+
+.matiere-ic {
+    font-size: 30px;
+    line-height: 1;
+}
+
+.matiere-maths {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+}
+
+.matiere-francais {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+}
+
+.matiere-btn.is-active {
+    border-color: #0f172a;
+}
+
+.eleve-tuile-fr {
+    background: linear-gradient(135deg, #ef4444, #b91c1c);
+    cursor: default;
+}
+
+.eleve-bientot {
+    flex: none;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.25);
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.eleve-menu[hidden] {
+    display: none;
+}
