@@ -5561,7 +5561,7 @@ console.log("Page actuelle:", currentPage);
             // ce qui est disponible, par niveau (à compléter au fur et à mesure)
             const dispo = {
                 7: { cours: true, qcm: true, synthese: true },
-                8: { cours: true, qcm: false, synthese: false }
+                8: { cours: true, qcm: true, synthese: false }
             }[num] || { cours: false, qcm: false, synthese: false };
 
             const annee = num === 1 ? "1<sup>re</sup> année secondaire" : num + "<sup>e</sup> année";
