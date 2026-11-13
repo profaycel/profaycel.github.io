@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="../icons/icon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="moteur.css?v=3">
+<link rel="stylesheet" href="moteur.css?v=4">
 <link rel="stylesheet" href="../honneur.css?v=2">
 <style>
   .lecon{text-decoration:none}
@@ -31,7 +31,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js" integrity="sha384-TcHRA3zBbn+Lexh5n+Oil4guNPOS3rjNDpGRAN46u/s/mB2IZ50ceC6TYDU2yvgK" crossorigin="anonymous"></script>
 <script src="../supabase.js"></script>
-<script src="catalogue.js?v=17"></script>
+<script src="catalogue.js?v=18"></script>
 <script src="../apercu.js?v=1"></script>
 <script>
 const sb = () => window.supabaseClient;
@@ -61,8 +61,11 @@ async function lancer() {
 
     // Leçons du niveau de l'élève (tout pour l'administrateur ou si le niveau n'est pas encore connu)
     const voirTout = admin && !apercu;
-    let lecons = window.CATALOGUE.filter(l => voirTout || (eleve.classe && l.niveau === eleve.classe));
-    if (eleve.classe) document.getElementById("sousTitre").innerHTML = "رياضيات · <bdi>" + eleve.classe + "</bdi> · الثلاثي الأوّل";
+    // Matière : ?m=francais ouvre les cours de français, sinon mathématiques
+    const FR = new URLSearchParams(location.search).get("m") === "francais";
+    let lecons = window.CATALOGUE.filter(l => (FR ? l.matiere === "francais" : l.matiere !== "francais") && (voirTout || (eleve.classe && l.niveau === eleve.classe)));
+    if (FR) document.getElementById("sousTitre").innerHTML = "اللغة الفرنسية · " + (eleve.classe ? "<bdi>" + eleve.classe + "</bdi> · " : "") + "الثلاثي الأوّل";
+    else if (eleve.classe) document.getElementById("sousTitre").innerHTML = "رياضيات · <bdi>" + eleve.classe + "</bdi> · الثلاثي الأوّل";
 
     let faits = 0, tous = 0;
     const carteLecon = l => {
@@ -71,7 +74,7 @@ async function lancer() {
         const ok = p.examen_score != null;
         const badge = ok ? '<span class="badge or">✅ نجح</span>' : pc > 0 ? `<span class="badge vert ltr">${pc}%</span>` : "";
         return `<a class="niveau lecon" href="lecon.html?l=${l.id}">
-          <span class="num">${ok ? "✓" : l.partie === "geometrie" ? "📐" : "🔢"}</span>
+          <span class="num">${ok ? "✓" : l.matiere === "francais" ? "📖" : l.partie === "geometrie" ? "📐" : "🔢"}</span>
           <span class="info"><span class="titre"><bdi dir="auto">${l.titre}</bdi></span><br><span class="sous"><bdi dir="auto">${l.sous}</bdi></span>
             <div class="prog"><div style="width:${pc}%"></div></div></span>${badge}</a>`;
     };
@@ -96,17 +99,17 @@ async function lancer() {
 
     let h = `<div class="carte">
         <h2>مرحبا ${prenom} 👋</h2>
-        <div style="color:var(--gris)">كلّ درس فيه مستويات تُفتح واحدا بعد الآخر، وفي آخره امتحان. عندما تنجح في كلّ دروس جزء (الجبر أو الهندسة) تحصل على <b>شهادة رسميّة</b> باسمك 🎓</div>
+        <div style="color:var(--gris)">${FR ? "كلّ درس فيه مستويات تُفتح واحدا بعد الآخر، وفي آخره امتحان. عندما تنجح في امتحانات الدروس الخمسة عشر كلّها تحصل على <b>شهادة واحدة</b> باسمك في اللغة الفرنسية 🎓" : "كلّ درس فيه مستويات تُفتح واحدا بعد الآخر، وفي آخره امتحان. عندما تنجح في كلّ دروس جزء (الجبر أو الهندسة) تحصل على <b>شهادة رسميّة</b> باسمك 🎓"}</div>
         <div class="prog"><div style="width:${pt}%"></div></div>
         <small style="color:var(--gris)">تقدّمك: ${N(pt + "%")} · الشهادات: ${N((certs.data || []).length + " / " + parties.length)} 🎓</small>
       </div>`;
     // تدريبات QCM : 100 سؤال لكلّ مستوى (الأسئلة والأجوبة في قاعدة البيانات، لا تُقرأ إلا عبر دوالّ محميّة)
     let qcmFaites = 0, qcmJustes = 0;
-    if (eleve.classe || voirTout) {
+    if ((eleve.classe || voirTout) && !FR) {
         const rq = await sb().from("qcm_reponses").select("juste").eq("user_id", user.id);
         (rq.data || []).forEach(r => { qcmFaites++; if (r.juste) qcmJustes++; });
     }
-    if (eleve.classe) {
+    if (eleve.classe && !FR) {
         h += `<a class="carte" href="qcm.html" style="display:block;text-decoration:none;color:inherit;background:#eff4ff;border-color:#bfdbfe">
             <b>🧠 تدريبات QCM · 100 سؤال</b> <span class="badge vert ltr" style="float:left">${qcmFaites} / 100</span>
             <div style="color:var(--gris);font-size:16px">50 سؤالا قبل فرض المراقبة عدد 2 و50 قبل الفرض التأليفي عدد 1. جاوب لتنتقل للسؤال الموالي، ويظهر لك التفسير دائما. 🎓 شهادة عند إتمام الأسئلة.</div>
@@ -122,9 +125,19 @@ async function lancer() {
     if (!eleve.classe && !voirTout) {
         h += `<div class="carte centre"><h3>اختر مستواك أوّلا 📚</h3><p>لا تظهر الدروس إلا بعد اختيار المستوى الدراسي في فضائك.</p><a class="btn" href="../eleve.html" style="text-decoration:none">← فضائي</a></div>`;
     } else if (!lecons.length) {
-        h += `<div class="carte centre"><h3>دروس مستواك في الطريق ✍️</h3><p>الدروس التفاعليّة متوفّرة حاليّا للسنة الثامنة والسنة التاسعة أساسي، ودروس مستواك قادمة قريبا.</p><a href="?tout=1">عرض كلّ الدروس</a></div>`;
+        h += `<div class="carte centre"><h3>دروس مستواك في الطريق ✍️</h3><p>${FR ? "دروس اللغة الفرنسية متوفّرة حاليّا للسنة السابعة أساسي، ودروس مستواك قادمة قريبا." : "الدروس التفاعليّة متوفّرة حاليّا للسنة السابعة والثامنة والتاسعة أساسي وللسنة الأولى ثانوي."}</p><a href="?${FR ? "m=francais&" : ""}tout=1">عرض كلّ الدروس</a></div>`;
     } else {
-        niveaux.forEach(niv => {
+        if (FR) {
+            const MODS = [[0, "📚 Rappels", "مراجعات أساسية قبل البداية"], [1, "👨‍👩‍👧 Module 1 : En famille", ""], [2, "🏙️ Module 2 : Vivre en ville, vivre à la campagne", ""]];
+            niveaux.forEach(niv => {
+                if (plusieurs) h += `<h2 class="niveau-titre">📘 <bdi>${niv}</bdi></h2>`;
+                MODS.forEach(([m, titre]) => {
+                    const lst = lecons.filter(l => l.niveau === niv && l.module === m).map(carteLecon).join("");
+                    if (lst) h += `<div class="section" dir="ltr" style="text-align:left">${titre}</div>${lst}`;
+                });
+                h += parties.filter(pa => pa.niveau === niv).map(cartePartie).join("");
+            });
+        } else niveaux.forEach(niv => {
             const alg = section("algebre", niv), geo = section("geometrie", niv);
             if (plusieurs) h += `<h2 class="niveau-titre">📘 <bdi>${niv}</bdi></h2>`;
             if (alg) h += `<div class="section">🔢 الجبر والحساب</div>${alg}`;

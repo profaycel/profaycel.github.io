@@ -143,3 +143,9 @@
   mathématiques dans `<span class="ltr">`, aucun balisage d'avis/étoiles.
 - Limite connue : un élève connecté peut toujours enregistrer ou partager ce qu'il a le droit de voir (PDF, leçon).
 - À activer dans Supabase (Authentication → Policies/Passwords) : « Leaked password protection ».
+- **Cours de français, 7 أساسي, trimestre 1 (13/11/2026)** : 15 leçons interactives en français (`matiere: "francais"` dans `parcours/catalogue.js`, ids `7-fr-<module>-<sujet>`,
+  `module` 0 = rappels, 1 = « En famille », 2 = « Vivre en ville, vivre à la campagne »), chacune de 4 niveaux + un examen. Affichées par `parcours/index.html?m=francais`
+  (tuile « Cours de français » dans `eleve.html`, onglet Français) ; les mathématiques restent la vue par défaut. **Un seul certificat** (partie `7-francais-t1`, titre « اللغة الفرنسية »,
+  table `public.parties`, section 10 bis de `supabase/schema.sql`) après réussite des 15 examens. Les fichiers de leçon sont dans le stockage privé `lecons` comme les autres (`lecons/7-fr-….js`).
+  Le moteur (`moteur.js`) a un nouveau type de question `ordre` (remettre des mots dans l'ordre, `rep` = mots dans l'ordre, `alt` = autres ordres acceptés), l'option `texte` (texte de lecture
+  affiché au-dessus de la question), `numDepart` (numérotation des niveaux) et accepte l'apostrophe typographique. Pour ajouter une leçon de français : même procédé que pour les maths.
