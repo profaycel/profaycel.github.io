@@ -137,9 +137,11 @@
   Les chiffres ne sont visibles qu'après avoir noté. Table `avis_site` (aucun accès direct) + fonctions `donner_avis_site(int)` et `mon_avis_site()`
   (section 16 de `supabase/schema.sql`, déjà appliquée). Réservé aux élèves (fiche non archivée) ; la note du compte administrateur n'est jamais enregistrée ni comptée
   (il voit les chiffres en aperçu). Ne PAS publier ces notes comme « AggregateRating » dans le balisage Google : un site qui s'évalue lui-même n'est pas éligible aux étoiles.
-- **Pages publiques pour Google (13/11/2026)** : dossier `exercices/` (`exercices.css` + une page par niveau/partie, la première : `exercices/8-geometrie.html`).
-  Contenu ouvert à tous : titre, présentation des leçons (titres du catalogue), 2 exercices d'échantillon sans réponse, bouton d'inscription. JAMAIS de correction, de réponse
-  ni de PDF ici (le contenu complet reste privé). Chaque nouvelle page doit être ajoutée à `sitemap.xml` et liée depuis l'accueil ; texte arabe (فصحى), lettres et symboles
-  mathématiques dans `<span class="ltr">`, aucun balisage d'avis/étoiles.
+- **Pages publiques pour Google (13/11/2026)** : dossier `exercices/` (`exercices.css`) : une page d'accueil `exercices/index.html` (choix du niveau) et une page par niveau et par partie
+  (`7-algebre`, `7-geometrie`, `8-…`, `9-…`, `1-…` ; les pages de 1 ثانوي sont en français, `dir="ltr"`). Contenu ouvert à tous : titre, présentation des leçons (titres du catalogue),
+  2 exercices d'échantillon sans réponse, bouton d'inscription, liens vers les pages voisines. JAMAIS de correction, de réponse ni de PDF ici (le contenu complet reste privé).
+  Les pages sont générées avec un petit script (non gardé dans le dépôt) ; pour une nouvelle page (ex. trimestre 2), copier une page existante, changer titre / leçons / exercices,
+  l'ajouter à `sitemap.xml` et à `exercices/index.html`. Texte arabe (فصحى), lettres et symboles mathématiques dans `<span class="ltr">`, aucun balisage d'avis/étoiles.
+  L'accueil (`index.html`) renvoie vers `exercices/index.html` depuis son pied de page.
 - Limite connue : un élève connecté peut toujours enregistrer ou partager ce qu'il a le droit de voir (PDF, leçon).
 - À activer dans Supabase (Authentication → Policies/Passwords) : « Leaked password protection ».
