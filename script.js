@@ -4806,6 +4806,7 @@ console.log("Page actuelle:", currentPage);
     // Documents publiés : matière → trimestre → série et sa correction
     const MATIERES = [
         { nom: "Mathématiques", icone: "📐" },
+        { nom: "Français", icone: "📖" },
         { nom: "Technologie", icone: "🔧" }
     ];
 
