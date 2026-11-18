@@ -785,6 +785,36 @@ document.addEventListener("DOMContentLoaded", function () {
 
     }
 
+    // Ouverture du site par un utilisateur déjà connecté : on l'envoie directement dans son espace
+    // (élève → eleve.html, parent → parent.html). Un clic sur le logo depuis une autre page du site
+    // garde l'accueil ; l'administrateur garde toujours l'accueil.
+    function accueilRedirection(session) {
+
+        const racine = document.documentElement;
+        const page = window.location.pathname.split("/").pop();
+        const estAccueil = page === "" || page === "index.html";
+
+        if (!estAccueil || !session || window.location.hash) {
+            racine.style.visibility = "";
+            return;
+        }
+
+        let interne = false;
+        try {
+            interne = !!document.referrer && new URL(document.referrer).host === window.location.host;
+        } catch (e) { interne = false; }
+
+        const role = session.user.user_metadata.role;
+
+        if (interne || role === "admin") {
+            racine.style.visibility = "";
+            return;
+        }
+
+        window.location.replace(role === "parent" ? "parent.html" : "eleve.html");
+
+    }
+
     if (headerActions) {
 
         function updateAuthButton() {
@@ -797,6 +827,8 @@ document.addEventListener("DOMContentLoaded", function () {
             window.supabaseClient.auth.getSession().then(function (result) {
 
                 const session = result.data.session;
+
+                accueilRedirection(session);
 
                 const oldButton = headerActions.querySelector(".header-login-button");
                 if (oldButton) {
