@@ -541,7 +541,7 @@ create policy documents_admin_retrait on storage.objects
 -- =================================================
 
 -- la correction prend le même numéro que sa série (affichées ensemble)
-alter table public.documents add column if not exists numero int check (numero between 1 and 50);
+alter table public.documents add column if not exists numero int check (numero between 1 and 200);
 
 create or replace function public.choisir_niveau(niveau text)
  returns json
