@@ -4962,49 +4962,9 @@ console.log("Page actuelle:", currentPage);
 
     }
 
-    // Devoirs de français : liste simple « série n°X + correction », avant la synthèse n°1
-    function htmlDocumentsFrancais(documents) {
-
-        const docs = (documents || []).filter(function (doc) { return doc.matiere === "Français"; });
-
-        if (docs.length === 0) {
-            return "<p>Les devoirs arrivent bientôt.</p>";
-        }
-
-        const parNumero = {};
-        const numeros = [];
-
-        docs.forEach(function (doc) {
-            const n = doc.numero || 999;
-            if (!parNumero[n]) { parNumero[n] = []; numeros.push(n); }
-            parNumero[n].push(doc);
-        });
-
-        numeros.sort(function (a, b) { return a - b; });
-
-        return `<div class="docs-dc">⭐ ما قبل الفرض التأليفي عدد <bdi>1</bdi><br><small>Avant la synthèse n°1</small></div>` + numeros.map(function (n) {
-            const paire = parNumero[n].sort(function (a, b) {
-                return ORDRE_TYPES.indexOf(a.type_fichier) - ORDRE_TYPES.indexOf(b.type_fichier);
-            });
-            return `<div class="docs-paire">${paire.map(function (doc) {
-                return `
-                    <div class="docs-item${doc.type_fichier === "Correction" ? " docs-item-correction" : ""}">
-                        <span class="docs-item-ic">${ICONES_TYPES[doc.type_fichier] || "📄"}</span>
-                        <div class="docs-item-texte">
-                            <strong dir="auto">${echapperHtml(doc.nom)}</strong>
-                            <small>${doc.type_fichier || "Document"}</small>
-                        </div>
-                        <div class="doc-boutons">${boutonsDocument(doc)}</div>
-                    </div>
-                `;
-            }).join("")}</div>`;
-        }).join("");
-
-    }
-
     function htmlDocuments(documents) {
 
-        documents = (documents || []).filter(function (doc) { return doc.matiere !== "Français"; });
+        documents = (documents || []).filter(function (doc) { return doc.matiere !== "Français"; }); // sécurité : le français n'est plus proposé
 
         // matières : les deux principales, puis celles qui ont des documents
         const matieres = MATIERES.slice();
@@ -5586,48 +5546,6 @@ console.log("Page actuelle:", currentPage);
         }
 
 
-        // Panneau Français : indique l'année de l'élève et met « Bientôt » sur ce qui n'existe pas encore pour son niveau
-        function adapterFrancaisAuNiveau(classe) {
-
-            const num = parseInt(classe, 10);
-            if (!num) { return; }
-
-            // ce qui est disponible, par niveau (à compléter au fur et à mesure)
-            const dispo = {
-                7: { cours: true, qcm: true, synthese: true },
-                8: { cours: true, qcm: true, synthese: false }
-            }[num] || { cours: false, qcm: false, synthese: false };
-
-            const annee = num === 1 ? "1<sup>re</sup> année secondaire" : num + "<sup>e</sup> année";
-
-            const sousCours = document.querySelector("#fr-sous-cours");
-            if (sousCours) { sousCours.innerHTML = annee + " : leçons interactives, examens et certificat"; }
-
-            const sousQcm = document.querySelector("#fr-sous-qcm");
-            if (sousQcm) { sousQcm.innerHTML = annee + " : avant le contrôle n°1 et avant la synthèse n°1"; }
-
-            function enBientot(id) {
-                const tuile = document.querySelector(id);
-                if (!tuile) { return; }
-                tuile.removeAttribute("href");
-                tuile.classList.add("eleve-tuile-bientot");
-                const fleche = tuile.querySelector(".eleve-fleche");
-                if (fleche) { fleche.outerHTML = '<span class="eleve-bientot">Bientôt</span>'; }
-            }
-
-            if (!dispo.cours) { enBientot("#fr-tuile-cours"); }
-            if (!dispo.qcm) { enBientot("#fr-tuile-qcm"); }
-
-            if (!dispo.synthese) {
-                const details = document.querySelector("#devoirs-synthese-fr");
-                const bientot = document.querySelector("#fr-synthese-bientot");
-                if (details) { details.hidden = true; }
-                if (bientot) { bientot.hidden = false; }
-            }
-
-        }
-
-
         // Séries d'exercices publiées, regroupées par niveau
         async function loadEleveDocuments(classe) {
 
@@ -5646,13 +5564,6 @@ console.log("Page actuelle:", currentPage);
             }
 
             container.innerHTML = htmlDocuments(documents);
-
-            const conteneurFr = document.querySelector("#eleve-documents-fr");
-            if (conteneurFr) {
-                conteneurFr.innerHTML = htmlDocumentsFrancais(documents);
-            }
-
-            adapterFrancaisAuNiveau(classe);
 
         }
 

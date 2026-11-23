@@ -115,27 +115,9 @@
 
 
 
-                <!-- CHOIX DE LA MATIÈRE : Mathématiques / Français (matieres.js) -->
+                <!-- MATHÉMATIQUES ET TECHNOLOGIE : LES TROIS ENTRÉES -->
 
-                <div class="matieres-choix">
-
-                    <button type="button" class="matiere-btn matiere-maths" data-matiere="maths" aria-expanded="false" aria-controls="matiere-maths">
-                        <span class="matiere-ic">📐</span>
-                        <strong>Mathématiques</strong>
-                    </button>
-
-                    <button type="button" class="matiere-btn matiere-francais" data-matiere="francais" aria-expanded="false" aria-controls="matiere-francais">
-                        <span class="matiere-ic">📖</span>
-                        <strong>Français</strong>
-                    </button>
-
-                </div>
-
-
-
-                <!-- MATHÉMATIQUES : LES TROIS ENTRÉES -->
-
-                <div class="eleve-menu" id="matiere-maths" hidden>
+                <div class="eleve-menu" id="matiere-maths">
 
                     <a class="eleve-tuile eleve-tuile-cours" href="parcours/index.html">
                         <span class="eleve-tuile-ic">🎯</span>
@@ -176,51 +158,6 @@
                                 <p>Chargement...</p>
                             </div>
 
-                        </div>
-
-                    </details>
-
-                </div>
-
-
-
-                <!-- FRANÇAIS : ce qui est prévu (bientôt) -->
-
-                <div class="eleve-menu" id="matiere-francais" hidden>
-
-                    <a class="eleve-tuile eleve-tuile-fr" id="fr-tuile-cours" href="parcours/index.html?m=francais">
-                        <span class="eleve-tuile-ic">📚</span>
-                        <span class="eleve-tuile-texte">
-                            <strong>Cours de français</strong>
-                            <small id="fr-sous-cours">7<sup>e</sup> année : leçons interactives, examens et certificat</small>
-                        </span>
-                        <span class="eleve-fleche">›</span>
-                    </a>
-
-                    <a class="eleve-tuile eleve-tuile-qcm" id="fr-tuile-qcm" href="parcours/qcm.html?m=francais">
-                        <span class="eleve-tuile-ic">🧠</span>
-                        <span class="eleve-tuile-texte">
-                            <strong>QCM de français</strong>
-                            <small id="fr-sous-qcm">7<sup>e</sup> année : avant le contrôle n°1 et avant la synthèse n°1</small>
-                        </span>
-                        <span class="eleve-fleche">›</span>
-                    </a>
-
-                    <details class="eleve-devoirs" id="devoirs-synthese-fr">
-
-                        <summary class="eleve-tuile eleve-tuile-fr">
-                            <span class="eleve-tuile-ic">🏆</span>
-                            <span class="eleve-tuile-texte">
-                                <strong>Devoirs de synthèse</strong>
-                                <small>10 devoirs avec corrections avant la synthèse n°1</small>
-                            </span>
-                            <span class="eleve-fleche">›</span>
-                        </summary>
-
-                        <div class="eleve-devoirs-corps">
-                            <div id="eleve-documents-fr">
-                                <p>Chargement...</p>
-                            </div>
                         </div>
 
                     </details>
@@ -420,10 +357,9 @@
 
     <script src="i18n.js?v=20"></script>
     <script src="apercu.js?v=1"></script>
-    <script src="script.js?v=38"></script>
+    <script src="script.js?v=39"></script>
     <script src="messages.js?v=2"></script>
     <script src="avis.js?v=1"></script>
-    <script src="matieres.js?v=1"></script>
 
 </body>
 
