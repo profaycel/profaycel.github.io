@@ -143,6 +143,7 @@
   Les pages sont générées avec un petit script (non gardé dans le dépôt) ; pour une nouvelle page (ex. trimestre 2), copier une page existante, changer titre / leçons / exercices,
   l'ajouter à `sitemap.xml` et à `exercices/index.html`. Texte arabe (فصحى), lettres et symboles mathématiques dans `<span class="ltr">`, aucun balisage d'avis/étoiles.
   L'accueil (`index.html`) renvoie vers `exercices/index.html` depuis son pied de page.
+- **Séries « ما قبل الفرض التأليفي عدد 1 » (23/11/2026)** : dans la table `documents`, `numero` de 1 à 5 = avant le DC n°1, 6 à 10 = avant le DC n°2, et **`numero` 101 à 110 = séries avant le devoir de synthèse n°1** (101 = série 1…), regroupées sous le bouton « ما قبل الفرض التأليفي عدد 1 » (clé de groupe 100 dans `htmlListeTrimestre()` de `script.js`) ; la série (type « Série d'exercices ») et sa correction (type « Correction ») ont le même `numero`. Le bouton « Bientôt » disparaît dès qu'il existe une série `numero` > 100 en trimestre 1. Les PDF vont dans le stockage privé `documents` (`series/7e-fdt1-serie<n>-enonce.pdf` / `-correction.pdf`).
 - Limite connue : un élève connecté peut toujours enregistrer ou partager ce qu'il a le droit de voir (PDF, leçon).
 - À activer dans Supabase (Authentication → Policies/Passwords) : « Leaked password protection ».
 - **Cours de français, 7 أساسي, trimestre 1 (13/11/2026)** : 15 leçons interactives en français (`matiere: "francais"` dans `parcours/catalogue.js`, ids `7-fr-<module>-<sujet>`,

@@ -4928,7 +4928,7 @@ console.log("Page actuelle:", currentPage);
         const ordreDc = [];
 
         paires.forEach(function (paire) {
-            const dc = paire.numero === 999 ? 0 : Math.ceil(paire.numero / 5);
+            const dc = paire.numero === 999 ? 0 : (paire.numero > 100 ? 100 : Math.ceil(paire.numero / 5)); // numéros 101, 102… = séries « ما قبل الفرض التأليفي » (101 = série 1) : groupe à part (clé 100)
             if (!groupes[dc]) {
                 groupes[dc] = [];
                 ordreDc.push(dc);
@@ -4941,19 +4941,19 @@ console.log("Page actuelle:", currentPage);
         const actif = ordreDc.filter(function (dc) { return dc > 0; }).pop() || ordreDc[0];
 
         const titreDc = function (dc) {
-            return dc === 0 ? "📄 Autres" : `⭐ ما قبل فرض المراقبة عدد <bdi>${dc}</bdi>`;
+            return dc === 100 ? `⭐ ما قبل الفرض التأليفي عدد <bdi>1</bdi>` : (dc === 0 ? "📄 Autres" : `⭐ ما قبل فرض المراقبة عدد <bdi>${dc}</bdi>`);
         };
 
         // Trimestre 1 : « ما قبل الفرض التأليفي عدد 1 » arrive bientôt (disparaît dès qu'il y a des séries au-delà du DC n°2)
         const bientotSynthese = trimestre === 1 && ordreDc.some(function (dc) { return dc > 0; }) && !ordreDc.some(function (dc) { return dc >= 3; });
         if (ordreDc.length < 2 && !bientotSynthese) {
             return ordreDc.map(function (dc) {
-                return (dc > 0 ? `<div class="docs-dc">${titreDc(dc)}<br><small>Avant le devoir de contrôle n°${dc}</small></div>` : "") + groupes[dc].map(htmlPaire).join("");
+                return (dc > 0 ? `<div class="docs-dc">${titreDc(dc)}<br><small>${dc === 100 ? "Avant le devoir de synthèse n°1" : `Avant le devoir de contrôle n°${dc}`}</small></div>` : "") + groupes[dc].map(htmlPaire).join("");
             }).join("");
         }
 
         return `<div class="docs-dcs">${ordreDc.map(function (dc) {
-            return `<button type="button" class="docs-dc-btn${dc === actif ? " on" : ""}" data-dc="${dc}">${titreDc(dc)}${dc > 0 ? `<small>Avant le DC n°${dc}</small>` : ""}</button>`;
+            return `<button type="button" class="docs-dc-btn${dc === actif ? " on" : ""}" data-dc="${dc}">${titreDc(dc)}${dc > 0 ? `<small>${dc === 100 ? "Avant le DS n°1" : `Avant le DC n°${dc}`}</small>` : ""}</button>`;
         }).join("")}${bientotSynthese ? `<button type="button" class="docs-dc-btn docs-dc-bientot" disabled>⭐ ما قبل الفرض التأليفي عدد <bdi>1</bdi><small>Bientôt</small></button>` : ""}</div>` + ordreDc.map(function (dc) {
             return `<div class="docs-dc-groupe" data-dc="${dc}"${dc === actif ? "" : " hidden"}>${groupes[dc].map(htmlPaire).join("")}</div>`;
         }).join("");
