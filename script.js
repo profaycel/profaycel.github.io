@@ -817,6 +817,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (headerActions) {
 
+        function dejaInscrit() { try { return localStorage.getItem("profaycel_deja_inscrit") === "1"; } catch (e) { return false; } }
+
         function updateAuthButton() {
 
             if (!window.supabaseClient) {
@@ -826,7 +828,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             window.supabaseClient.auth.getSession().then(function (result) {
 
-                const session = result.data.session;
+                const session = result.data.session; if (session) { try { localStorage.setItem("profaycel_deja_inscrit", "1"); } catch (e) { /* sans importance */ } }
 
                 accueilRedirection(session);
 
@@ -891,7 +893,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     // Téléphone : bouton rouge qui clignote, visible tout de suite dans la barre du haut
                     const pageActuelle = window.location.pathname.split("/").pop();
 
-                    if (pageActuelle !== "register.html" && pageActuelle !== "inscription-enfant.html") {
+                    if (pageActuelle !== "register.html" && pageActuelle !== "inscription-enfant.html" && !dejaInscrit()) {
 
                         const barre = document.querySelector(".header-container");
                         const boutonMenu = barre ? barre.querySelector(".mobile-menu-button") : null;
@@ -912,7 +914,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     const registerLink = document.createElement("a");
                     registerLink.href = "register.html";
                     registerLink.className = "header-button header-register-button";
-                    registerLink.textContent = "Inscription";
+                    registerLink.textContent = "Inscription"; if (dejaInscrit()) { registerLink.style.display = "none"; }
 
                     headerActions.insertBefore(
                         registerLink,
