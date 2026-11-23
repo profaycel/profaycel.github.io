@@ -28,6 +28,12 @@
     ajouté par `script.js` quand personne n'est connecté).
   - Inscription élève : `register.html` ne demande plus ni nom ni niveau (élève) ; au premier passage dans
     `eleve.html`, l'écran « Complète ton profil » (nom + niveau, fonction `completer_profil`) s'affiche une seule fois.
+  - **Inscription par Google seulement (23/11/2026)** : `register.html` n'a plus de formulaire (email / mot de passe) : un seul bouton « S'inscrire avec Google »
+    (le rôle `eleve` est mémorisé dans un `select#role` caché). La connexion par email + mot de passe reste dans `login.html` (anciens comptes, parents).
+  - **Déjà inscrit (23/11/2026)** : `acces.js` (index.html et register.html). Une personne connectée voit sur l'accueil un grand « فضائي » (Mon espace) à la place de
+    « التسجيل », et `register.html` l'envoie directement dans son espace. L'appareil mémorise `localStorage` « profaycel_deja_inscrit » dès qu'une session existe :
+    sans session mais avec ce repère, l'accueil propose « Se connecter » (pas d'inscription) et `script.js` cache « Inscription » / « S'inscrire » dans la barre du haut.
+    La session Supabase est gardée (`persistSession`, `autoRefreshToken` explicites dans `supabase.js`).
 - Élève : `eleve.html` (séances, documents par matière → trimestre, série + correction)
 - Tableau d'honneur hebdomadaire (31/10/2026) : `honneur.js` + `honneur.css`, affiché dans la section `#honneur` de `index.html`
   (public, sans connexion) et en haut de `parcours/index.html` (« لوحة الشرف », onglet du niveau de l'élève). Il montre les 3 premiers
