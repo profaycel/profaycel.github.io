@@ -221,6 +221,80 @@
                 </section>
 
 
+                <!-- ENVOI GROUPÉ -->
+
+                <section class="student-welcome-card is-stacked doc-ajout" id="envoi-groupe">
+
+                    <span class="student-label">
+                        ENVOI GROUPÉ
+                    </span>
+
+                    <h2>
+                        📦 Plusieurs séries d'un coup
+                    </h2>
+
+                    <p>
+                        Choisissez tous les PDF en une fois. Noms attendus : <strong>…-serie1-enonce.pdf</strong> et <strong>…-serie1-correction.pdf</strong> (série 2, 3, 4…).
+                    </p>
+
+                    <form id="groupe-form">
+
+                        <div class="doc-champ">
+                            <label class="doc-champ-titre" for="groupe-niveau">Niveau</label>
+                            <select id="groupe-niveau" class="doc-titre">
+                                <option value="7 أساسي">7 أساسي</option>
+                                <option value="8 أساسي">8 أساسي</option>
+                                <option value="9 أساسي">9 أساسي</option>
+                                <option value="1 ثانوي">1 ثانوي</option>
+                            </select>
+                        </div>
+
+                        <div class="doc-champ">
+                            <label class="doc-champ-titre" for="groupe-matiere">Matière</label>
+                            <select id="groupe-matiere" class="doc-titre">
+                                <option value="Mathématiques">Mathématiques</option>
+                                <option value="Technologie">Technologie</option>
+                                <option value="Informatique">Informatique</option>
+                            </select>
+                        </div>
+
+                        <div class="doc-champ">
+                            <label class="doc-champ-titre" for="groupe-trimestre">Trimestre</label>
+                            <select id="groupe-trimestre" class="doc-titre">
+                                <option value="1">Trimestre 1</option>
+                                <option value="2">Trimestre 2</option>
+                                <option value="3">Trimestre 3</option>
+                            </select>
+                        </div>
+
+                        <div class="doc-champ">
+                            <label class="doc-champ-titre" for="groupe-decalage">Groupe</label>
+                            <select id="groupe-decalage" class="doc-titre">
+                                <option value="100">ما قبل الفرض التأليفي (numéros 101, 102…)</option>
+                                <option value="0">Séries normales (ما قبل فرض المراقبة)</option>
+                            </select>
+                        </div>
+
+                        <label class="doc-drop">
+                            <input type="file" id="groupe-fichiers" accept="application/pdf" multiple>
+                            <span class="doc-drop-ic">📦</span>
+                            <strong>Choisir les PDF</strong>
+                            <small>Ctrl+A dans la fenêtre pour tout sélectionner</small>
+                        </label>
+
+                        <p id="groupe-resume"></p>
+
+                        <button type="submit" class="button button-primary doc-envoyer" id="groupe-envoyer">
+                            📤 Publier tout
+                        </button>
+
+                        <ul id="groupe-journal"></ul>
+
+                    </form>
+
+                </section>
+
+
                 <!-- LISTE -->
 
                 <section class="student-welcome-card is-stacked">
@@ -300,7 +374,7 @@
     </footer>
 
 
-<script src="script.js?v=37"></script>
+<script src="script.js?v=37"></script><script src="documents-groupes.js?v=1"></script>
 
 </body>
-</html>
+</html>
