@@ -41,8 +41,8 @@ const sb = () => window.supabaseClient;
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const SERIES = { dc1: "قبل فرض المراقبة عدد 1", dc2: "قبل فرض المراقبة عدد 2", ds1: "قبل الفرض التأليفي عدد 1" };
 // Matière : ?m=francais ouvre les QCM de français, sinon mathématiques
-const MAT = new URLSearchParams(location.search).get("m") === "francais" ? "francais" : "maths";
-const RETOUR = "index.html" + (MAT === "francais" ? "?m=francais" : "");
+const MAT = "maths";
+const RETOUR = "index.html";
 const LETTRES_AR = ["أ", "ب", "ج", "د"], LETTRES_FR = ["A", "B", "C", "D"];
 let QS = [], NIVEAU = null, PARAM = null, VUE = 0, FR = false, OCCUPE = false;
 
@@ -65,8 +65,8 @@ async function lancer() {
         return;
     }
     NIVEAU = data.niveau; QS = data.questions || [];
-    FR = NIVEAU === "1 ثانوي" || MAT === "francais";
-    document.getElementById("sousTitre").innerHTML = "أسئلة اختيار من متعدّد · " + (MAT === "francais" ? "الفرنسية · " : "") + "<bdi>" + esc(NIVEAU) + "</bdi>";
+    FR = NIVEAU === "1 ثانوي";
+    document.getElementById("sousTitre").innerHTML = "أسئلة اختيار من متعدّد · " + "<bdi>" + esc(NIVEAU) + "</bdi>";
     if (!QS.length) {
         app.innerHTML = `<div class="carte centre"><h3>الأسئلة في الطريق ✍️</h3><p>أسئلة مستواك ستُضاف قريبا.</p><a class="btn" href="${RETOUR}" style="text-decoration:none">← دروسي</a></div>`;
         return;
