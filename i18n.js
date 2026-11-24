@@ -359,6 +359,8 @@
         "Apprends étape par étape, niveau après niveau": "تعلّم خطوة بخطوة، مستوى بعد مستوى",
         "QCM interactifs": "QCM تفاعلية",
         "Réponds, lis l'explication, passe à la suivante": "أجب، اقرأ الشرح، ثم انتقل إلى السؤال الموالي",
+        "Résumés": "الملخصات",
+        "Les règles essentielles à retenir avant le devoir de synthèse": "أهمّ القواعد التي يجب حفظها قبل الفرض التأليفي",
         "Séries d'exercices et corrections avant chaque devoir": "سلاسل التمارين وتصحيحها قبل كل فرض",
         "MON NIVEAU": "مستواي",
         "Choisis ton niveau": "اختر مستواك",

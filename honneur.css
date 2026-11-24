@@ -358,6 +358,14 @@
     background: linear-gradient(135deg, #059669, #047857);
 }
 
+.eleve-tuile-resumes {
+    background: linear-gradient(135deg, #ea580c, #c2410c);
+    border: 0;
+    width: 100%;
+    font: inherit;
+    text-align: inherit;
+}
+
 .eleve-tuile-ic {
     flex: none;
     display: grid;

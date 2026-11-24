@@ -4964,7 +4964,7 @@ console.log("Page actuelle:", currentPage);
 
     function htmlDocuments(documents) {
 
-        documents = (documents || []).filter(function (doc) { return doc.matiere !== "Français"; }); // sécurité : le français n'est plus proposé
+        documents = (documents || []).filter(function (doc) { return doc.matiere !== "Français" && doc.type_fichier !== "Résumé"; }); // sécurité : le français n'est plus proposé ; les résumés ont leur propre carte (#tuile-resumes)
 
         // matières : les deux principales, puis celles qui ont des documents
         const matieres = MATIERES.slice();
@@ -5135,6 +5135,51 @@ console.log("Page actuelle:", currentPage);
             }
             console.error("Erreur lien fichier:", e);
             showToast("Connecte-toi pour ouvrir ce document.", "error");
+        }
+
+    });
+
+
+    // Carte « Résumés » (espace élève) : ouvre dans la visionneuse les images du résumé du niveau de l'élève
+    document.addEventListener("click", async function (event) {
+
+        if (!event.target.closest("#tuile-resumes")) {
+            return;
+        }
+
+        try {
+
+            const { data: lignes, error } = await window.supabaseClient
+                .from("documents")
+                .select("*")
+                .eq("statut", "publie")
+                .eq("type_fichier", "Résumé");
+
+            if (error) {
+                throw error;
+            }
+
+            const classeEleve = (document.querySelector("#eleve-classe") || {}).textContent || "";
+            const resume = (lignes || []).find(function (l) { return l.classe && classeEleve.indexOf(l.classe) !== -1; }) || (lignes || [])[0];
+            const images = resume ? (resume.fichiers || []).map(function (f) { return f.chemin; }).filter(Boolean) : [];
+
+            if (images.length === 0) {
+                showToast("الملخّص سيتوفّر قريبا لمستواك.", "info");
+                return;
+            }
+
+            const ouvrir = document.createElement("button");
+            ouvrir.type = "button";
+            ouvrir.className = "doc-voir";
+            ouvrir.dataset.images = encodeURIComponent(JSON.stringify(images));
+            ouvrir.hidden = true;
+            document.body.appendChild(ouvrir);
+            ouvrir.click();
+            setTimeout(function () { ouvrir.remove(); }, 0);
+
+        } catch (e) {
+            console.error("Erreur résumés:", e);
+            showToast("Connecte-toi pour voir ce document.", "error");
         }
 
     });
