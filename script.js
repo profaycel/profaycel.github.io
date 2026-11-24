@@ -5160,7 +5160,7 @@ console.log("Page actuelle:", currentPage);
             }
 
             const classeEleve = (document.querySelector("#eleve-classe") || {}).textContent || "";
-            const resume = (lignes || []).find(function (l) { return l.classe && classeEleve.indexOf(l.classe) !== -1; }) || (lignes || [])[0];
+            const resume = (lignes || []).find(function (l) { return l.classe && classeEleve.indexOf(l.classe) !== -1; });
             const images = resume ? (resume.fichiers || []).map(function (f) { return f.chemin; }).filter(Boolean) : [];
 
             if (images.length === 0) {
