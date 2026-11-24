@@ -1924,3 +1924,55 @@ begin
 end $$;
 revoke all on function public.qcm_suivi() from public, anon;
 grant execute on function public.qcm_suivi() to authenticated;
+
+-- =====================================================
+-- 18. COMPTES « FAMILLE » À PLUSIEURS NIVEAUX (24/11/2026) — déjà appliqué
+-- Liste blanche prive.niveaux_multiples : un même compte (ex. parent ayant un enfant en 7 et un en 8)
+-- peut basculer de niveau avec la barre de niveaux.js. Tous les autres comptes : aucun effet.
+-- Pour ajouter un compte : insert into prive.niveaux_multiples (user_id, niveaux) values ('<uuid>', array['7 أساسي','8 أساسي']);
+-- =====================================================
+create table if not exists prive.niveaux_multiples (
+    user_id uuid primary key references auth.users (id) on delete cascade,
+    niveaux text[] not null
+);
+alter table prive.niveaux_multiples enable row level security;
+revoke all on prive.niveaux_multiples from public, anon, authenticated;
+
+create or replace function public.mes_niveaux()
+returns jsonb
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+    select coalesce((
+        select jsonb_build_object(
+            'niveaux', to_jsonb(m.niveaux),
+            'actuel', (select e.classe from public.eleves e
+                        where e.user_id = (select auth.uid()) and e.statut is distinct from 'archive'
+                        order by e.id limit 1))
+          from prive.niveaux_multiples m
+         where m.user_id = (select auth.uid())
+    ), '{}'::jsonb);
+$$;
+revoke all on function public.mes_niveaux() from public, anon;
+grant execute on function public.mes_niveaux() to authenticated;
+
+create or replace function public.changer_niveau(p_niveau text)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare v text[];
+begin
+    select m.niveaux into v from prive.niveaux_multiples m where m.user_id = (select auth.uid());
+    if v is null or not (p_niveau = any (v)) then
+        raise exception 'niveau non autorisé';
+    end if;
+    update public.eleves set classe = p_niveau
+     where user_id = (select auth.uid()) and statut is distinct from 'archive';
+end;
+$$;
+revoke all on function public.changer_niveau(text) from public, anon;
+grant execute on function public.changer_niveau(text) to authenticated;
