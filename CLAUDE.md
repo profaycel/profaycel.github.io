@@ -150,6 +150,9 @@
   l'ajouter à `sitemap.xml` et à `exercices/index.html`. Texte arabe (فصحى), lettres et symboles mathématiques dans `<span class="ltr">`, aucun balisage d'avis/étoiles.
   L'accueil (`index.html`) renvoie vers `exercices/index.html` depuis son pied de page.
 - **Séries « ما قبل الفرض التأليفي عدد 1 » (23/11/2026)** : dans la table `documents`, `numero` de 1 à 5 = avant le DC n°1, 6 à 10 = avant le DC n°2, et **`numero` 101 à 110 = séries avant le devoir de synthèse n°1** (101 = série 1…), regroupées sous le bouton « ما قبل الفرض التأليفي عدد 1 » (clé de groupe 100 dans `htmlListeTrimestre()` de `script.js`) ; la série (type « Série d'exercices ») et sa correction (type « Correction ») ont le même `numero`. Le bouton « Bientôt » disparaît dès qu'il existe une série `numero` > 100 en trimestre 1. Les PDF vont dans le stockage privé `documents` (`series/7e-fdt1-serie<n>-enonce.pdf` / `-correction.pdf`).
+- **Carte « Résumés » (24/11/2026)** : 4e carte de l'espace élève (`#tuile-resumes` dans `eleve.html`, gestionnaire dans `script.js`). Une ligne par niveau dans `documents`
+  avec `type_fichier = 'Résumé'` et les 3 images dans `fichiers` (`[{chemin, type: "image/png"}]`, objets du stockage privé `documents`, noms latins `7e-fdt1-resume1-….png`) ;
+  la carte ouvre la visionneuse (`.doc-voir`) avec les images du niveau (la policy `documents_lecture` limite déjà au niveau de l'élève). Les « Résumé » sont exclus de la liste « Devoirs » (`htmlDocuments`).
 - Limite connue : un élève connecté peut toujours enregistrer ou partager ce qu'il a le droit de voir (PDF, leçon).
 - À activer dans Supabase (Authentication → Policies/Passwords) : « Leaked password protection ».
 - **Cours de français, 7 أساسي, trimestre 1 (13/11/2026)** : 15 leçons interactives en français (`matiere: "francais"` dans `parcours/catalogue.js`, ids `7-fr-<module>-<sujet>`,
